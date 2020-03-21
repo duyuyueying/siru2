@@ -5,8 +5,8 @@
 			<view class="mb50" v-if="this.showType == 'passport'"><uni-input-section placeholder="国家或地区" type="picker" @input="changeValue('country', $event)"></uni-input-section></view>
 			<view class="mb20"><uni-input-section placeholder="证件姓名" @input="changeValue('name', $event)"></uni-input-section></view>
 			<view class="mb50"><uni-input-section placeholder="证件号码"  @input="changeValue('id', $event)"></uni-input-section></view>
-			<view class="mb50 center"><uni-upload label="上传证件正面照片" @changePath="changPath" :imagPath="frontImgPath"></uni-upload></view>
-			<view class="mb50 center" v-if="this.showType != 'passport'"><uni-upload label="上传证件反面照片" @changePath="changPath" :imagPath="backImgPath"></uni-upload></view>
+			<view class="mb50 center"><uni-upload label="上传证件正面照片" @changePath="changPath($event, 'front')" :imagPath="frontImg"></uni-upload></view>
+			<view class="mb50 center" v-if="this.showType != 'passport'"><uni-upload label="上传证件反面照片" @changePath="changPath($event, 'back')" :imagPath="backImg"></uni-upload></view>
 			<view class="submit_btn" @click="submit"><text class="submit_btn_txt">提交</text></view>
 		</view>
 		
@@ -28,6 +28,7 @@
 	import {UniSteps} from '@dcloudio/uni-ui';
 	import uniInputSection from '@/components/uni-input.vue';
 	import uniUpload from '@/components/uni-upload.vue';
+	import {mapState, mapMutations } from 'vuex';
 	export default {
 		data() {
 			return {
@@ -45,8 +46,8 @@
 				name: '', // 缓存名称
 				id: '', // 缓存证件号码
 				country: '', // 国家
-				frontImgPath: '', // 正面照
-				backImgPath: '', //背面照
+				// frontImgPath: '', // 正面照
+				// backImgPath: '', //背面照
 				
 			}
 		},
@@ -61,17 +62,30 @@
 				title: '个人实名认证'
 			})
 		},
+		onUnload(){
+			if(this.frontImg != null) {
+				this.FRONT_IMG(null)
+			}	
+			if(this.backImg != null) {
+				this.BACK_IMG(null)
+			}
+		},
 		components:{
 			UniSteps,
 			uniInputSection,
 			uniUpload
 		},
+		computed: mapState(['frontImg', 'backImg']),
 		methods: {
+			...mapMutations(['BACK_IMG','FRONT_IMG']),
 			changeValue(key, value) {
 				this[key] = value;
 			},
-			changPath(){
-				this.frontImgPath = '../../static/temp/avatar.jpeg';
+			changPath(imgUrl,type){
+				uni.navigateTo({
+					url: '/pages/crop/crop?imagePaht='+imgUrl+'&type='+type
+				})
+				// this.frontImgPath = '../../static/temp/avatar.jpeg';
 			},
 			showToast(txt){
 				uni.showToast({

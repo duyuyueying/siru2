@@ -63,8 +63,20 @@
 				</mix-pulldown-refresh>
 			</swiper-item>
 		</swiper>
-		
-		
+		<uni-popup ref="sign">
+			<view class="sign_box">
+				<view><text class="list_item_black_title_sm heavy">{{data.name}}</text></view>
+				<image src="/static/temp/avatar.jpeg" mode="aspectFill" class="qr_img"></image>
+				<!-- <view><text class="blod_black_txt" style="color:#ffb100">恭喜您获得&nbsp;1&nbsp;金币</text></view>
+				<view><text class="normal_txt">连续签到奖励更丰富</text></view> -->
+				<view @click="download">
+					<text class="list_item_black_title_sm">点击下载二维码</text>
+				</view>
+				<view class="close_btn rotate" @click="close">
+					<icons type='add' color='#fff'></icons>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
@@ -76,6 +88,7 @@
 	import newsItem from '@/components/list-item/news-item.vue';
 	import icons from '@/components/icons/icons.vue';
 	import {loadMore} from '@/common/util.js';
+	import {uniPopup} from '@dcloudio/uni-ui';
 	export default {
 		data() {
 			return {
@@ -94,7 +107,8 @@
 			tabs,
 			uniTitle,
 			newsItem,
-			icons
+			icons,
+			uniPopup
 		},
 		onLoad() {
 			this.iStatusBarHeight  = uni.getSystemInfoSync().statusBarHeight;
@@ -108,6 +122,11 @@
 			console.log('分享...');
 		},
 		onNavigationBarButtonTap(e) {
+			if(e.text == '关注') {
+				uni.navigateTo({
+					url: '/pages/user/userEdit'
+				})
+			}
 			console.log(e);
 		},
 		methods: {
@@ -170,7 +189,31 @@
 				}
 			},
 			showQrCode() {
-				console.log("showQrCode");
+				this.$refs.sign.open();
+			},
+			download() {
+				uni.downloadFile({
+					url: 'https://img.36krcdn.com/20200307/v2_945dcd5d78514102a1e83a016bfbb2a6_img_000',
+					success(e) {
+						
+						uni.saveImageToPhotosAlbum({
+							filePath: e.tempFilePath,
+							success(path) {
+								uni.showToast({
+									icon:'none',
+									title: '图片已保存至相册'
+								})
+							}
+						})
+					},
+					fail(e){
+						console.log("fail",e)
+					}
+				});
+				this.close();	
+			},
+			close() {
+				this.$refs.sign.close();
 			}
 		}
 	}
@@ -243,5 +286,33 @@
 		@include sideBorder;
 		flex: 1;
 		padding: 20upx 0upx;
+	}
+	.sign_box{
+		width: 250px;
+		padding: $space-lg 0;
+		background-color: #fff;
+		@extend .flex_column;
+		align-items: center;
+	}
+	.close_btn{
+		width: 30px;
+		height: 30px;
+		background-color: $mainColor;
+		border-radius: 20px;
+		position: absolute;
+		right: -15px;
+		top: -15px;
+		// margin-top: 15px;
+		// padding: $space-sm $space-base;
+		text-align: center;
+		line-height: 30px;
+	}
+	.rotate{
+		transform: rotate(45deg);
+	}
+	.qr_img{
+		width: 180px;
+		height: 180px;
+		margin: $space-base;
 	}
 </style>

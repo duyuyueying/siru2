@@ -8,18 +8,22 @@
 			<view class="flex_row"><text class="list_item_black_title_sm heavy right_space_base">{{item.name}}</text><text class="normal_txt">/{{item.unit}}</text></view>
 			<text class="normal_txt">{{item.exChange}}</text>
 		</view>
-		<view class="flex6 flex_column" v-if="pricePosition == 'CNYUP'">
-			<text class="list_item_black_title_sm heavy">&yen;{{item.cnyPrice}}</text>
-			<text class="normal_txt">={{item.price}}USDT</text>
+		<view class="flex6" v-if="type != 'search'">
+			<view class="flex_column" v-if="pricePosition == 'CNYUP'">
+				<text class="list_item_black_title_sm heavy">&yen;{{item.cnyPrice}}</text>
+				<text class="normal_txt">={{item.price}}USDT</text>
+			</view>
+			<view class="flex_column" v-else-if="pricePosition == 'CNYUP'">
+				<text class="list_item_black_title_sm heavy">${{item.price}}</text>
+				<text class="normal_txt">={{item.cnyPrice}}CNY</text>
+			</view>
 		</view>
-		<view class="flex6 flex_column" v-else>
-			<text class="list_item_black_title_sm heavy">${{item.price}}</text>
-			<text class="normal_txt">={{item.cnyPrice}}CNY</text>
-		</view>
+		<view class="flex6" v-else></view>
 		<view class="flex4 flex_row">
-			<view class="btn" :style="{backgroundColor: isUp > 0 ? upTheme.txt: downTheme.txt}">
+			<view class="btn" :style="{backgroundColor: isUp > 0 ? upTheme.txt: downTheme.txt}" v-if="type !='search'">
 				<text class="list_item_black_title_sm btn_txt" style="color:#fff">{{isUp>0?'+':'-'}}{{item.rate}}%</text>
 			</view>
+			<view style="width: 100upx;" v-else></view>
 			<view @click.stop="collect" class="collect_btn_wrap flex center" v-if="hasCollect">
 				<icons type="collect" :color="item.isCollect ? '#ffb100' : '#a0a0a0'"></icons>
 			</view>
@@ -60,13 +64,16 @@
 		},
 		methods:{
 			onClick(){
-				this.$emit('click');
+				let symbol = this.item.symbol;
+				let exChangeName = this.item.exChangeName
+				uni.navigateTo({
+					url: '/pages/quotations/coinDetail?symbol='+symbol+'&exChangeName='+exChangeName
+				});
+				// this.$emit('click');
 			},
 			// 自选
 			collect() {
 				this.$emit('collect', this.item.id);
-				// this.$emit('collect', this.item.id);
-				// this.isCollect = !this.isCollect;
 			}
 		},
 		computed:{

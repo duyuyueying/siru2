@@ -20,6 +20,22 @@
 					<person-list-item v-else-if="type == 'focus' || type == 'fans'" :item="item" showIdentification showDetail></person-list-item>                
 					<!-- 金币记录 -->
 					<coin-list-item :item="item" v-else-if="type == 'coin'"></coin-list-item>
+					<!-- 回复我的 -->
+					<message-item :item="item" v-else-if="type == 'replyMe'" @goPage="goOneCommet">
+						<text style="fontSize: 26upx;color: #999">谢谢评论！</text>
+					</message-item>
+					<!-- 赞过我的 -->
+					<message-item :item="item" v-else-if="type == 'likeMe'" @goPage="goOneCommet">
+						<view>
+							<icons type="good" color="#ffb100"></icons><text style="fontSize: 26upx;color: #999;margin-left:10upx;">点赞</text>
+						</view>
+					</message-item>
+					<!-- 赞过我的 -->
+					<message-item :item="item" v-else-if="type == 'focusMe'" :showContent="false" @goPage="goPerson">
+						<text style="fontSize: 26upx;color: #ccc;margin-top:10upx;margin-bottom: 10upx;">成为了你的粉丝</text>
+					</message-item>
+					<!-- 系统消息 -->
+					<message-server-item :item="item" v-else-if="type == 'systemMessage'"></message-server-item>
 					<news-item :newsItem="item" v-else></news-item>
 				</view>
 			</scroll-view>
@@ -37,6 +53,8 @@
 	import inviteListItem from '@/pages/userCenterList/uni-invite-list-item.vue';
 	import personListItem from '@/components/list-item/person-list-item.vue';
 	import coinListItem from '@/pages/userCenterList/coin-list-item.vue';
+	import messageItem from '@/components/list-item/message-item.vue';
+	import messageServerItem from '@/components/list-item/message-server-item.vue';
 	import {newsList} from '@/service/getData.js';
 	import {loadMore} from '@/common/util.js';
 	import {focusAuthors, tags, newsItems, goldList} from '@/mock/data';
@@ -47,7 +65,9 @@
 			personListItem,
 			uniTitle,
 			coinListItem,
-			inviteListItem
+			inviteListItem,
+			messageItem,
+			messageServerItem
 		},
 		props: {
 			nid: {
@@ -105,9 +125,11 @@
 					if(this.type === 'focus'){
 						let temp = [].concat(focusAuthors);
 						list = temp.map((item)=>{return Object.assign({},item, {isFocus: true})});
-					
 					}
-					if(this.type === 'fans' || this.type == 'replyMe' || this.type == 'likeMe' || this.type == 'focusMe' || this.type == 'focusMe' || this.type == 'systemMessage') {
+					if(this.type === 'fans' || this.type == 'systemMessage') {
+						list = focusAuthors;
+					}
+					if(this.type == 'replyMe' || this.type == 'likeMe' || this.type == 'focusMe'){
 						list = focusAuthors;
 					}
 					if(this.type === 'myCollect' || this.type === 'history') {
@@ -154,7 +176,17 @@
 					this.navigateFlag = false;
 				}, 200)
 			},
-		}
+			goOneCommet(id) {
+				uni.navigateTo({
+					url: '/pages/comment/one_comment?id=' + id
+				});
+			},
+			goPerson(id) {
+				uni.navigateTo({
+					url: '/pages/author/author?id=' + id
+				});
+			}
+		} 
 	}
 </script>
 

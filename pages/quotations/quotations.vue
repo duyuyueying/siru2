@@ -2,7 +2,9 @@
 	<view class="wrap">
 		<uni-nav-bar statusBar>
 			<view class="flex2"><tabs :tabs="['自选','大盘']" @changeTab="changeTab($event, 'currTab')" :defaultTab="currTab"></tabs></view>
-			<uni-icons type="search" v-slot="right"></uni-icons>
+			 <view @click="goSearch">
+				<uni-icons type="search" v-slot="right"></uni-icons>
+			 </view>
 		</uni-nav-bar>
 		<!-- 下拉刷新组件 -->
 		<!--  -->
@@ -239,7 +241,12 @@
 				
 			},
 			transition(e) {
-				console.log(this.currSubTab, e);
+				let dx = e.detail.dx
+				if(this.currTab != 0 && this.currSubTab == 0 && dx < 0){
+					if(dx < -50 && dx > -300){
+						this.currTab = 0;
+					}
+				}
 			},
 			animationfinish(e) {
 				console.log('animationend==', e);
@@ -254,6 +261,11 @@
 			goEditPage() {
 				uni.navigateTo({
 					url: '/pages/quotations/editCoins'
+				});
+			},
+			goSearch() {
+				uni.navigateTo({
+					url: '/pages/search/searchCoins'
 				});
 			}
 		},

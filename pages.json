@@ -29,6 +29,17 @@
             }
         },
 		{
+		    "path" : "pages/comment/one_comment",
+		    "style" : {
+		    	"titleNView": {
+		    		"backButton": {
+		    			"type": "back"
+		    		},
+		    		"titleText": "评论回复"
+		    	}
+		    }
+		},
+		{
 		    "path" : "pages/details/fastNewsDetail",
 		    "style" : {
 		    	"titleNView": {
@@ -60,6 +71,12 @@
 		}
 		,{
 		    "path" : "pages/search/search",
+		    "style" : {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+		    "path" : "pages/search/searchCoins",
 		    "style" : {
 				"navigationStyle": "custom"
 			}
@@ -124,7 +141,6 @@
 				}
 			}
 		}
-        
         ,{
             "path" : "pages/tagPage/tagPage",
             "style" : {
@@ -206,6 +222,17 @@
 		    "path" : "pages/user/user",
 		    "style" : {
 				"navigationStyle": "custom"
+			}
+		},
+		{
+		    "path" : "pages/user/userEdit",
+		    "style" : {
+				"titleNView": {
+					"backButton": {
+						"type": "back"
+					},
+					"titleText": "编辑个人信息"
+				}
 			}
 		},
 		{
@@ -426,6 +453,21 @@
 					}
 				}
 			}
+        }
+        ,{
+            "path" : "pages/about/about",
+            "style" : {
+				"titleNView": {
+					"backButton": {
+						"type": "back"
+					},
+					"titleText": "关于我们"
+				}
+			}
+        }
+        ,{
+            "path" : "pages/crop/crop",
+            "style" : {}
         }
     ],
 	"globalStyle": {

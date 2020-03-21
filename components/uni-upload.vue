@@ -1,6 +1,6 @@
 <template>
 	<view class="u-upload_wrap" @tap="chooseImg">
-		<view v-if="imagPath != ''">
+		<view v-if="imagPath != null">
 			<image class="img_wrap" mode="aspectFill" :src="imagPath"></image>
 		</view>
 		<view  @tap="chooseImg" v-else class="flex_column">
@@ -39,9 +39,8 @@
 					sizeType:['copressed'],
 					success(res) {
 						let imagPath = res.tempFilePaths;
-						this.isTap = false;
-						// TODO:这里跳转执行裁剪图片页面，
-						_this.$emit('changePath');
+						_this.isTap = false;
+						_this.$emit('changePath', imagPath[0]);
 					}
 				})
 			}

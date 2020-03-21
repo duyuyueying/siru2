@@ -2,7 +2,7 @@
 	<view class="container">
 		<uni-status-bar></uni-status-bar>
 		<view class="header">
-			<view class="userinfo" v-if="userId != null">
+			<view class="userinfo" v-if="userId != null" @click="goPerson">
 				<view class="face">
 					<image :src="userinfo.face" class="face_img" mode="aspectFill"></image>
 				</view>
@@ -230,13 +230,21 @@
 					case 'feedback':
 						url = '/pages/feedback/feedback';
 						break;
-					default:
-						url='/pages/home/home';
+					case 'about':
+						url = '/pages/about/about';
+						break;
+					
 				}
 				uni.navigateTo({
 					url
 				})
 				// uni.showToast({title: this.severList[list_i][li_i].name});
+			},
+			// 去个人中心页面
+			goPerson(id){
+				uni.navigateTo({
+					url: '/pages/author/author?id='+id
+				})
 			}
 		},
 		watch:{

@@ -64,6 +64,9 @@
 		created() {
 			this.calcCounter()
 		},
+		onLoad(e) {
+			this.type = e.type;
+		},
 		methods: {
 			...mapMutations(['USER_ID']),
 			// 移动自定义数字键盘

@@ -1,0 +1,108 @@
+<template>
+	<view class="flex flex_row list_item" @click="onClick" :class="{isSelect: isSelect}">
+		<view class="flex5 flex_column" v-if="type === 'exchange'">
+			<view class="flex_row"><text class="list_item_black_title_sm heavy right_space_base">ONT</text><text class="normal_txt">/BTC</text></view>
+			<text class="normal_txt">1942233.1</text>
+		</view>
+		<view class="flex5 flex_column" v-else>
+			<view class="flex_row"><text class="list_item_black_title_sm heavy right_space_base">{{item.name}}</text><text class="normal_txt">/{{item.unit}}</text></view>
+			<text class="normal_txt">{{item.exChange}}</text>
+		</view>
+		<view class="flex6 flex_column" v-if="pricePosition == 'CNYUP'">
+			<text class="list_item_black_title_sm heavy">&yen;{{item.cnyPrice}}</text>
+			<text class="normal_txt">={{item.price}}USDT</text>
+		</view>
+		<view class="flex6 flex_column" v-else>
+			<text class="list_item_black_title_sm heavy">${{item.price}}</text>
+			<text class="normal_txt">={{item.cnyPrice}}CNY</text>
+		</view>
+		<view class="flex4 flex_row">
+			<view class="btn" :style="{backgroundColor: isUp > 0 ? upTheme.txt: downTheme.txt}">
+				<text class="list_item_black_title_sm btn_txt" style="color:#fff">{{isUp>0?'+':'-'}}{{item.rate}}%</text>
+			</view>
+			<view @click.stop="collect" class="collect_btn_wrap flex center" v-if="hasCollect">
+				<icons type="collect" :color="item.isCollect ? '#ffb100' : '#a0a0a0'"></icons>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	import {mapState} from 'vuex';
+	import icons from '@/components/icons/icons.vue';
+	export default {
+		data(){
+			return {
+				isCollect: false
+			}
+		},
+		props:{
+			item: Object,
+			hasCollect: {
+				type: Boolean,
+				default: false
+			},
+			isSelect: {
+				type: Boolean,
+				default: false
+			},
+			type: {
+				type: String,
+				default: 'quotations'
+			}
+		},
+		components:{
+			icons
+		},	
+		created() {
+			// this.isCollect = this.item.isCollect || false;
+			console.log(this.isSelect);
+		},
+		methods:{
+			onClick(){
+				this.$emit('click');
+			},
+			// 自选
+			collect() {
+				this.$emit('collect', this.item.id);
+				// this.$emit('collect', this.item.id);
+				// this.isCollect = !this.isCollect;
+			}
+		},
+		computed:{
+			...mapState(['upTheme', 'downTheme', 'pricePosition']),
+			isUp(){
+				return this.item.startPrice - this.item.endPrice < 0
+			}
+		},
+		watch:{
+			item(e) {
+				console.log(e)
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+	.list_item{
+		padding: $space-lg;
+		background-color: $whiteColor;
+		border: 0 solid $borderColor;
+		border-bottom-width: 2upx;
+	}
+	.center{
+		align-items: center;
+	}
+	.btn{
+		padding: $space-sm $space-base;
+		border-radius: 6upx;
+		text-align: center;
+	}
+	.collect_btn_wrap{
+		margin-left: $space-sm;
+		// line-height: ;
+	},
+	.isSelect{
+		background-color: #f5f5f5;
+	}
+</style>

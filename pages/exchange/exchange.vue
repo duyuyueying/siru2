@@ -8,7 +8,7 @@
 				<view class="flex_row mt20">
 					<text class="list_item_black_title_sm heavy mr20 white_color">{{data.name}}</text>
 					<text class="list_item_black_title_sm heavy mr20 focus_color" >ER{{data.ERange}}</text>
-					<icons type="question" color="#ffb100"></icons>
+					<view @click="showTips"><icons type="question" color="#ffb100"></icons></view>
 				</view>
 				<view class="flex_column">
 					<text class="list_item_black_title_base white_color">{{data.oneDayDeal}}亿</text>
@@ -17,9 +17,9 @@
 			</view>
 			<view class="flex_column flex2 space_between">
 				<view class="flex_row mt20 range_box">
-					<text class="normal_txt focus_color">全球排名</text>
+					<text class="range_focus_txt">全球排名</text>
 					<view class="range_txt_box">
-						<text class="list_item_black_title_sm">第{{data.globalRange}}名</text>
+						<text class="range_txt">第{{data.globalRange}}名</text>
 					</view>
 				</view>
 				<view class="flex_column">
@@ -31,7 +31,7 @@
 		<tabs :tabs="['主页','行情','资讯','公告']" @changeTab="changeTab" :defaultTab="currTab"></tabs>
 		<swiper :current="currTab" @change="changeTab" class="swiper">
 			<swiper-item>
-				<scroll-view scroll-y="true" style="height: 600px;">
+				<scroll-view :scroll-y="enableScrollY" :style="{height: swiperHeight+'px'}">
 					<view>
 						<view class="flex_row_center main_coins_wrap">
 							<view class="flex1 flex_column">
@@ -85,7 +85,7 @@
 				</scroll-view>
 			</swiper-item>
 			<swiper-item>
-				<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+				<mix-pulldown-refresh ref="mixPulldownRefresh1" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<scroll-view id="tab-bar" class="tab-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft" :show-scrollbar="false">
 						<view 
 							v-for="(item,index) in tradeTabBar" :key="index"
@@ -97,26 +97,25 @@
 					</scroll-view>
 					<scroll-view
 						class="panel-scroll-box" 
-						:scroll-y="enableScroll" 
+						:scroll-y="enableScrollY" 
 						@scrolltolower="loadMore"
+						:style="{height: (swiperHeight-22)+'px'}"
 						>
-							<uni-self-dish-table-head>
-								<view class="edit_cell"><text class="normal_txt">名称/成交量</text></view>
-							</uni-self-dish-table-head>
-							<uni-self-dish-table-cell v-for="(item, index) in tabBars[1].newsList" :key="index" :item="item" type="exchange"></uni-self-dish-table-cell>
-						
-<!-- 						<divide-table-cell-head :items="['名称','最新价','24H跌幅']"></divide-table-cell-head>
-						<divide-table-cell v-for="(item, index) in tabBars[1].newsList" :item="item" :key="index" type="riseAndFall"></divide-table-cell>
- -->						<mix-load-more :status="tabBars[1].loadMoreStatus"></mix-load-more>
+						<uni-self-dish-table-head>
+							<view class="edit_cell"><text class="normal_txt">名称/成交量</text></view>
+						</uni-self-dish-table-head>
+						<uni-self-dish-table-cell v-for="(item, index) in tabBars[1].newsList" :key="index" :item="item" type="exchange"></uni-self-dish-table-cell>
+						<mix-load-more :status="tabBars[1].loadMoreStatus"></mix-load-more>
 					</scroll-view>
 				</mix-pulldown-refresh>
 			</swiper-item>
 			<swiper-item>
-				<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+				<mix-pulldown-refresh ref="mixPulldownRefresh2" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<scroll-view
 						class="panel-scroll-box" 
-						:scroll-y="enableScroll" 
+						:scroll-y="enableScrollY" 
 						@scrolltolower="loadMore"
+						:style="{height: swiperHeight+'px'}"
 						>
 						<news-item :newsItem="item" v-for="(item, index) in tabBars[2].newsList" :key="index"></news-item>
 						<!-- 上滑加载更多组件 -->
@@ -128,6 +127,18 @@
 			我是公共
 			</swiper-item>
 		</swiper>
+		<uni-popup ref="tips">
+			<view class="tips_box">
+				<view><text class="list_item_black_title_base">ExRank说明</text></view>
+				
+				<view class="tips_content_box">
+					<text class="list_item_black_title_sm">全球交易所综合排行榜(exChange Rank)，检测ExRank，是衡量数字货币交易所综合性的指标，对交易所不同维度的数据进行分析得出的综合分数。</text>
+				</view>
+				<view class="close_btn" @click="close">
+					<text class="close_btn_txt">确定</text>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 <script>
@@ -144,6 +155,7 @@
 	import uniSelfDishTableCell from '@/components/list-item/uni-self-dish-table-cell.vue'
 	import baseInfoLabel from '@/pages/exchange/base-info-label.vue';
 	import {mapState} from 'vuex';
+	import {uniPopup} from '@dcloudio/uni-ui';
 	let windowWidth = 0, scrollTimer = false, tabBar, scrollTimer1 = false;
 	export default {
 		data() {
@@ -156,7 +168,6 @@
 					globalRange: 25,
 				},
 				identification: null,
-				iStatusBarHeight: 0,
 				currTab: 0,
 				dataList: [],
 				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
@@ -165,8 +176,11 @@
 				tabBars: [{name:'主页'},{name: '行情'},{name: '资讯'},{name:'公告'}],
 				coins: coins,
 				tradeTabBar: [{name:'全部'},{name:'BTC'},{name:'ETH'},{name: 'EOS'},{name:'BCH'},{name:'EURS'},{name:'USDT'},{name:'ETH'},{name: 'EOS'},{name:'BCH'},{name:'EURS'},{name:'USDT'}],
-				tradeTabCurrentIndex: 0,
-				scrollLeft: 0, //顶部选项卡左滑距离
+				tradeTabCurrentIndex: 0, // 行情标签下tab的索引
+				scrollLeft: 0, // 顶部选项卡左滑距离
+				enableScrollY: false, // scrollview是否可以华东
+				headScrollTop: 0,
+				swiperHeight: 0,
 			}
 		},
 		mixins:[loadMore],
@@ -179,13 +193,33 @@
 			divideTableCell,
 			baseInfoLabel,
 			uniSelfDishTableHead,
-			uniSelfDishTableCell
+			uniSelfDishTableCell,
+			uniPopup
+		},
+		onReady() {
+			let _this = this;
+			uni.getSystemInfo({
+				success: function(e) {
+					// 44为标题的高度
+					_this.swiperHeight = e.windowHeight;
+				}
+			})
 		},
 		onLoad(e) {
 			this.tabBars = this.initTab(this.tabBars);
 			uni.setNavigationBarTitle({
 				title: e.exChangeName
 			});
+		},
+		mounted() {
+			this.getElSize();
+		},
+		onPageScroll(e) {
+			if(Math.ceil(e.scrollTop) + 20 > this.headScrollTop ) {
+				this.enableScrollY = true;
+			} else {
+				this.enableScrollY = false;
+			}
 		},
 		onShareAppMessage() {
 			console.log('分享...');
@@ -199,9 +233,7 @@
 			loadList(type){
 				let tabItem = this.tabBars[this.currTab];
 				//type add 加载更多 refresh下拉刷新
-				console.log('loadList====',tabItem, this.currTab, this.tabBars)
 				if(type === 'add'){
-					console.log(tabItem.loadMoreStatus)
 					if(tabItem.loadMoreStatus === 2){
 						return;
 					}
@@ -236,7 +268,8 @@
 					tabItem.newsList = [...tabItem.newsList, ...tempArr];
 					//下拉刷新 关闭刷新动画
 					if(type === 'refresh'){
-						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+						let keyName = 'mixPulldownRefresh'+this.currTab
+						this.$refs[keyName] && this.$refs[keyName].endPulldownRefresh();
 						// #ifdef APP-PLUS
 						tabItem.refreshing = false;
 						// #endif
@@ -347,19 +380,22 @@
 				}, 300)
 			},
 			
-			//获得元素的size
-			getElSize(id) { 
-				return new Promise((res, rej) => {
-					let el = uni.createSelectorQuery().select('#' + id);
-					el.fields({
-						size: true,
-						scrollOffset: true,
-						rect: true
-					}, (data) => {
-						res(data);
-					}).exec();
-				});
+			getElSize(id) {
+				let el = uni.createSelectorQuery().select('.swiper');
+				el.fields({
+					size: true,
+					scrollOffset: true,
+					rect: true
+				}, (data) => {
+					this.headScrollTop = data.top;
+				}).exec();
 			},
+			showTips() {
+				this.$refs.tips.open();
+			},
+			close() {
+				this.$refs.tips.close();
+			}
 		}
 	}
 </script>
@@ -372,6 +408,7 @@
 	}
 	.swiper, .panel-scroll-box{
 		height: 100%;
+		background-color: #fff;
 	}
 	.bg_wrapper{
 		height: 200upx;
@@ -453,6 +490,9 @@
 		top: 0;
 		bottom: 0;
 		left: 50%;
+		@extend  .flex;
+		align-items: center;
+		justify-content: center;
 		text-align: center;
 	}
 	.main_coins_wrap{
@@ -461,6 +501,9 @@
 	}
 	.mt10{
 		margin-top: 10upx;
+	}
+	.mb20{
+		margin-bottom: 20upx;
 	}
 	/* 顶部tabbar */
 	.tab-bar{
@@ -490,5 +533,31 @@
 			border-color: $mainColor;
 		}
 	}
-
+	.range_txt{
+		@include txt($color: #fff);
+	}
+	.range_focus_txt{
+		@include txt($color: $mainColor);
+	}
+	.tips_box{
+		width: 300px;
+		padding-top: $space-lg;
+		background-color: #fff;
+		@extend .flex_column;
+		align-items: center;
+		border-radius: 8upx;
+	}
+	.tips_content_box{
+		padding: $space-lg;
+	}
+	.close_btn{
+		width: 100%;
+		height: 44px;
+		@include sideBorder(top);
+		text-align: center;
+		line-height: 44px;
+		.close_btn_txt{
+			@include txt(30upx, #489aff)
+		}
+	}
 </style>

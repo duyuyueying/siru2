@@ -44,7 +44,6 @@
 				// this.version = '1111';
 			})
 			// #endif
-			console.log(version)
 		},
 		methods:{
 			copy(content) {
@@ -64,7 +63,6 @@
 							version: plus.runtime.version
 						},
 						success: (res) => {
-							console.log('success', res);
 							if (res.statusCode == 200 && res.data.isUpdate) {
 								let openUrl = plus.os.name === 'iOS' ? res.data.iOS : res.data.Android;
 								// 提醒用户更新

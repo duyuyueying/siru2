@@ -43,11 +43,11 @@
 			</scroll-view>
 			
 		</view>
-		<view v-else >
+		<view v-else>
 			<!-- 顶部选项卡 -->
 			<!-- 搜索页面分类不多，没有scrollview，后续tab多起来，该换scrollview -->
 			<!-- <scroll-view id="nav-bar" class="nav-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft"> -->
-				<view class="flex_row nav-bar">
+				<view class="flex_row nav-bar fixed_tabbar">
 					<view
 						v-for="(item,index) in tabBars" :key="index"
 						class="nav-item"
@@ -56,9 +56,12 @@
 						@click="changeTab(index)"
 					>{{item.name}}</view>
 				</view>
+				<view >
+					<view class="uni-tabbar__placeholder-view" />
+				</view>
 			<!-- </scroll-view> -->
 			<!-- 下拉刷新组件 -->
-			<view style="height: 100%;">
+			<view>
 				<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<!-- 内容部分 -->
 					<swiper 
@@ -75,21 +78,23 @@
 								@scrolltolower="loadMore"
 								v-if="index != 0"
 								>
-								<!-- 
-									* 新闻列表 
-									* 和nvue的区别只是需要把uni标签转为weex标签而已
-									* class 和 style的绑定限制了一些语法，其他并没有不同
-								-->
 								<view v-for="(item, index) in tabItem.newsList" :key="index" class="news-item" @click="navToDetails(item)">
+									<!-- 直播 -->
 									<uni-vedio-list-item :item="item" v-if="tabItem.name == '视频'"></uni-vedio-list-item >
-									<person-list-item :items="item" v-else-if="tabItem.name == '专栏'">
+									<!-- 专栏 -->
+									<person-list-item :item="item" v-else-if="tabItem.name == '专栏'">
 										<view class="flex_row">
 											<view class="flex_row mr20"><text class="m-head_left_text" style="marginRight: 10upx">文章  </text><text class="m-head_left_text" style="color:#000">111</text></view>
 											<view  class="flex_row"><text class="m-head_left_text">粉丝  </text><text class="m-head_left_text" style="color:#000">222</text></view>
 										</view>
 									</person-list-item>
+									<!-- 币种 -->
 									<uni-coins-item :item="item" v-else-if="tabItem.name == '币种'"></uni-coins-item>
+									<!-- 交易所 -->
 									<uni-ex-change-item :item="item" v-else-if="tabItem.name == '交易所'"></uni-ex-change-item>
+									<!-- 快讯 -->
+									<fast-news-item :newsItem="item" v-else-if="tabItem.name == '快讯'"></fast-news-item>
+									<!-- 文章 -->
 									<news-item :newsItem="item" v-else></news-item>
 								</view> 
 								<!-- 上滑加载更多组件 -->
@@ -123,17 +128,13 @@
 												</view>
 											</person-list-item>
 										</view>
-										<!-- 直播 -->
-										<!-- <view class="u_item_list" v-if="item.enCode == 'live'">
-											<live-item v-for="(subItem, i) in item.list" :item="subItem" :key="i" ></live-item>
-										</view> -->
 										<!-- 文章 -->
 										<view class="u_item_list" v-if="item.enCode == 'article'">
 											<news-item v-for="(subItem, i) in item.list" :newsItem="subItem" :key="i" ></news-item>
 										</view>
 										<!-- 快讯 -->
 										<view class="u_item_list" v-if="item.enCode == 'fastNews'">
-											<news-item v-for="(subItem, i) in item.list" :newsItem="subItem" :key="i" :showImg="false" :showTag="false" :showSource="false" :showAuthor="false" :showCoins="false"></news-item>
+											<fast-news-item v-for="(subItem, i) in item.list" :newsItem="subItem" :key="i"></fast-news-item>
 										</view>
 										<!-- 你想找 -->
 										<view class="u_item_list" v-if="item.enCode == 'coinType'">
@@ -159,99 +160,63 @@
 </template>
 
 <script>
-	import {mapState, mapMutations} from 'vuex'; 
-	import {uniNavBar,uniIcons,uniSearchBar, uniStatusBar } from '@dcloudio/uni-ui';
+	import {uniStatusBar } from '@dcloudio/uni-ui';
 	import uniTitle from '@/components/uni-title.vue';
 	import uniTag from '@/components/uni-tag.vue';
-	import {newItem, searchTab, searchList, homeTab, newsItems, focusAuthors, tags, banner, coins} from '../../mock/data';
 	import newsItem from '@/components/list-item/news-item.vue';
+	import fastNewsItem from '@/components/list-item/fast-news-item.vue';
 	import personListItem from '@/components/list-item/person-list-item.vue';
-	import {newsList} from '../../service/getData.js';
+	import {newsList} from '@/service/getData.js';
 	import liveItem from '@/components/list-item/uni-video-list-item.vue';
 	import uniCoinsItem from '@/components/list-item/uni-coins-item.vue';
 	import uniExChangeItem from '@/components/list-item/uni-exchange-item.vue';
 	import icons from '@/components/icons/icons.vue';
 	import {loadMore} from '@/common/util.js';
-	// 缓存每页最多
-	const MAX_CACHE_DATA = 100;
-	// 缓存页签数量
-	const MAX_CACHE_PAGE = 3;
-	let windowWidth = 0, scrollTimer = false, tabBar;
+	import {newItem, searchTab, searchList, newsItems, focusAuthors, tags, coins} from '@/mock/data';
+	
+	let scrollTimer = false, tabBar;
 	let HISTORY_LIST = 'HISTORY_LIST'; // 存放历史数据的keyName
 	export default {
 		data() {
 			return {
 				tabCurrentIndex: 0, //当前选项卡索引
-				historyList: [],
-				hotList: ['BT','BTC','王晓宇','BT','BTC','王晓宇','BT','BTC','王晓宇'],
-				listData: [],
-				keyWord: '',
+				historyList: [], // 历史搜索
+				hotList: ['BT','BTC','王晓宇','BT','BTC','王晓宇','BT','BTC','王晓宇'], // 热门
+				keyWord: '', // 搜索关键字
 				showInit: true, // 展示默认页面
-				searchTabList: [],
-				tabList: [], // tabList数据
-				scrollLeft: 0, // 选中的tab需要偏移的位置
-				cacheTab: [],// 缓存3列tab，优化体验
-				isTap: false, // 防止重复触
-				tabBars: [],
+				tabBars: [], // tab数据
 				enableScroll: true,
-				swiperHeight: 0,
+				swiperHeight: 0, // scrollView的高度
 			}
 		},
 		components:{
-			uniNavBar,
-			uniSearchBar,
 			uniTitle,
 			uniTag,
 			newsItem,
-			uniIcons,
 			uniCoinsItem,
 			uniExChangeItem,
 			personListItem,
 			liveItem,
 			uniStatusBar,
-			icons
+			icons,
+			fastNewsItem
 		},
 		mixins:[loadMore],
 		onLoad() {
-			// this.listData = newItem;
 			this.tabBars = this.initTab(searchTab);
 			this.loadList('add');
 			this.loadHistoryListData();
-			// this.calcHeight();
 		},
 		onReady() {
 			let _this = this;
 			uni.getSystemInfo({
 				success: function(e) {
-					console.log(e);
+					// 44为标题的高度
 					_this.swiperHeight = e.windowHeight - 44;
-					console.log(_this.swiperHeight)
-					// windowHeight = e.windowHeight;
 				}
 			})
 		},
 		methods: {
-			calcHeight() {
-				let view = uni.createSelectorQuery().in(this).select("#swiper");
-				view.fields({
-				  size: true,
-				  scrollOffset: true
-				}, data => {
-					console.log(data);
-					// this.trueHeight = data.height
-				}).exec();
-			},
-			//获取分类
-			// loadTabbars(){
-			// 	let tabList = searchTab;
-			// 	tabList.forEach(item=>{
-			// 		item.newsList = [];
-			// 		item.loadMoreStatus = 0;  //加载更多 0加载前，1加载中，2没有更多了
-			// 		item.refreshing = 0;
-			// 	})
-			// 	this.tabBars = tabList;
-			// 	this.loadNewsList('add');
-			// },
 			// 获取存放在本地的历史数据
 			loadHistoryListData() {
 				let _this = this;
@@ -261,12 +226,10 @@
 						_this.historyList = e.data;
 					}
 				});
-				
 			},
 			//新闻列表
 			loadList(type){
 				let tabItem = this.tabBars[this.tabCurrentIndex];
-				
 				//type add 加载更多 refresh下拉刷新
 				if(type === 'add'){
 					if(tabItem.loadMoreStatus === 2){
@@ -279,14 +242,12 @@
 					tabItem.refreshing = true;
 				}
 				// #endif
-				
 				//setTimeout模拟异步请求数据
 				setTimeout(()=>{
 					let list = [];
 					if(tabItem.name == '专栏') {
 						list = focusAuthors;
 					} else if(tabItem.name == '最新'){
-					
 						list = newsItems;
 					}else if(tabItem.name == '全部'){
 						list = searchList;
@@ -319,24 +280,8 @@
 					}
 				}, 600)
 			},
-			
-			//下拉刷新
-			// onPulldownReresh(){
-			// 	this.loadNewsList('refresh');
-			// },
-			// //上滑加载
-			// loadMore(){
-			// 	this.loadNewsList('add');
-			// },
-			//设置scroll-view是否允许滚动，在小程序里下拉刷新时避免列表可以滑动
-			// setEnableScroll(enable){
-			// 	if(this.enableScroll !== enable){
-			// 		this.enableScroll = enable;
-			// 	}
-			// },
 			//tab切换
 			async changeTab(e){
-				console.log()
 				if(scrollTimer){
 					//多次切换只执行最后一次
 					clearTimeout(scrollTimer);
@@ -357,7 +302,6 @@
 						this.tabCurrentIndex = index; 
 					}
 					this.tabCurrentIndex = index; 
-					
 					//第一次切换tab，动画结束后需要加载数据
 					let tabItem = this.tabBars[this.tabCurrentIndex];
 					if(this.tabCurrentIndex !== 0 && tabItem.loaded !== true){
@@ -365,20 +309,6 @@
 						tabItem.loaded = true;
 					}
 				}, 300)
-				
-			},
-			//获得元素的size
-			getElSize(id) { 
-				return new Promise((res, rej) => {
-					let el = uni.createSelectorQuery().select('#' + id);
-					el.fields({
-						size: true,
-						scrollOffset: true,
-						rect: true
-					}, (data) => {
-						res(data);
-					}).exec();
-				});
 			},
 			// 清除搜索历史
 			clearAllHistory() {
@@ -403,7 +333,6 @@
 			 */
 			confirm(e, fromTag) {
 				uni.hideKeyboard();
-				console.log(e.value);
 				if(fromTag){
 					this.keyWord = e.value;
 				}
@@ -458,10 +387,6 @@
 			clearInput() {
 				this.keyWord = '';
 			},
-			// 滚动到相应的页面
-			gotoWiper(index) {
-				this.curr
-			}
 		}
 	}
 </script>
@@ -471,14 +396,12 @@
 	page {
 		width: 100%;
 		min-height: 100%;
-		// display: flex;
-		// flex-direction: column;
 	}
 	/* #endif */
+	.panel-scroll-box, .swiper-box{
+		height: 100%;
+	}
 	.home_container{
-		// display: flex;
-		// flex:1;
-		// flex-direction: column;
 		height: 100%;
 		overflow: hidden;
 	}
@@ -533,49 +456,22 @@
 	.tag_item{
 		margin-bottom: $space-sm;
 	}
-	.tab-box {
-		flex: 1;
-	}
 	.swiper-item {
 		flex: 1;
 		flex-direction: column;
 	}
-	.page-item {
-		flex: 1;
-		flex-direction: row;
-		position: absolute;
-		left: 0;
-		top: 0;
-		right: 0;
-		bottom: 0;
-	}
-	.m-navbar_wrap{
-		margin-bottom: $space-base;
-		background-color: #fff;
-		flex: 1;
-	}
 	.m-head_left{
 		width: 150upx;
 		@include flex-center($justify:flex-end);
-		
 	}
 	.m-head_left_text{
 		@include txt;
-	}
-	.m-head_left{
-		width: 150upx;
-		flex-direction: row;
-		justify-content: flex-end;
-		align-items: center;
-		// background-color: red;
 	}
 	.m-head_left_focus_text{
 		@include txt($color: $mainColor);
 		margin: 0 $space-sm;
 	}
-	.m-head_left_text{
-		@include txt;
-	}
+	
 	.u-item_head_wrap{
 		border: 0 solid $borderColor;
 		// border-style: solid;
@@ -584,9 +480,9 @@
 	}
 	/* 顶部tabbar */
 	.nav-bar{
-		position: relative;
+		// position: relative;
 		z-index: 10;
-		height: 90upx;
+		// height: 90upx;
 		white-space: nowrap;
 		box-shadow: 0 2upx 8upx rgba(0,0,0,.06);
 		background-color: #fff;
@@ -621,16 +517,5 @@
 			// }
 		}
 	}
-	.panel-scroll-box{
-		height: 100%;
-		
-		.panel-item{
-			background: #fff;
-			padding: 30px 0;
-			border-bottom: 2px solid #000;
-		}
-	}
-	.swiper-box{
-		height: 100%;
-	}
+	
 </style>

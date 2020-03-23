@@ -19,7 +19,6 @@
 					<view  @tap.stop="focus" class="button" :class="{isFocus}"><text class="btn_txt" :style="{color: isFocus? '#999' :'#f39700' }">{{isFocus ? '已关注' : '+  关注'}}</text></view>
 				</view>
 			</view>
-			
 		</navigator>
     </view>
 </template>
@@ -49,8 +48,8 @@
         },
 		mounted() {
 			// 这里需要根据接口返回来的关注人的列表判断当前这个人是否被关注过
-
-			this.isFocus = this.item.isFocus || false;
+			console.log(this.item);
+			this.isFocus = this.item &&this.item.isFocus || false;
 			this.identification = identification[this.item.identification];	
 		},
         methods: {
@@ -58,6 +57,12 @@
                this.isFocus = !this.isFocus;
             }
         },
+		watch:{
+			item() {
+				console.log(this.item);
+			}
+		}
+		
     }
 </script>
 

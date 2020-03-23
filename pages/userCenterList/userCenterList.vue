@@ -5,6 +5,7 @@
 				class="panel-scroll-box" 
 				:scroll-y="enableScroll" 
 				@scrolltolower="loadMore"
+				:style="{height: swiperHeight+'px'}"
 				>
 				<view v-if="type === 'coin'">
 					<view class="u-head_coins">
@@ -38,6 +39,9 @@
 					<message-server-item :item="item" v-else-if="type == 'systemMessage'"></message-server-item>
 					<news-item :newsItem="item" v-else></news-item>
 				</view>
+				<!-- 上滑加载更多组件 -->
+				<mix-load-more :status="loadMoreStatus"></mix-load-more>
+				
 			</scroll-view>
 		</mix-pulldown-refresh>
 	</view>
@@ -87,6 +91,8 @@
 				coinsCount: '5',
 				refreshing: false, // 刷新状态
 				isFocus: false, // 是否被关注
+				swiperHeight: 0,
+				loadMoreStatus: 0,
 			}
 		},
 		onLoad(e) {
@@ -95,6 +101,15 @@
 			uni.setNavigationBarTitle({
 				title: userCenterConfig[e.type].name
 			});
+		},
+		onReady() {
+			let _this = this;
+			uni.getSystemInfo({
+				success: function(e) {
+					// 44为标题的高度
+					_this.swiperHeight = e.windowHeight;
+				}
+			})
 		},
 		methods: {
 			//列表

@@ -1,11 +1,24 @@
 <template>
 	<view class="wrap">
-		<uni-nav-bar statusBar>
+		<view style="background-color: #fff;" class="fixed_navbar">
+			<uni-status-bar />
+			<view class="navbar_header flex_row">
+				<view class="flex2"><tabs :tabs="['自选','大盘']" @changeTab="changeTab($event, 'currTab')" :defaultTab="currTab"></tabs></view>
+				 <view @click="goSearch">
+					<uni-icons type="search" v-slot="right"></uni-icons>
+				 </view>
+			</view>
+		</view>
+		<view class="uni-navbar__placeholder">
+			<uni-status-bar />
+			<view class="uni-navbar__placeholder-view" />
+		</view>
+		<!-- <uni-nav-bar statusBar :fixed="true">
 			<view class="flex2"><tabs :tabs="['自选','大盘']" @changeTab="changeTab($event, 'currTab')" :defaultTab="currTab"></tabs></view>
 			 <view @click="goSearch">
 				<uni-icons type="search" v-slot="right"></uni-icons>
 			 </view>
-		</uni-nav-bar>
+		</uni-nav-bar> -->
 		<!-- 下拉刷新组件 -->
 		<!--  -->
 			<swiper 
@@ -14,20 +27,22 @@
 				:duration="300" 
 				:current="currTab"
 				@change="changeTab($event, 'currTab')"
-				ref="test"
+				:style="{height: swiperHeight+'px'}"
 			>
 				<!-- 自盘 -->
 				<swiper-item>
-					<view class="relative_section">
-						<uni-self-dish-table-head @headClick="goEditPage">
-							<view class="edit_cell"><icons type="edit"></icons>  <text class="black_txt">编辑</text></view>
-						</uni-self-dish-table-head>
-					</view>
+				<view class="relative_section">
+					<uni-self-dish-table-head @headClick="goEditPage">
+						<view class="edit_cell"><icons type="edit"></icons>  <text class="black_txt">编辑</text></view>
+					</uni-self-dish-table-head>
+				</view>
+				<!-- <view class="fixed_self_placeholder"></view> -->
 					<mix-pulldown-refresh ref="mixPulldownRefresh0" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 						<scroll-view
 							class="panel-scroll-box"
 							:scroll-y="true"
 							@scrolltolower="loadMore"
+							:style="{height: (swiperHeight-30)+'px'}"
 							>
 							<view class="list_wrap">
 								<uni-self-dish-table-cell v-for="(item, index) in swiperItems[0].newsList" :key="index" :item="item" @click="goPage(item.name, item.exChange)"></uni-self-dish-table-cell>
@@ -52,6 +67,7 @@
 							:current="currSubTab"
 							@change="changeTab($event, 'currSubTab')"
 							@transition = "transition"
+							
 							 >
 							<swiper-item>
 								<view class="relative_section">
@@ -62,6 +78,7 @@
 										class="panel-scroll-box"
 										:scroll-y="true"
 										@scrolltolower="loadMore('self')"
+										:style="{height: (swiperHeight-112)+'px'}"
 										>
 										<uni-big-dish-table-cell v-for="(item, index) in swiperItems[1].newsList" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-table-cell>
 										<!-- 上滑加载更多组件 -->
@@ -111,7 +128,7 @@
 
 <script>
 	import tabs from '@/components/tabs.vue';
-	import {uniNavBar, uniIcons} from '@dcloudio/uni-ui';
+	import {uniIcons, uniStatusBar} from '@dcloudio/uni-ui';
 	
 	import uniSelfDishTableHead from '@/components/list-item/uni-self-dish-table-head.vue';
 	import uniSelfDishTableCell from '@/components/list-item/uni-self-dish-table-cell.vue';
@@ -133,6 +150,7 @@
 				enableScroll: true,
 				loadMoreStatus: 0, //加载更多 0加载前，1加载中，2没有更多了
 				swiperItems: [], // 缓存所有swiper加载和刷新相关的数据
+				swiperHeight: 0,
 			}
 		},
 		mixins:[loadMore],
@@ -143,12 +161,21 @@
 			uniBigDishTableHead,
 			uniBigDishTableCell,
 			uniTitle,
-			uniNavBar,
-			uniIcons
+			uniIcons,
+			uniStatusBar
 		},
 		created() {
 			this.swiperItems = this.initTab(swiperItem);
 			this.loadList('add');
+		},
+		onReady() {
+			let _this = this;
+			uni.getSystemInfo({
+				success: function(e) {
+					// 44为标题的高度
+					_this.swiperHeight = e.windowHeight - 66;
+				}
+			})
 		},
 		computed: mapState(['upTheme', 'downTheme']),
 		methods: {
@@ -273,7 +300,9 @@
 </script>
 
 <style lang="scss">
-	
+	.swiper{
+		position: relative;
+	}
 	page, .wrap,.swiper, .list_wrap, .panel-content{
 		height: 100%;
 	}
@@ -285,7 +314,8 @@
 		height: 100%;
 	}
 	.progress_box{
-		margin-top: 18upx;
+		margin-top: 10px;
+		height: 40px;
 		padding: 0 $space-lg;
 	}
 	.space_between{
@@ -300,6 +330,18 @@
 		text{
 			margin-left: $space-sm;
 		}
+	}
+	.fixed_self_dish{
+		position: fixed;
+		width: 100%;
+		top: 0;
+		height: 32px;
+		z-index: 999;
+		background-color: red;
+	}
+	.fixed_self_placeholder{
+		height: 32px;
+		width: 100%;
 	}
 	
 </style>

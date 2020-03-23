@@ -57,7 +57,6 @@
 			} else {
 				this.showType = 'passport';
 			}
-			console.log(this.showType);
 			uni.setNavigationBarTitle({
 				title: '个人实名认证'
 			})
@@ -121,7 +120,6 @@
 				
 			},
 			submit() {
-				console.log('submit');
 				if(this.verify()) {
 					// TODO: 联调接口
 				}

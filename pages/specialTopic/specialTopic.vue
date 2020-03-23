@@ -1,5 +1,10 @@
 <template>
 	<view class="container">
+		<scroll-view
+			class="panel-scroll-box" 
+			:scroll-y="enableScroll" 
+			@scrolltolower="loadMore"
+			>
 		<view class="bg_wrapper" :style="{backgroundImage: 'url('+data.image_url+')'}">
 			<view class="section">
 				<text class="title">{{data.title}}</text>
@@ -17,19 +22,15 @@
 			</view>
 		</view>
 		<view style="margin-top: 230upx;">
-			<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
-				<scroll-view
-					class="panel-scroll-box" 
-					:scroll-y="enableScroll" 
-					@scrolltolower="loadMore"
-					>
+<!-- 			<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+ -->				
 					<news-item :newsItem="item" v-for="(item, index) in dataList" :key="index"></news-item>
 					<!-- 上滑加载更多组件 -->
 					<mix-load-more :status="loadMoreStatus"></mix-load-more>
-				</scroll-view>
-			</mix-pulldown-refresh>
+				
+			<!-- </mix-pulldown-refresh> -->
 		</view>
-		
+		</scroll-view>
 	</view>
 </template>
 
@@ -106,7 +107,7 @@
 					}
 					//上滑加载 处理状态
 					if(type === 'add'){
-						this.loadMoreStatus = this.data.length > 40 ? 2: 0;
+						this.loadMoreStatus = this.dataList.length > 40 ? 2: 0;
 					}
 				}, 600)
 			},
@@ -141,6 +142,9 @@
 	page,.container{
 		height: 100%;
 		// overflow: hidden;
+	}
+	.panel-scroll-box{
+		height: 100%;
 	}
 	.bg_wrapper{
 		position: relative;

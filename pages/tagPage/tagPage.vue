@@ -9,10 +9,10 @@
 				<view class="btn" @click="focus"><text class="desc_txt" :style="{color: isFocus ? '#a0a0a0' : '#000'}">{{isFocus ? '已关注' : '+ 关注'}}</text></view>
 			</view>
 		</view>
-		<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+		<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 			<scroll-view
 				class="panel-scroll-box" 
-				:scroll-y="enableScroll" 
+				:scroll-y="enableScrollY" 
 				@scrolltolower="loadMore"
 				>
 				<news-item :newsItem="item" v-for="(item, index) in dataList" :key="index"></news-item>
@@ -36,6 +36,8 @@
 				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
 				refreshing: false, // 刷新状态
 				isFocus: false, // 是否被关注
+				enableScrollY: false,
+				scrollViewOffset: 0,
 			}
 		},
 		mixins:[loadMore],
@@ -49,12 +51,22 @@
 				title: `#${this.data.name}#`
 			})
 		},
+		onPageScroll(e) {
+			if(Math.ceil(e.scrollTop) + 20 > this.scrollViewOffset ) {
+				this.enableScrollY = true;
+			} else {
+				this.enableScrollY = false;
+			}
+		},
+		mounted() {
+			this.getElSize();
+		},
 		methods:{
 			//列表
 			loadList(type){
 				// let tabItem = this.tabBars[this.currTab];
 				//type add 加载更多 refresh下拉刷新
-			
+				console.log(this.loadMoreStatus);
 				if(type === 'add'){
 					if(this.loadMoreStatus === 2){
 						return;
@@ -98,6 +110,17 @@
 					}
 				}, 600)
 			},
+			//获得元素的size
+			getElSize() { 
+				let el = uni.createSelectorQuery().select('.panel-scroll-box');
+				el.fields({
+					size: true,
+					scrollOffset: true,
+					rect: true
+				}, (data) => {
+					this.scrollViewOffset = data.top;
+				}).exec();
+			},
 			
 			focus() {
 				let id = this.data.id;
@@ -111,6 +134,9 @@
 	page,.container{
 		height: 100%;
 		// overflow: hidden;
+	}
+	.panel-scroll-box{
+		height: 100%;
 	}
 	.bg_wrapper{
 		position: relative;

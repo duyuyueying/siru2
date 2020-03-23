@@ -15,7 +15,7 @@
 		></mix-advert> -->
 		<!-- #endif -->
 		<!-- 头部 -->
-		<view style="background-color: #fff;">
+		<view style="background-color: #fff;" class="fixed_navbar">
 			<uni-status-bar />
 			<view class="navbar_header">
 				<view class="logo_wrap">
@@ -28,6 +28,10 @@
 					</view>
 				</view>
 			</view>
+		</view>
+		<view class="uni-navbar__placeholder">
+			<uni-status-bar />
+			<view class="uni-navbar__placeholder-view" />
 		</view>
 		<!-- 顶部选项卡 -->
 		<scroll-view id="nav-bar" class="nav-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft" :show-scrollbar="false">
@@ -503,13 +507,7 @@
 		height: 100%;
 	}
 	.panel-scroll-box{
-		height: 100%;
-		
-		.panel-item{
-			background: #fff;
-			padding: 30px 0;
-			border-bottom: 2px solid #000;
-		}
+		height: calc(100% - 44px - var(--status-bar-height));
 	}
 	/* 新闻列表  emmm 仅供参考 */
 	.news-item{

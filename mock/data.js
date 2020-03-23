@@ -177,6 +177,7 @@ let oneNews = {
 	},
 	comment: 5,
 	like: 1,
+	goodFlag: true
 }
 
 let newItem = [{

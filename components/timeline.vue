@@ -41,7 +41,9 @@
 						<text class="time_txt">2MIN涨幅</text>
 						<text style="font-weight: bold;" :class="theme ==='greenUp' ? 'greenColor' : 'redColor'">+1.65%</text>
 					</view>
-					<operation-btns :goodCount="item.goodCount" :badCount="item.badCount" :commentCount="item.comment" @share="doShare" @gotoCommet="goPage(item.id)"></operation-btns>
+					<view style="padding: 20upx">
+						<operation-btns :goodCount="item.goodCount" :badCount="item.badCount" :commentCount="item.comment" @share="doShare" @gotoCommet="goPage(item.id)"></operation-btns>
+					</view>
 				</view>
 			</view>
 		</scroll-view>

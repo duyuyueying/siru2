@@ -37,13 +37,14 @@
 		methods: {
 			...mapMutations(['USER_ID']),
 			submit() {
+				console.log()
 				this.USER_ID(1);
 				uni.setStorage({
 					key:'USER_ID',
 					data: 1
 				})
 				uni.navigateBack({
-					delta:2
+					delta:3
 				});
 			},
 			gotoForget() {

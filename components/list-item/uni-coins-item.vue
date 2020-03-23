@@ -4,17 +4,18 @@
 			<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
 		</view>
 		<view class="content_wapper">
-			<text class="txt">{{item.name}}</text>
+			<text class="list_item_black_title_sm heavy">{{item.name}}</text>
 			<text class="title_txt">{{item.nikeName}}</text>
 		</view>
 		<view class="content_wapper" style="align-items: flex-end;">
-			<text class="txt">${{item.price}}</text>
-			<text class="title_txt" :class="theme ==='greenUp' && isUp > 0 ? 'greenColor' : 'redColor'">{{isUp > 0 ? '+' : '-'}} {{item.change}} %</text>
+			<text class="list_item_black_title_sm heavy">${{item.price}}</text>
+			<text class="title_txt" :style="{color: isUp > 0 ? upTheme.txt : downTheme.txt}">{{isUp > 0 ? '+' : '-'}} {{item.change}} %</text>
 		</view>
 	</view>
 </template>
 
 <script>
+	import {mapState} from 'vuex';
 	export default {
 		data() {
 			return {
@@ -24,8 +25,8 @@
 		props: {
 			item: Object
 		},
-		created() {
-			this.theme = uni.getStorageSync('markTheme') || 'greenUp';
+		mounted() {
+			console.log(this)
 		},
 		methods:{
 			goPage() {
@@ -37,6 +38,7 @@
 			}
 		},
 		computed: {
+			...mapState(['upTheme', 'downTheme']),
 			isUp(){
 				return (this.item.start - this.item.end) > 0;
 			}

@@ -1,6 +1,6 @@
 <template>
 	<view class="container home_container">
-		<view style="background-color: #fff; position: relative; z-index: 2;">
+		<view style="background-color: #fff;" class="fixed_navbar">
 			<uni-status-bar />
 			<view class="navbar_header">
 				<view class="flex1 radius search_wrap">
@@ -16,6 +16,10 @@
 					<text class="cancel_btn_txt">取消</text>
 				</view>
 			</view>
+		</view>
+		<view class="uni-navbar__placeholder">
+			<uni-status-bar />
+			<view class="uni-navbar__placeholder-view" />
 		</view>
 		<view v-if="showInit">
 			<scroll-view scroll-y="true">

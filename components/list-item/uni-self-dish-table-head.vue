@@ -21,7 +21,7 @@
 <style lang="scss">
 	@import '@/common/quotations.scss';
 	.table_head{
-		height: 64upx;
+		height: 32px;
 		background-color: $bgColor;
 		justify-content: center;
 		padding: 0 $space-lg;

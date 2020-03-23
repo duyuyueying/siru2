@@ -33,7 +33,7 @@
 						class="panel-scroll-box"
 						:scroll-y="enableScrollY"
 						@scrolltolower="loadMore"
-						style="height: 600px;"
+						:style="{height: swiperHeight+'px'}"
 						>
 						<uni-self-dish-table-cell v-for="(item, index) in dataList" :key="index" :isSelect="index == 0" :item="item" hasCollect @collect="collect"></uni-self-dish-table-cell>
 						<!-- 上滑加载更多组件 -->
@@ -88,6 +88,7 @@
 				enableScrollY: false,
 				isSelect: false, // 是否被加入了自选列表
 				id: 123,
+				swiperHeight: 0,
 			};
 		},
 		mixins:[loadMore],
@@ -105,6 +106,15 @@
 			this.startPrice = 2;
 			this.endPrice =1;
 			this.loadList('add');
+		},
+		onReady() {
+			let _this = this;
+			uni.getSystemInfo({
+				success: function(e) {
+					// 44为标题的高度
+					_this.swiperHeight = e.windowHeight - 66;
+				}
+			})
 		},
 		mounted() {
 			this.getElSize();
@@ -183,16 +193,14 @@
 			},
 			//获得元素的size
 			getElSize(id) { 
-					let el = uni.createSelectorQuery().select('.relative_section');
-					el.fields({
-						size: true,
-						scrollOffset: true,
-						rect: true
-					}, (data) => {
-						console.log(data);
-						this.headScrollTop = data.top;
-					}).exec();
-				// });
+				let el = uni.createSelectorQuery().select('.relative_section');
+				el.fields({
+					size: true,
+					scrollOffset: true,
+					rect: true
+				}, (data) => {
+					this.headScrollTop = data.top;
+				}).exec();
 			},
 			share() {
 				uni.showToast({

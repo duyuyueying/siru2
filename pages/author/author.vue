@@ -19,7 +19,9 @@
 				<view><text class="txt white">关注 {{data.focus}}</text></view>
 			</view>
 		</view>
-		<tabs :tabs="['主页','专栏']" @changeTab="changeTab" :defaultTab="currTab"></tabs>
+		<view class="relative_section">
+			<tabs :tabs="['主页','专栏']" @changeTab="changeTab" :defaultTab="currTab"></tabs>
+		</view>
 		<swiper :current="currTab" @change="changeTab" class="swiper">
 			<swiper-item>
 				<view class="content_wrapper">
@@ -50,10 +52,10 @@
 				</view>
 			</swiper-item>
 			<swiper-item>
-				<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+				<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<scroll-view
 						class="panel-scroll-box" 
-						:scroll-y="enableScroll" 
+						:scroll-y="enableScrollY" 
 						@scrolltolower="loadMore"
 						>
 						<news-item :newsItem="item" v-for="(item, index) in dataList" :key="index"></news-item>
@@ -100,6 +102,8 @@
 				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
 				refreshing: false, // 刷新状态
 				isFocus: false, // 是否被关注
+				scrollViewOffset: 0,
+				enableScrollY: false,
 			}
 		},
 		mixins:[loadMore],
@@ -116,7 +120,7 @@
 			this.loadList('add');
 			uni.setNavigationBarTitle({
 				title: this.data.name
-			})
+			});
 		},
 		onShareAppMessage() {
 			console.log('分享...');
@@ -128,6 +132,16 @@
 				})
 			}
 			console.log(e);
+		},
+		mounted() {
+			this.getElSize();
+		},
+		onPageScroll(e) {
+			if(Math.ceil(e.scrollTop) + 20 > this.scrollViewOffset ) {
+				this.enableScrollY = true;
+			} else {
+				this.enableScrollY = false;
+			}
 		},
 		methods: {
 			//列表
@@ -211,6 +225,17 @@
 					}
 				});
 				this.close();	
+			},
+			//获得元素的size
+			getElSize() { 
+				let el = uni.createSelectorQuery().select('.relative_section');
+				el.fields({
+					size: true,
+					scrollOffset: true,
+					rect: true
+				}, (data) => {
+					this.scrollViewOffset = data.top;
+				}).exec();
 			},
 			close() {
 				this.$refs.sign.close();
@@ -302,8 +327,6 @@
 		position: absolute;
 		right: -15px;
 		top: -15px;
-		// margin-top: 15px;
-		// padding: $space-sm $space-base;
 		text-align: center;
 		line-height: 30px;
 	}

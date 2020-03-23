@@ -25,7 +25,9 @@
 		<view class="announce_wrapper">
 			<text class="txt">{{helper.announce3}}</text>
 		</view>
-		<operation-btns :goodCount="detail.goodCount" :badCount="detail.badCount" @gotoCommet="showReply(detail.id)" @share="share"></operation-btns>
+		<view style="padding: 20upx">
+			<operation-btns :goodCount="detail.goodCount" :badCount="detail.badCount" @gotoCommet="showReply(detail.id)" @share="share"></operation-btns>
+		</view>
 		<section-head title="评论"></section-head>
 		<view class="comment-wrap">
 			<comment-item v-for="(item, index) in commentList" :key="index" :item="item"></comment-item>
@@ -166,7 +168,6 @@
 				});
 			},
 			onClick(index, item) {
-				console.log(index,item);
 				if(item.icon == 'share'){
 					this.$refs.popup.open();
 				}

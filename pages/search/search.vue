@@ -1,21 +1,25 @@
 <template>
 	<view class="container home_container">
-		<view style="background-color: #fff;">
+		<view style="background-color: #fff;" class="fixed_navbar">
 			<uni-status-bar />
 			<view class="navbar_header">
 				<view class="flex1 radius search_wrap">
 					<input type="text" class="input_search" placeholder="PAYDEX" confirm-type="search" @input="inputFun" @confirm="confirm" v-model="keyWord">
 					<view class="search_icon_box">
-						<uni-icons type="search" color="#999"></uni-icons>
+						<icons type="search" color="#999"></icons>
 					</view>
 					<view class="clear_icon_box" @click="clearInput" v-if="keyWord.length>0">
-						<uni-icons type="search" color="#999"></uni-icons>
+						<icons type="cancel" color="#999"></icons>
 					</view>
 				</view>
 				<view class="cancel_btn_box" @click="goBack">
 					<text class="cancel_btn_txt">取消</text>
 				</view>
 			</view>
+		</view>
+		<view class="uni-navbar__placeholder">
+			<uni-status-bar />
+			<view class="uni-navbar__placeholder-view" />
 		</view>
 		<view v-if="showInit">
 			<scroll-view scroll-y="true">
@@ -25,7 +29,7 @@
 					</uni-title>
 					<view class="u-wrap">
 						<view class="spacing-row-sm tag_item" v-for="(item, index) in historyList" :key="index">
-							<uni-tag :text="item" rightBtn @click-right="deleteTag(index)"></uni-tag>
+							<uni-tag :text="item" rightBtn @click-right="deleteTag(index)" @click="confirm({value: item}, 'changeKeyWord')"></uni-tag>
 						</view>
 					</view>
 					<uni-title title="今日热词" size="34" height="90">
@@ -39,7 +43,7 @@
 			</scroll-view>
 			
 		</view>
-		<view v-else :style="{height: swiperHeight+'px'}">
+		<view v-else >
 			<!-- 顶部选项卡 -->
 			<!-- 搜索页面分类不多，没有scrollview，后续tab多起来，该换scrollview -->
 			<!-- <scroll-view id="nav-bar" class="nav-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft"> -->
@@ -95,6 +99,7 @@
 								class="panel-scroll-box" 
 								:scroll-y="enableScroll" 
 								@scrolltolower="loadMore"
+								:style="{height: swiperHeight+'px'}"
 								v-else
 								>
 								<view v-for="(item, index) in tabItem.newsList" :key="index">
@@ -104,7 +109,8 @@
 												<view class="m-head_left" :style="{height:'90upx'}" >
 													<text class="m-head_left_text">共</text>
 													<text class="m-head_left_focus_text">{{item.total}}</text>
-												<text class="m-head_left_text">条</text>
+													<text class="m-head_left_text">条</text>
+													<icons type="right" color="#999" size="12"></icons>
 												</view>
 											</uni-title>
 										</view>
@@ -164,6 +170,7 @@
 	import liveItem from '@/components/list-item/uni-video-list-item.vue';
 	import uniCoinsItem from '@/components/list-item/uni-coins-item.vue';
 	import uniExChangeItem from '@/components/list-item/uni-exchange-item.vue';
+	import icons from '@/components/icons/icons.vue';
 	import {loadMore} from '@/common/util.js';
 	// 缓存每页最多
 	const MAX_CACHE_DATA = 100;
@@ -179,7 +186,7 @@
 				hotList: ['BT','BTC','王晓宇','BT','BTC','王晓宇','BT','BTC','王晓宇'],
 				listData: [],
 				keyWord: '',
-				showInit: false, // 展示默认页面
+				showInit: true, // 展示默认页面
 				searchTabList: [],
 				tabList: [], // tabList数据
 				scrollLeft: 0, // 选中的tab需要偏移的位置
@@ -201,7 +208,8 @@
 			uniExChangeItem,
 			personListItem,
 			liveItem,
-			uniStatusBar
+			uniStatusBar,
+			icons
 		},
 		mixins:[loadMore],
 		onLoad() {
@@ -209,14 +217,14 @@
 			this.tabBars = this.initTab(searchTab);
 			this.loadList('add');
 			this.loadHistoryListData();
-			this.calcHeight();
+			// this.calcHeight();
 		},
 		onReady() {
 			let _this = this;
 			uni.getSystemInfo({
 				success: function(e) {
 					console.log(e);
-					_this.swiperHeight = e.windowHeight - 45;
+					_this.swiperHeight = e.windowHeight - 44;
 					console.log(_this.swiperHeight)
 					// windowHeight = e.windowHeight;
 				}
@@ -328,7 +336,7 @@
 			// },
 			//tab切换
 			async changeTab(e){
-				
+				console.log()
 				if(scrollTimer){
 					//多次切换只执行最后一次
 					clearTimeout(scrollTimer);
@@ -394,6 +402,8 @@
 			 * @param {Object} fromTag:从tag点击进行搜索需要传入这个值进行判断，好设置keyWord的值
 			 */
 			confirm(e, fromTag) {
+				uni.hideKeyboard();
+				console.log(e.value);
 				if(fromTag){
 					this.keyWord = e.value;
 				}
@@ -413,8 +423,13 @@
 			},
 			// input框输入的回调
 			inputFun(e){
-				this.keyWord = e.detail.value;
-				if(!this.showInit && e.detail.value == ''){
+				// 当从tag点击进来时候，e.detail == undefined
+				let detail = e.detail
+				if(!detail) {
+					return;
+				}
+				this.keyWord = detail.value;
+				if((!this.showInit && detail.value == '')){
 					this.showInit = true
 				}
 			},
@@ -446,13 +461,6 @@
 			// 滚动到相应的页面
 			gotoWiper(index) {
 				this.curr
-			}
-		},
-			
-		computed:{
-			...mapState(['tabIndex']),
-			showResult(){
-				console.log(this.keyWord);
 			}
 		}
 	}

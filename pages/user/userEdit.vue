@@ -3,7 +3,7 @@
 		<view class="flex_column bg_wrapper">
 			<view class="img_wrapper">
 				<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
-				<view class="mask" @click="goCrop"><icons type="good" color="#fff"></icons></view>
+				<view class="mask" @click="goCrop"><icons type="picture" color="#fff" size="24"></icons></view>
 			</view>
 		</view>
 		<view class="input_wrap flex_row">

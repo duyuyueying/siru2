@@ -6,10 +6,10 @@
 				<view class="flex1 radius search_wrap">
 					<input type="text" class="input_search" placeholder="PAYDEX" confirm-type="search" @input="inputFun" @confirm="confirm" v-model="keyWord">
 					<view class="search_icon_box">
-						<uni-icons type="search" color="#999"></uni-icons>
+						<icons type="search" color="#999"></icons>
 					</view>
 					<view class="clear_icon_box" @click="clearInput" v-if="keyWord.length>0">
-						<uni-icons type="search" color="#999"></uni-icons>
+						<icons type="cancel" color="#999"></icons>
 					</view>
 				</view>
 				<view class="cancel_btn_box" @click="goBack">
@@ -25,7 +25,7 @@
 					</uni-title>
 					<view class="u-wrap">
 						<view class="spacing-row-sm tag_item" v-for="(item, index) in historyList" :key="index">
-							<uni-tag :text="item" rightBtn @click-right="deleteTag(index)"></uni-tag>
+							<uni-tag :text="item" rightBtn @click-right="deleteTag(index)" @click="confirm({value: item}, 'changeKeyWord')"></uni-tag>
 						</view>
 					</view>
 					<uni-title title="今日热词" size="34" height="90">
@@ -55,80 +55,60 @@
 					</scroll-view>
 				</mix-pulldown-refresh>
 			</view>
-			
 		</view>
 		
 	</view>
 </template>
 
 <script>
-	import {mapState, mapMutations} from 'vuex'; 
-	import {uniNavBar,uniIcons,uniSearchBar, uniStatusBar } from '@dcloudio/uni-ui';
+	import {uniIcons, uniStatusBar } from '@dcloudio/uni-ui';
 	import uniTitle from '@/components/uni-title.vue';
 	import uniTag from '@/components/uni-tag.vue';
-	import {newItem, searchTab, searchList, homeTab, newsItems, focusAuthors, tags, banner, coins} from '../../mock/data';
-	import newsItem from '@/components/list-item/news-item.vue';
-	import personListItem from '@/components/list-item/person-list-item.vue';
 	import {newsList} from '../../service/getData.js';
-	import liveItem from '@/components/list-item/uni-video-list-item.vue';
-	import uniCoinsItem from '@/components/list-item/uni-coins-item.vue';
-	import uniExChangeItem from '@/components/list-item/uni-exchange-item.vue';
 	import {loadMore} from '@/common/util.js';
 	import uniSelfDishTableCell from '@/components/list-item/uni-self-dish-table-cell.vue';
-	// 缓存每页最多
-	const MAX_CACHE_DATA = 100;
-	// 缓存页签数量
-	const MAX_CACHE_PAGE = 3;
-	let windowWidth = 0, scrollTimer = false, tabBar;
-	let HISTORY_LIST = 'HISTORY_LIST'; // 存放历史数据的keyName
+	import icons from '@/components/icons/icons.vue';
+	import {coins} from '@/mock/data';
+	
+	// 存放历史数据的keyName
+	let HISTORY_LIST = 'HISTORY_LIST'; 
 	export default {
 		data() {
 			return {
-				historyList: [],
-				hotList: ['BT','BTC','王晓宇','BT','BTC','王晓宇','BT','BTC','王晓宇'],
-				listData: [],
-				keyWord: '',
-				showInit: false, // 展示默认页面
-				searchTabList: [],
+				historyList: [],// 搜索历史
+				hotList: ['BT','BTC','王晓宇','BT','BTC','王晓宇','BT','BTC','王晓宇'], // 热词
+				listData: [], // 搜索列表
+				keyWord: '', // 搜索关键字
+				showInit: true, // 展示默认页面
 				enableScroll: true,
-				swiperHeight: 0,
+				swiperHeight: 0, // scroll-view的高度
 				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
 				refreshing: false, // 刷新状态
 			}
 		},
 		components:{
-			uniNavBar,
-			uniSearchBar,
 			uniTitle,
 			uniStatusBar,
 			uniSelfDishTableCell,
 			uniIcons,
+			uniTag,
+			icons
 		},
 		mixins:[loadMore],
 		onLoad() {
 			this.loadList('add');
 			this.loadHistoryListData();
-			this.calcHeight();
 		},
 		onReady() {
 			let _this = this;
 			uni.getSystemInfo({
 				success: function(e) {
-					_this.swiperHeight = e.windowHeight;
+					console.log(e.windowTop,e.windowBottom,e.statusBarHeight);
+					_this.swiperHeight = e.windowHeight - 44;
 				}
 			})
 		},
 		methods: {
-			calcHeight() {
-				let view = uni.createSelectorQuery().in(this).select("#swiper");
-				view.fields({
-				  size: true,
-				  scrollOffset: true
-				}, data => {
-					console.log(data);
-					// this.trueHeight = data.height
-				}).exec();
-			},
 			// 获取存放在本地的历史数据
 			loadHistoryListData() {
 				let _this = this;
@@ -139,7 +119,7 @@
 					}
 				});
 			},
-			//新闻列表
+			//列表
 			loadList(type){
 				//type add 加载更多 refresh下拉刷新
 				if(type === 'add'){
@@ -184,19 +164,6 @@
 					}
 				}, 600)
 			},
-			//获得元素的size
-			getElSize(id) { 
-				return new Promise((res, rej) => {
-					let el = uni.createSelectorQuery().select('#' + id);
-					el.fields({
-						size: true,
-						scrollOffset: true,
-						rect: true
-					}, (data) => {
-						res(data);
-					}).exec();
-				});
-			},
 			// 清除搜索历史
 			clearAllHistory() {
 				this.historyList = [];
@@ -207,18 +174,13 @@
 				this.historyList.splice(index,1);
 				this.setHistoryListData(this.historyList);
 			},
-			// 直播列表页面
-			gotoLiveList(){
-				uni.navigateTo({
-					url: '../livelist/livelist'
-				})
-			},
 			/**
-			 * 提交搜索
+			 * 提交搜索,并存入storage中
 			 * @param {Object} e:必须类型有{value:'xxxx'}
 			 * @param {Object} fromTag:从tag点击进行搜索需要传入这个值进行判断，好设置keyWord的值
 			 */
 			confirm(e, fromTag) {
+				uni.hideKeyboard();
 				if(fromTag){
 					this.keyWord = e.value;
 				}
@@ -251,13 +213,8 @@
 			clearInput() {
 				this.keyWord = '';
 			},
-			// 滚动到相应的页面
-			gotoWiper(index) {
-				this.curr
-			},
 			// 自选切换
 			collect(id) {
-				console.log('inner');
 				let tempArr = []
 				this.listData.forEach((item, index)=>{
 					let newObj = Object.assign({},item);
@@ -269,13 +226,6 @@
 				this.listData = tempArr;
 			}
 		},
-			
-		computed:{
-			...mapState(['tabIndex']),
-			showResult(){
-				console.log(this.keyWord);
-			}
-		}
 	}
 </script>
 
@@ -284,14 +234,9 @@
 	page {
 		width: 100%;
 		min-height: 100%;
-		// display: flex;
-		// flex-direction: column;
 	}
 	/* #endif */
 	.home_container{
-		// display: flex;
-		// flex:1;
-		// flex-direction: column;
 		height: 100%;
 		overflow: hidden;
 	}
@@ -346,104 +291,14 @@
 	.tag_item{
 		margin-bottom: $space-sm;
 	}
-	.tab-box {
-		flex: 1;
-	}
-	.swiper-item {
-		flex: 1;
-		flex-direction: column;
-	}
-	.page-item {
-		flex: 1;
-		flex-direction: row;
-		position: absolute;
-		left: 0;
-		top: 0;
-		right: 0;
-		bottom: 0;
-	}
-	.m-navbar_wrap{
-		margin-bottom: $space-base;
-		background-color: #fff;
-		flex: 1;
+	.m-head_left_text{
+		@include txt;
 	}
 	.m-head_left{
 		width: 150upx;
 		@include flex-center($justify:flex-end);
-		
-	}
-	.m-head_left_text{
-		@include txt;
-	}
-	.m-head_left{
-		width: 150upx;
-		flex-direction: row;
-		justify-content: flex-end;
-		align-items: center;
-		// background-color: red;
-	}
-	.m-head_left_focus_text{
-		@include txt($color: $mainColor);
-		margin: 0 $space-sm;
-	}
-	.m-head_left_text{
-		@include txt;
-	}
-	.u-item_head_wrap{
-		border: 0 solid $borderColor;
-		// border-style: solid;
-		border-bottom-width: 2upx;
-		// border-bottom-color: $borderColor;
-	}
-	/* 顶部tabbar */
-	.nav-bar{
-		position: relative;
-		z-index: 10;
-		height: 90upx;
-		white-space: nowrap;
-		box-shadow: 0 2upx 8upx rgba(0,0,0,.06);
-		background-color: #fff;
-		display: flex;
-		flex: 1;
-		.nav-item{
-			display: inline-block;
-			// width: 150upx;
-			flex: 1;
-			height: 90upx;
-			text-align: center;
-			line-height: 90upx;
-			font-size: 30upx;
-			color: #303133;
-			position: relative;
-			&:after{
-				content: '';
-				width: 0;
-				height: 0;
-				border-bottom: 4upx solid #007aff;
-				position: absolute;
-				left: 50%;
-				bottom: 0;
-				transform: translateX(-50%);
-				transition: .3s;
-			}
-		}
-		.current{
-			color: $mainColor;
-			// &:after{
-			// 	width: 50%;
-			// }
-		}
 	}
 	.panel-scroll-box{
-		height: 100%;
-		
-		.panel-item{
-			background: #fff;
-			padding: 30px 0;
-			border-bottom: 2px solid #000;
-		}
-	}
-	.swiper-box{
 		height: 100%;
 	}
 </style>

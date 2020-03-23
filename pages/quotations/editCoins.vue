@@ -20,10 +20,10 @@
 				</view>
 			</view>
 			<view class="flex2">
-				<icons type="chartUp" color="#a0a0a0" @click="top(item.id, index)"></icons>
+				<icons type="sort" color="#a0a0a0" @click="top(item.id, index)"></icons>
 			</view>
 			<view class="flex1">
-				<icons type="more" color="#a0a0a0"></icons>
+				<icons type="menu" color="#a0a0a0"></icons>
 			</view>
 		</view>
 	</view>

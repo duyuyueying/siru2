@@ -14,6 +14,12 @@ export default {
 	"up":"\ue635",
 	"right": "\ue68b",
 	"question": "\ue6dc",
+	"search": "\ue637",
 	"more": "\ue627",
-	"warn": "\ue60b"
+	"warn": "\ue60b",
+	"menu": "\ue630",
+	"sort": "\ue636",
+	"picture": "\ue613",
+	"sign": "\ue6ae",
+	"cancel": "\ue616"
 }

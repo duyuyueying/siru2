@@ -14,7 +14,7 @@ minRequest.interceptors.response((response) => {
 
 // 设置默认配置
 minRequest.setConfig((config) => {
-    config.baseURL = 'http://127.0.0.1:8181'
+    config.baseURL = 'http://127.0.0.1:8182/api'
     return config
 })
 
@@ -24,6 +24,9 @@ export default {
     apis: {
         uniapp(data) {
             return minRequest.get('/web/captcha', data)
+        },
+        send_sms(phone) {
+            return minRequest.post('/common/send_sms', {phone: phone})
         }
     }
 }

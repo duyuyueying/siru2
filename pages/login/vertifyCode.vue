@@ -2,14 +2,14 @@
 	<view class="container">
 		<view class="flex_column content">
 			<text class="title">验证码</text>
-			<text class="normal_txt">短信已发送至：13896308911</text>
+			<text class="normal_txt">短信已发送至：{{phone}}</text>
 			<!-- 输入框 -->
 			<view @click="moveUp(0)" class="flex_column input_box" style="align-self: center;">
 				<view class="flex_row" style="height: 80rpx;padding-left: 23rpx;">
 					<view style="margin-right: 65rpx;font-size: 60rpx;" v-for="(x,i) in codeList" :key="i" >{{x}}</view>
-					<view class="move-inpt" v-show="codeList.length<6" style="width: 3rpx;height: 50rpx;background-color: #FFB100;margin-left: 13rpx;">	
+					<view class="move-inpt" v-show="codeList.length<6" style="width: 3rpx;height: 50rpx;background-color: #FFB100;margin-left: 13rpx;">
 					</view>
-				</view>	
+				</view>
 				<view class="flex_row" >
 					<view style="margin-right: 25rpx;" :class="x==codeList.length?'input-code':'code'"  v-for="x in [0,1,2,3,4,5]" :key="x" ></view>
 				</view>
@@ -42,15 +42,17 @@
 				</view>
 			</view>
 		</view>
-		
+
 	</view>
 </template>
 
 <script>
 	import icons from '@/components/icons/icons.vue';
 	import {mapState, mapMutations} from 'vuex';
+	import {isPhone} from '@/utils/validate'
+
 	// 转换率
-	const l=uni.getSystemInfoSync().screenWidth/750 
+	const l=uni.getSystemInfoSync().screenWidth/750
 	export default {
 		data() {
 			return {
@@ -59,6 +61,7 @@
 				animationData:{},
 				counter: 60,
 				showMessage: false,
+				phone:''
 			}
 		},
 		created() {
@@ -66,6 +69,16 @@
 		},
 		onLoad(e) {
 			this.type = e.type;
+			this.phone = e.phone;
+
+			if (!isPhone(this.phone)) {
+				this.$message('手机号码不正确',function () {
+					uni.navigateTo({
+						url: '/pages/login/login'
+					})
+				})
+			}
+
 		},
 		methods: {
 			...mapMutations(['USER_ID']),
@@ -75,18 +88,18 @@
 				      duration: 500,
 				        timingFunction: 'ease',
 				    })
-				
+
 				    this.animation = animation
 					// 用px解决手机端失效问题
 				    animation.translateY(x*l).step()
-				
+
 				    this.animationData = animation.export()
 			},
 			// 对应输入法删减最后一个数字
 			backNup(){
 				if(this.codeList.length>0){
 					this.codeList.pop()
-				}	
+				}
 			},
 			// 清除验证码
 			clearCode(){
@@ -121,10 +134,10 @@
 								url: '/pages/login/settingPassword'
 							});
 						}
-						
+
 					}
 				}
-										
+
 			},
 			calcCounter(){
 				this.timer = setInterval(()=>{
@@ -167,7 +180,7 @@
 			 flex-direction: column;
 				 justify-content: space-around;
 				 align-items: center;
-				 
+
 	}
 	.flex-row-around{
 			 display: flex;
@@ -198,7 +211,7 @@
 	/* 动画次数,infinite为一直重复 */
 	animation-iteration-count:infinite;
 	/* 定义动画重复时的运动方向,alternate为反向运动 */
-	animation-direction:alternate;		
+	animation-direction:alternate;
 }
 /* 动画实际操作 */
 @keyframes bigt

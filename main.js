@@ -3,7 +3,10 @@ import App from './App'
 import store from './store/index';
 import MinRequest from './service/MinRequest'
 import minRequest from './service/api'
+import {showMsg} from './utils/utils'
 
+
+Vue.prototype.$message = showMsg
 Vue.prototype.$http = minRequest.minRequest // ajax请求方法
 Vue.use(MinRequest)
 Vue.config.productionTip = false

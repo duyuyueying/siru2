@@ -27,6 +27,12 @@ export default {
         },
         send_sms(phone) {
             return minRequest.post('/common/send_sms', {phone: phone})
+        },
+        login_sms(phone, verify_code) {
+            return minRequest.post('/api/login/sms', {phone: phone, verify_code: verify_code})
+        },
+        login(phone, verify_code) {
+            return minRequest.post('/api/login', {phone: phone, verify_code: verify_code})
         }
     }
 }

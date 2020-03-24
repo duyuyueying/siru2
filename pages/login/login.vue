@@ -47,12 +47,6 @@
                     return
                 }
 
-                uni.navigateTo({
-                    url: '/pages/login/vertifyCode?type=login&phone=' + this.phoneNumber
-                })
-                return;
-
-                //TODO 调试成功,暂时不需要发送短信(需数据库查看短信验证码)
                 this.$api.send_sms(this.phoneNumber).then(data => {
                     if (data && data.code === 200) {
                         // this.$message('发送短信成功', function (phone) {

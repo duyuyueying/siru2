@@ -112,7 +112,7 @@
 			uniRate,
 			uniBottomComment,
 			uniPopup,
-			uniTitle
+			uniTitle,
 		},
 		onShareAppMessage() {
 			return {
@@ -136,6 +136,7 @@
 			async getDetail() {
 				let content = FAIL_CONTENT
 				try{
+					/*
 					let result = await getNormalNewsDetail('5299102');
 					if (result.statusCode == 200) {
 						content = result.data.content
@@ -146,7 +147,26 @@
 					// #endif
 					this.content = nodes;
 					this.detail = oneNews;
-					console.log(this.detail);
+					*/
+
+					this.$api.article_info(this.id).then(data => {
+						if (data && data.code === 200) {
+							const nodes = htmlParser(data.result.content);
+							// #ifdef APP-PLUS-NVUE
+							parseImgs(nodes)
+							// #endif
+							this.content = nodes;
+							this.detail = oneNews;
+						} else {
+							this.$message(data.msg,function () {
+								// uni.navigateBack({
+								// 	delta: 1
+								// });
+							})
+						}
+					})
+
+
 				} catch (e){
 					
 				}

@@ -2,7 +2,7 @@
 	<view class="container">
 		<uni-status-bar></uni-status-bar>
 		<view class="header">
-			<view class="userinfo" v-if="userId != null" @click="goPerson">
+			<view class="userinfo" v-if="userinfo.id" @click="goPerson">
 				<view class="face">
 					<image :src="userinfo.avatar_src!=''?userinfo.avatar_src:'/static/temp/avatar.jpeg'" class="face_img" mode="aspectFill"></image>
 				</view>
@@ -125,57 +125,60 @@
 		},
 		onShow(){
 			/** 执行页面数据刷新的方法 */
-
-
+			this.init()
 		},
 		onLoad() {
-			const api_token = uni.getStorageSync('api_token');
-			if (api_token) {
-				this.$api.user().then(data => {
-					if (data && data.code === 200) {
-						uni.setStorage({
-							key:'USER_ID',
-							data: data.result.id
-						})
-						this.userinfo = data.result
-						this.init();
-					} else {
-						this.$message(data.msg)
-						uni.setStorage({
-							key:'USER_ID',
-							data: null
-						})
-					}
-				})
-			}
+
 		},
 		mounted() {
 		},
 		computed: mapState(['userId']),
 		methods: {
 			init() {
+				this.userinfo = {}
+				this.orderTypeLise= defaultMessage;
+				this.checkInList = defaultCheckIn;
+				const api_token = uni.getStorageSync('api_token');
+				if (api_token) {
+					this.$api.user().then(data => {
+						if (data && data.code === 200) {
+							uni.setStorage({
+								key:'USER_ID',
+								data: data.result.id
+							})
+							this.USER_ID(data.result.id);
+							uni.setStorageSync('user_info',data.result);
+							this.userinfo = data.result
+							this.orderTypeLise=[
+								//name-标题 icon-图标 badge-角标
+								{name:'金币',count:1, nikeName: 'coin'},
+								{name:'关注',count:2, nikeName: 'focus'},
+								{name:'粉丝',count:3, nikeName: 'fans'},
+								{name:'消息',count:4, nikeName: 'message'},
+							];
+							this.checkInList = [
+								{count: 1, checkIn: true},
+								{count: 2, sign: true},
+								{count: 2},
+								{count: 1},
+								{count: 1},
+								{count: 2},
+								{count: 3},
+							];
+						} else {
+							this.$message(data.msg)
+							uni.removeStorageSync('USER_ID')
+							uni.setStorageSync('user_info', null);
+						}
+					})
+				}
 				//用户信息
 				// this.userinfo={
 				// 	face:'/static/temp/avatar.jpeg',
 				// 	username:"VIP会员10240",
 				// 	integral:"1435"
 				// };
-				this.orderTypeLise=[
-					//name-标题 icon-图标 badge-角标
-					{name:'金币',count:1, nikeName: 'coin'},
-					{name:'关注',count:2, nikeName: 'focus'},
-					{name:'粉丝',count:3, nikeName: 'fans'},
-					{name:'消息',count:4, nikeName: 'message'},
-				];
-				this.checkInList = [
-					{count: 1, checkIn: true},
-					{count: 2, sign: true},
-					{count: 2},
-					{count: 1},
-					{count: 1},
-					{count: 2},
-					{count: 3},
-				];
+
 			},
 			//用户点击订单类型
 			toSign(index, item){
@@ -279,7 +282,6 @@
 		watch:{
 			userId(e) {
 				console.log(e);
-				debugger
 				this.init()
 			}
 		}

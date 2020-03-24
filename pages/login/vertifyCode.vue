@@ -59,7 +59,7 @@
 				fwMes:"",
 				codeList:[],
 				animationData:{},
-				counter: 0,
+				counter: 60,
 				showMessage: false,
 				phone:''
 			}
@@ -122,11 +122,11 @@
 							// 这里写业务逻辑
 							this.$api.login_sms(this.phone, codePl).then(data => {
 								if (data && data.code === 200) {
-									// this.USER_ID(data.result.user_id);
-									// uni.setStorage({
-									// 	key:'USER_ID',
-									// 	data: data.result.user_id
-									// })
+									this.USER_ID(data.result.user_id);
+									uni.setStorage({
+										key:'USER_ID',
+										data: data.result.user_id
+									})
 
 									uni.setStorage({
 										key:'api_token',

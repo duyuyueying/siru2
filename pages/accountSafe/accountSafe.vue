@@ -22,7 +22,7 @@
 		</view>
 		<view class="list">
 			<uni-title title="账号密码" :isBold="false" :height="120" @click="onClick('password')">
-				<view @tap="toPage(list.nikeName)" class="flex_row item_wrap">
+				<view class="flex_row item_wrap">
 					<text class="list_item_black_txt">未设置</text>
 					<icons type="right" color='#ddd'></icons>
 				</view>

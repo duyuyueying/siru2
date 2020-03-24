@@ -736,9 +736,7 @@ let coin = {
 		unit: 'USDT', // USDT是单位？
 		oneDay: '4388.08',
 		total: '15388.08',
-		icon_url: 'xxx',
 		exRangk: 7,
-		name: 'BZ',
 		eosAndEth: '110',
 		sale: 2084.76,
 		totalPrice: 14800

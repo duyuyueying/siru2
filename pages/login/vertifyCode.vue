@@ -156,6 +156,16 @@
 			sendCode() {
 				// 发送验证码逻辑
 				this.counter = 60;
+				this.$api.send_sms(this.phone).then(data => {
+					if (data && data.code === 200) {
+						// this.$message('发送短信成功', function (phone) {
+						// }(this.phoneNumber), 2000)
+					} else {
+						this.$message(data.msg)
+					}
+				}).catch(err => {
+					this.$message('网络错误')
+				})
 			}
 		}
 	}

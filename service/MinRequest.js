@@ -82,6 +82,20 @@ class MinRequest {
         options.method = 'POST'
         return this.request(options)
     }
+
+    put (url, data, options = {}) {
+        options.url = url
+        options.data = data
+        options.method = 'PUT'
+        return this.request(options)
+    }
+
+    delete (url, data, options = {}) {
+        options.url = url
+        options.data = data
+        options.method = 'DELETE'
+        return this.request(options)
+    }
 }
 
 MinRequest.install = function (Vue) {

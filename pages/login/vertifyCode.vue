@@ -78,7 +78,6 @@
 					})
 				})
 			}
-
 		},
 		methods: {
 			...mapMutations(['USER_ID']),
@@ -119,17 +118,22 @@
 							codePl+=x+""
 						})
 						// 这里写业务逻辑
+						debugger
+						return
+
 						// 接口成功后跳转
 						if(this.type == 'login') {
+							//验证码登录
 							this.USER_ID(1);
 							uni.setStorage({
 								key:'USER_ID',
 								data: 1
 							})
 							uni.navigateBack({
-								delta: 2
+								delta: 3
 							});
 						} else {
+							//修改密码
 							uni.navigateTo({
 								url: '/pages/login/settingPassword'
 							});

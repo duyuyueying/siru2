@@ -7,9 +7,9 @@
 		* url 跳转链接
 		*  -->
 		<!-- #ifndef MP -->
-		<!-- <mix-advert 
-			ref="mixAdvert" 
-			:timedown="8" 
+		<!-- <mix-advert
+			ref="mixAdvert"
+			:timedown="8"
 			imageUrl="/static/advert.jpg"
 			:url="advertNavUrl"
 		></mix-advert> -->
@@ -35,7 +35,7 @@
 		</view>
 		<!-- 顶部选项卡 -->
 		<scroll-view id="nav-bar" class="nav-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft" :show-scrollbar="false">
-			<view 
+			<view
 				v-for="(item,index) in tabBars" :key="index"
 				class="nav-item"
 				:class="{current: index === tabCurrentIndex}"
@@ -45,17 +45,17 @@
 		</scroll-view>
 		<!-- 下拉刷新组件 -->
 		<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
-			<swiper 
+			<swiper
 				id="swiper"
-				class="swiper-box" 
-				:duration="300" 
-				:current="tabCurrentIndex" 
+				class="swiper-box"
+				:duration="300"
+				:current="tabCurrentIndex"
 				@change="changeTab"
 			>
 				<swiper-item v-for="(tabItem, index) in tabBars" :key="index">
-					<scroll-view 
-						class="panel-scroll-box" 
-						:scroll-y="enableScroll" 
+					<scroll-view
+						class="panel-scroll-box"
+						:scroll-y="enableScroll"
 						@scrolltolower="loadMore"
 						>
 						<!-- 最新tab内容 -->
@@ -96,8 +96,8 @@
 								<text class="list_item_more_black_txt">+订阅</text>
 							</view>
 						</view>
-						<!-- 
-							* 新闻列表 
+						<!--
+							* 新闻列表
 							* 和nvue的区别只是需要把uni标签转为weex标签而已
 							* class 和 style的绑定限制了一些语法，其他并没有不同
 						-->
@@ -152,7 +152,7 @@
 				importNewsListData: [], // 存放专题和新闻早八点之间的5条新闻
 				specialList: [], // 专栏图片
 				bannerList: [], // banner图片
-				importNews: [], // 存放新闻早八点、专题的两条新闻 
+				importNews: [], // 存放新闻早八点、专题的两条新闻
 				focusTabCurr: 0, // 存放关注页面【作者|标签】的tab
 			}
 		},
@@ -164,7 +164,7 @@
 					time: '2019-04-26 21:21'
 				}
 				return `/pages/details/details?data=${JSON.stringify(data)}`;
-			} 
+			}
 		},
 		async onLoad() {
 			// 获取屏幕宽度
@@ -174,19 +174,19 @@
 		onReady(){
 			/**
 			 * 启动页广告 使用文档（滑稽）
-			 * 1. 引入组件并注册 
+			 * 1. 引入组件并注册
 			 * 		import mixAdvert from '@/components/mix-advert/vue/mix-advert';
 			 *      components: {mixAdvert},
 					 <!-- #ifndef MP -->
-						<mix-advert 
-							ref="mixAdvert" 
-							:timedown="8" 
+						<mix-advert
+							ref="mixAdvert"
+							:timedown="8"
 							imageUrl="/static/advert.jpg"
 							:url="advertNavUrl"
 						></mix-advert>
 					<!-- #endif -->
 			 * 	2. 调用组件的initAdvert()方法进行初始化
-			 * 
+			 *
 			 *  初始化的时机应该是在splash关闭时，否则会造成在app端广告显示了数秒后首屏才渲染出来
 			 */
 			// #ifndef MP
@@ -201,19 +201,25 @@
 			 */
 			//获取分类
 			loadTabbars(){
-				let tabList = homeTab;
-				tabList.forEach(item=>{
-					item.newsList = [];
-					item.loadMoreStatus = 0;  //加载更多 0加载前，1加载中，2没有更多了
-					item.refreshing = 0;
+				this.$http.get('/api/categories').then(res=>{
+					if(res.data.code === 0){
+						// let tabList = homeTab;
+						let tabList = res.data.data;
+						tabList.unshift([{name: '关注'},{name:'热门'}])
+						tabList.forEach(item=>{
+							item.newsList = [];
+							item.loadMoreStatus = 0;  //加载更多 0加载前，1加载中，2没有更多了
+							item.refreshing = 0;
+						})
+						this.tabBars = tabList;
+						this.loadNewsList('add');
+					}
 				})
-				this.tabBars = tabList;
-				this.loadNewsList('add');
 			},
 			//新闻列表
 			loadNewsList(type){
 				let tabItem = this.tabBars[this.tabCurrentIndex];
-				
+
 				//type add 加载更多 refresh下拉刷新
 				if(type === 'add'){
 					if(tabItem.loadMoreStatus === 2){
@@ -226,12 +232,12 @@
 					tabItem.refreshing = true;
 				}
 				// #endif
-				
+
 				//setTimeout模拟异步请求数据
 				setTimeout(()=>{
 					let list = [];
-					if(tabItem.name == '关注') {
-						if(this.focusTabCurr == 0) {
+					if(tabItem.name === '关注') {
+						if(this.focusTabCurr === 0) {
 							// 构造是否关注的数据
 							list = focusAuthors.map(item=>Object(item, {isFocus: false}));
 						} else {
@@ -242,7 +248,7 @@
 							 }
 							list = tempArr;
 						}
-					} else if(tabItem.name == '最新'){
+					} else if(tabItem.name === '最新'){
 						this.specialList = banner;
 						this.bannerList = banner;
 						this.importNewsListData = newItem;
@@ -278,6 +284,14 @@
 					}else{
 						list = newsItems;
 					}
+					/**
+					 *  请求分类下的新闻列表
+					 */
+					this.$http.get("/api/articles", {category_id: tabItem.id}).then(response => {
+						if (response.data.code === 0) {
+							list = response.data.data
+						}
+					})
 					list.sort((a,b)=>{
 						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
 					})
@@ -301,7 +315,7 @@
 						tabItem.loadMoreStatus = tabItem.newsList.length > 40 ? 2: 0;
 					}
 				}, 600)
-			
+
 			},
 			// 新闻详情
 			navToDetails(item){
@@ -311,7 +325,7 @@
 					author: item.author,
 					time: item.time
 				}
-				let url = item.videoSrc ? 'videoDetails' : 'details'; 
+				let url = item.videoSrc ? 'videoDetails' : 'details';
 
 				uni.navigateTo({
 					url: `/pages/details/${url}?data=${JSON.stringify(data)}`
@@ -348,7 +362,7 @@
 				}
 				//计算宽度相关
 				let tabBarScrollLeft = tabBar.scrollLeft;
-				let width = 0; 
+				let width = 0;
 				let nowWidth = 0;
 				//获取可滑动总宽度
 				for (let i = 0; i <= index; i++) {
@@ -360,7 +374,7 @@
 				}
 				if(typeof e === 'number'){
 					//点击切换时先切换再滚动tabbar，避免同时切换视觉错位
-					this.tabCurrentIndex = index; 
+					this.tabCurrentIndex = index;
 				}
 				//延迟300ms,等待swiper动画结束再修改tabbar
 				scrollTimer = setTimeout(()=>{
@@ -371,10 +385,10 @@
 						this.scrollLeft = 0;
 					}
 					if(typeof e === 'object'){
-						this.tabCurrentIndex = index; 
+						this.tabCurrentIndex = index;
 					}
-					this.tabCurrentIndex = index; 
-					
+					this.tabCurrentIndex = index;
+
 					//第一次切换tab，动画结束后需要加载数据
 					let tabItem = this.tabBars[this.tabCurrentIndex];
 					if(tabItem.loaded !== true){
@@ -382,10 +396,10 @@
 						tabItem.loaded = true;
 					}
 				}, 300)
-				
+
 			},
 			//获得元素的size
-			getElSize(id) { 
+			getElSize(id) {
 				return new Promise((res, rej) => {
 					let el = uni.createSelectorQuery().select('#' + id);
 					el.fields({
@@ -511,7 +525,7 @@
 	}
 	/* 新闻列表  emmm 仅供参考 */
 	.news-item{
-		background-color: #fff; 
+		background-color: #fff;
 	}
 	/* 头部样式 */
 	.header{
@@ -596,5 +610,5 @@
 		width: 100upx;
 		line-height: 75upx;
 	}
-	
+
 </style>

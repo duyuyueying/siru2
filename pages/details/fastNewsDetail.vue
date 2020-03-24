@@ -2,14 +2,14 @@
 	<view class="detail_page container">
 		<view class="banner" auto-focus>
 			<view class="title-area">
-				<text class="title-text">{{detail.title}}</text>
+				<text class="title-text">{{detail.name}}</text>
 			</view>
 		</view>
 		<view class="txt_wrapper flex_row">
-			<text class="txt mr20">{{friendlyDate(detail.time)}}</text>
-			<uni-rate size="15" value="4.5"></uni-rate>
+			<text class="txt mr20">{{friendlyDate(date2tamp(detail.create_time))}}</text>
+			<uni-rate disabled size="15" value="4.5"></uni-rate>
 		</view>
-		
+
 		<view v-if="detail.coins && detail.coins.length > 0" class="flex_row coin_wrapper">
 			<view v-for="(item, index) in detail.coins" :key="index" class="mark_wrapper">
 				<mark-view
@@ -26,7 +26,7 @@
 			<text class="txt">{{helper.announce3}}</text>
 		</view>
 		<view style="padding: 20upx">
-			<operation-btns :goodCount="detail.goodCount" :badCount="detail.badCount" @gotoCommet="showReply(detail.id)" @share="share"></operation-btns>
+			<operation-btns :goodCount="detail.good" :badCount="detail.bad" @gotoCommet="showReply(detail.id)" @share="share"></operation-btns>
 		</view>
 		<section-head title="评论"></section-head>
 		<view class="comment-wrap">
@@ -54,7 +54,7 @@
 	import newsItem from '@/components/list-item/news-item.vue';
 	import sectionHead from '@/components/sectionHead.vue';
 	import commentItem from '@/pages/comment/comment_item.vue';
-	import {friendlyDate} from '@/common/util.js';
+	import {friendlyDate, date2tamp} from '@/common/util.js';
 	import markView from '@/components/markView.vue';
 	import {oneNews,newItem,comment} from '@/mock/data.js';
 	import {detailText, platform} from  '@/common/config.js';
@@ -102,7 +102,7 @@
 				options: OPTIONS
 			}
 		},
-		mixins:[friendlyDate],
+		mixins:[friendlyDate, date2tamp],
 		components:{
 			markView,
 			sectionHead,
@@ -112,7 +112,7 @@
 			uniRate,
 			uniBottomComment,
 			uniPopup,
-			uniTitle,
+			uniTitle
 		},
 		onShareAppMessage() {
 			return {
@@ -123,7 +123,7 @@
 		onLoad(event) {
 			this.id = event.id;
 			this.getDetail();
-			this.getListData();
+			// this.getListData();
 			this.getCommentList();
 			let _this = this;
 			uni.getSystemInfo({
@@ -137,17 +137,17 @@
 				let content = FAIL_CONTENT
 				try{
 					/*
-					let result = await getNormalNewsDetail('5299102');
-					if (result.statusCode == 200) {
-						content = result.data.content
-					}
-					const nodes = htmlParser(oneNews.detail);
-					// #ifdef APP-PLUS-NVUE
-					parseImgs(nodes)
-					// #endif
-					this.content = nodes;
-					this.detail = oneNews;
-					*/
+                    let result = await getNormalNewsDetail('5299102');
+                    if (result.statusCode == 200) {
+                        content = result.data.content
+                    }
+                    const nodes = htmlParser(oneNews.detail);
+                    // #ifdef APP-PLUS-NVUE
+                    parseImgs(nodes)
+                    // #endif
+                    this.content = nodes;
+                    this.detail = oneNews;
+                    */
 
 					this.$api.article_info(this.id).then(data => {
 						if (data && data.code === 200) {
@@ -156,26 +156,32 @@
 							parseImgs(nodes)
 							// #endif
 							this.content = nodes;
-							this.detail = oneNews;
+							this.detail = data.result;
 						} else {
-							this.$message(data.msg,function () {
+							this.$message(data.msg, function () {
 								// uni.navigateBack({
 								// 	delta: 1
 								// });
 							})
 						}
 					})
-
-
 				} catch (e){
-					
+
 				}
 			},
 			getListData(){
 				this.listData = newItem;
 			},
 			getCommentList() {
-				this.commentList = comment;
+				// this.commentList = comment;
+				this.$api.comments(this.id).then(data => {
+					if (data && data.code === 200) {
+						this.commentList = data.result;
+					} else {
+						this.commentList = [];
+						// this.$message('获取评论失败')
+					}
+				})
 			},
 
 			share() {
@@ -192,13 +198,13 @@
 					this.$refs.popup.open();
 				}
 			},
-			
+
 		},
 	}
 </script>
 
 <style lang="scss">
-	
+
 	/* #ifndef APP-PLUS */
 	page {
 		min-height: 100%;

@@ -72,12 +72,20 @@ export default {
         },
         /**
          * 获取文章详情
-         * @param id
+         * @param articleId
          * @returns {Promise<unknown>}
          */
-        article_info(id) {
-            return minRequest.get('/api/articles/' + id)
+        article_info(articleId) {
+            return minRequest.get('/api/articles/' + articleId)
         },
+        /**
+         * 获取文章评论
+         * @param articleId
+         * @returns {Promise<unknown>}
+         */
+        comments(articleId) {
+            return minRequest.get('/api/articles/' + articleId + '/comments')
+        }
 
     }
 }

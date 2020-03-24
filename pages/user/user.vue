@@ -146,7 +146,7 @@
 								key:'USER_ID',
 								data: data.result.id
 							})
-							this.USER_ID(data.result.id);
+							// this.USER_ID(data.result.id);
 							uni.setStorageSync('user_info',data.result);
 							this.userinfo = data.result
 							this.orderTypeLise=[

@@ -146,10 +146,35 @@ const date2tamp = {
         },
     }
 }
+//获得元素的size
+const getElSize = {
+	data(){
+		return {
+			elSize: null,
+			elOffsetTop: 0
+		}
+	},
+	methods: {
+		getElSize(selector) { 
+			let el = uni.createSelectorQuery().select(selector);
+			el.fields({
+				size: true,
+				scrollOffset: true,
+				rect: true
+			}, (data) => {
+				console.log(data);
+				this.elSize = {width: data.width, height: data.height};
+				this.elOffsetTop = data.top;
+			}).exec();
+		}
+	}
+}
+
 
 export {
     friendlyDate,
     color,
     loadMore,
 	date2tamp,
+	getElSize
 }

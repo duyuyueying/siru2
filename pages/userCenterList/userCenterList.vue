@@ -1,11 +1,10 @@
 <template>
 	<view class="page-news">
-		<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+		<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 			<scroll-view
 				class="panel-scroll-box" 
 				:scroll-y="enableScroll" 
 				@scrolltolower="loadMore"
-				:style="{height: swiperHeight+'px'}"
 				>
 				<view v-if="type === 'coin'">
 					<view class="u-head_coins">
@@ -220,7 +219,7 @@
 		height: 100%;
 	}
 	.panel-scroll-box{
-		height: 675px;
+		height: 100vh;
 	}
 	.refresh {
 		justify-content: center;

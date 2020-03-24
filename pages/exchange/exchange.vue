@@ -85,7 +85,7 @@
 				</scroll-view>
 			</swiper-item>
 			<swiper-item>
-				<mix-pulldown-refresh ref="mixPulldownRefresh1" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+				<mix-pulldown-refresh ref="mixPulldownRefresh1" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<scroll-view id="tab-bar" class="tab-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft" :show-scrollbar="false">
 						<view 
 							v-for="(item,index) in tradeTabBar" :key="index"
@@ -110,7 +110,7 @@
 				</mix-pulldown-refresh>
 			</swiper-item>
 			<swiper-item>
-				<mix-pulldown-refresh ref="mixPulldownRefresh2" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+				<mix-pulldown-refresh ref="mixPulldownRefresh2" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<scroll-view
 						class="panel-scroll-box" 
 						:scroll-y="enableScrollY" 

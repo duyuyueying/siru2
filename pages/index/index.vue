@@ -202,10 +202,10 @@
 			//获取分类
 			loadTabbars(){
 				this.$http.get('/api/categories').then(res=>{
-					if(res.data.code === 0){
-						// let tabList = homeTab;
-						let tabList = res.data.data;
-						tabList.unshift([{name: '关注'},{name:'热门'}])
+					// debugger;
+					if (res && res.code === 200) {
+						let tabList = res.result;
+						tabList.unshift({name: '关注'},{name:'热门'});
 						tabList.forEach(item=>{
 							item.newsList = [];
 							item.loadMoreStatus = 0;  //加载更多 0加载前，1加载中，2没有更多了
@@ -219,7 +219,6 @@
 			//新闻列表
 			loadNewsList(type){
 				let tabItem = this.tabBars[this.tabCurrentIndex];
-
 				//type add 加载更多 refresh下拉刷新
 				if(type === 'add'){
 					if(tabItem.loadMoreStatus === 2){
@@ -232,7 +231,6 @@
 					tabItem.refreshing = true;
 				}
 				// #endif
-
 				//setTimeout模拟异步请求数据
 				setTimeout(()=>{
 					let list = [];
@@ -288,8 +286,8 @@
 					 *  请求分类下的新闻列表
 					 */
 					this.$http.get("/api/articles", {category_id: tabItem.id}).then(response => {
-						if (response.data.code === 0) {
-							list = response.data.data
+						if (response.code === 200) {
+							list = response.result
 						}
 					})
 					list.sort((a,b)=>{
@@ -491,7 +489,7 @@
 			display: inline-block;
 			/* width: 150upx; */
 			padding: 0 20upx;
-			height: 90upx;
+			/* height: 90upx; */
 			text-align: center;
 			line-height: 90upx;
 			font-size: 30upx;

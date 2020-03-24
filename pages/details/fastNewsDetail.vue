@@ -71,9 +71,7 @@
 	function parseImgs(nodes) {
 		nodes.forEach(node => {
 			if (
-				node.name === 'img' &&
-				node.attrs &&
-				node.attrs['data-img-size-val']
+				node.name === 'img'
 			) {
 				const sizes = node.attrs['data-img-size-val'].split(',')
 				const width = uni.upx2px(720 * 0.9)
@@ -152,9 +150,9 @@
 					this.$api.article_info(this.id).then(data => {
 						if (data && data.code === 200) {
 							const nodes = htmlParser(data.result.content);
-							// #ifdef APP-PLUS-NVUE
-							parseImgs(nodes)
-							// #endif
+							
+							// nodes = parseImgs(nodes)
+						
 							this.content = nodes;
 							this.detail = data.result;
 						} else {
@@ -287,6 +285,17 @@
 		// margin-bottom: 30upx;
 		overflow: hidden;
 		background-color: #fff;
+	}
+	/deep/ .article-content p{
+		margin: $space-lg 0;
+		color: #29293b;
+		line-height: 58upx;
+		word-break: break-word;
+	}
+	/deep/ .article-content img{
+		display: block;
+		width: 100%;
+		margin: 0 auto;
 	}
 	.hepler_wrapper{
 		padding: 50upx 30upx 0 30upx;

@@ -10,6 +10,7 @@ const state = {
   downTheme: {txt: '#e54d42', bg: '#fadbd9'},
   pricePosition: 'CNYUP',
   userId: null,
+  apiToken: null,
   frontImg: null,
   backImg: null
 }

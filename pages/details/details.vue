@@ -475,6 +475,11 @@
 		line-height: 58upx;
 		word-break: break-word;
 	}
+	/deep/ .article-content img{
+		display: block;
+		width: 100%;
+		margin: 0 auto;
+	}
 	.hepler_wrapper{
 		padding: 50upx 30upx 30upx 30upx;
 		background-color: #fff;

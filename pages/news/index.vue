@@ -1,22 +1,20 @@
 <template>
 	<view class="timeline">
-		<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+		<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 			<scroll-view
 				class="panel-scroll-box" 
 				:scroll-y="enableScroll" 
 				@scrolltolower="loadMore"
-				style="height: 675px;"
 				>
 			<view class="timeline_item" v-for="(item, index) in dataList" :key="index" :style="{marginBottom: (index+1) == dataList.length ? '40upx': '0upx'}">
 				<view class="line"></view>
 				<view class="block"></view>
 				<view class="time_wrapper">
-					<text class="time_txt">{{timeFun(item.time)}}</text>
+					<text class="time_txt">{{item.create_time}}</text>
 				</view>
-				
 				<view>
-					<view class="head_wrapper" @click="goPage(item.id)"><text class="head_txt">{{item.title}}</text></view>
-					<view class="desc_wrapper"><text class="content_txt">{{item.detail}}</text></view>
+					<view class="head_wrapper" @click="goPage(item.id)"><text class="head_txt">{{index--}}{{item.name}}</text></view>
+					<view class="desc_wrapper"><text class="content_txt">这是预览内容</text></view>
 					<view v-if="item.coins && item.coins.length > 0" class="flex_row coin_wrapper">
 						<view v-for="(subItem, index) in item.coins" :key="index" class="mark_wrapper" :style="{width:markViewWidth}">
 							<mark-view
@@ -26,7 +24,7 @@
 								></mark-view >
 						</view>
 					</view>
-					<view class="border flex_column" @click="goCoinDetailPage('ETH', '')">
+					<view class="border flex_column" @click="goCoinDetailPage('ETH', '')" v-if="false">
 						<text style="line-height: 50upx;font-size: 30upx;">ETH</text>
 						<text style="line-height: 50upx;font-size: 30upx;">$198.14</text>
 						<text class="time_txt">2MIN涨幅</text>
@@ -35,6 +33,8 @@
 					<operation-btns :goodCount="item.goodCount" :badCount="item.badCount" :commentCount="item.comment" @share="doShare" @gotoCommet="goPage(item.id)"></operation-btns>
 				</view>
 			</view>
+			<!-- 上滑加载更多组件 -->
+			<mix-load-more :status="loadMoreStatus"></mix-load-more>
 		</scroll-view>
 		</mix-pulldown-refresh>
 	</view>
@@ -47,6 +47,7 @@
 	import operationBtns from '@/components/operationBtns.vue';
 	import {loadMore} from '@/common/util.js';
 	import {oneNews} from '@/mock/data.js';
+	let PAGE_SIZE = 15;
 	export default {
 		data() {
 			return {
@@ -54,6 +55,7 @@
 				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
 				refreshing: false, // 刷新状态
 				dataList: [],
+				pageNum: 1,
 				// itemWatchFlag: false, // 用来监听
 			}
 		},
@@ -77,50 +79,88 @@
 			loadList(type){
 				// let tabItem = this.tabBars[this.currTab];
 				//type add 加载更多 refresh下拉刷新
-			
 				if(type === 'add'){
 					if(this.loadMoreStatus === 2){
 						return;
 					}
-					
 					this.loadMoreStatus = 1;
 				}
 				// #ifdef APP-PLUS
 				else if(type === 'refresh'){
 					this.refreshing = true;
+					// 刷新前清空数组
+					this.dataList = [];
 				}
 				// #endif
 				
+				this.$api.articles({
+					type: 2,
+					pageNum: this.pageNum,
+					pageSize: PAGE_SIZE,
+				}).then(data => {
+					if (data && data.code === 200) {
+						const result = data.result.data;
+						const total = data.result.total;
+						// consol
+						this.dataList.push(...result);
+						if(type === 'refresh'){
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							// #ifdef APP-PLUS
+							this.refreshing = false;
+							// #endif
+							this.loadMoreStatus = 0;
+						}
+						//上滑加载 处理状态
+						if(type === 'add'){
+							this.pageNum++;
+							this.loadMoreStatus = this.dataList.length >= total ? 2: 0;
+						}
+						// console.log(data);
+						// const nodes = htmlParser(data.result.content);
+						// // #ifdef APP-PLUS-NVUE
+						// parseImgs(nodes)
+						// // #endif
+						// this.content = nodes;
+						// this.detail = data.result;
+					} else {
+						this.$message(data.msg, function () {
+							// uni.navigateBack({
+							// 	delta: 1
+							// });
+						})
+					}
+				})
+				
 				//setTimeout模拟异步请求数据
-				setTimeout(()=>{
-					let list = new Array(20);
-					list.fill(oneNews);
-					list.sort((a,b)=>{
-						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
-					})
-					if(type === 'refresh'){
-						// 刷新前清空数组
-						this.dataList = [];
-					}
-					let tempArr = [];
-					list.forEach(item=>{
-						item.id = parseInt(Math.random() * 10000);
-						tempArr.push(item);
-					});
-					this.dataList.push(...tempArr);
-					//下拉刷新 关闭刷新动画
-					if(type === 'refresh'){
-						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-						// #ifdef APP-PLUS
-						this.refreshing = false;
-						// #endif
-						this.loadMoreStatus = 0;
-					}
-					//上滑加载 处理状态
-					if(type === 'add'){
-						this.loadMoreStatus = this.dataList.length > 40 ? 2: 0;
-					}
-				}, 600)
+				// setTimeout(()=>{
+				// 	let list = new Array(20);
+				// 	list.fill(oneNews);
+				// 	list.sort((a,b)=>{
+				// 		return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
+				// 	})
+				// 	if(type === 'refresh'){
+				// 		// 刷新前清空数组
+				// 		this.dataList = [];
+				// 	}
+				// 	let tempArr = [];
+				// 	list.forEach(item=>{
+				// 		item.id = parseInt(Math.random() * 10000);
+				// 		tempArr.push(item);
+				// 	});
+				// 	this.dataList.push(...tempArr);
+				// 	//下拉刷新 关闭刷新动画
+				// 	if(type === 'refresh'){
+				// 		this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+				// 		// #ifdef APP-PLUS
+				// 		this.refreshing = false;
+				// 		// #endif
+				// 		this.loadMoreStatus = 0;
+				// 	}
+				// 	//上滑加载 处理状态
+				// 	if(type === 'add'){
+				// 		this.loadMoreStatus = this.dataList.length > 40 ? 2: 0;
+				// 	}
+				// }, 600)
 			},
 			identificationFun(data) {
 				return identification[data];
@@ -156,13 +196,9 @@
 <style lang="scss">
 	.timeline{
 		height: 100%;
-		// margin-left: 40upx;
-		// border-style: solid;
-		// border-color: #f5f5f5;
-		// border-width: 0upx;
-		// border-left-width: 2upx;
-		// padding-left: 24upx;
-		
+	}
+	.panel-scroll-box{
+		height: 100%;
 	}
 	.timeline_item{
 		padding: 40upx 30upx 0upx 64upx;

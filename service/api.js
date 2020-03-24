@@ -1,4 +1,4 @@
-import MinRequest from './MinRequest'
+import MinRequest from './MinRequest';
 
 const minRequest = new MinRequest()
 
@@ -20,7 +20,7 @@ minRequest.interceptors.response((response) => {
 // 设置默认配置
 minRequest.setConfig((config) => {
     let api_token = uni.getStorageSync('api_token', '')
-    config.baseURL = 'http://127.0.0.1:8182'
+    config.baseURL = 'http://192.168.1.3:8182'
     config.header = {
         'content-type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -70,6 +70,14 @@ export default {
         user() {
             return minRequest.get('/api/user')
         },
+		/**
+		 * 获取文章列表
+		 * @param articleId
+		 * @returns {Promise<unknown>}
+		 */
+		articles(data) {
+		    return minRequest.get('/api/articles', data)
+		},
         /**
          * 获取文章详情
          * @param articleId

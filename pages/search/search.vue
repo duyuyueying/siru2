@@ -18,7 +18,7 @@
 			</view>
 		</view>
 		<view class="uni-navbar__placeholder">
-			<uni-status-bar />
+			<uni-status-bar class="statusBar" />
 			<view class="uni-navbar__placeholder-view" />
 		</view>
 		<view v-if="showInit">
@@ -47,7 +47,7 @@
 			<!-- 顶部选项卡 -->
 			<!-- 搜索页面分类不多，没有scrollview，后续tab多起来，该换scrollview -->
 			<!-- <scroll-view id="nav-bar" class="nav-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft"> -->
-				<view class="flex_row nav-bar fixed_tabbar">
+				<view class="flex_row nav-bar fixed_tabbar" :style="{top: (elSize.height + 44)+'px'}">
 					<view
 						v-for="(item,index) in tabBars" :key="index"
 						class="nav-item"
@@ -171,7 +171,7 @@
 	import uniCoinsItem from '@/components/list-item/uni-coins-item.vue';
 	import uniExChangeItem from '@/components/list-item/uni-exchange-item.vue';
 	import icons from '@/components/icons/icons.vue';
-	import {loadMore} from '@/common/util.js';
+	import {loadMore, getElSize} from '@/common/util.js';
 	import {newItem, searchTab, searchList, newsItems, focusAuthors, tags, coins} from '@/mock/data';
 	
 	let scrollTimer = false, tabBar;
@@ -201,7 +201,7 @@
 			icons,
 			fastNewsItem
 		},
-		mixins:[loadMore],
+		mixins:[loadMore,getElSize],
 		onLoad() {
 			this.tabBars = this.initTab(searchTab);
 			this.loadList('add');
@@ -215,6 +215,9 @@
 					_this.swiperHeight = e.windowHeight - 44;
 				}
 			})
+		},
+		mounted() {
+			this.getElSize('.statusBar');
 		},
 		methods: {
 			// 获取存放在本地的历史数据
@@ -415,7 +418,7 @@
 		background-color: $whiteColor;
 		.search_icon_box{
 			position: absolute;
-			left: 5px;
+			left: 15px;
 			top: 0px;
 		}
 		.clear_icon_box{
@@ -430,8 +433,8 @@
 		}
 		.input_search{
 			flex: 1;
-			height: 28px;
-			padding: 0 50upx;
+			height: 38px;
+			padding: 0 70upx;
 			margin-right: $space-lg;
 			background-color: $bgColor;
 			border-radius: 4upx;

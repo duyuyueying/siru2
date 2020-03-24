@@ -59,7 +59,7 @@
 				fwMes:"",
 				codeList:[],
 				animationData:{},
-				counter: 60,
+				counter: 0,
 				showMessage: false,
 				phone:''
 			}
@@ -117,21 +117,32 @@
 						this.codeList.forEach((x)=>{
 							codePl+=x+""
 						})
-						// 这里写业务逻辑
-						debugger
-						return
-
-						// 接口成功后跳转
 						if(this.type == 'login') {
 							//验证码登录
-							this.USER_ID(1);
-							uni.setStorage({
-								key:'USER_ID',
-								data: 1
+							// 这里写业务逻辑
+							this.$api.login_sms(this.phone, codePl).then(data => {
+								if (data && data.code === 200) {
+									// this.USER_ID(data.result.user_id);
+									// uni.setStorage({
+									// 	key:'USER_ID',
+									// 	data: data.result.user_id
+									// })
+
+									uni.setStorage({
+										key:'api_token',
+										data: data.result.api_token
+									})
+
+									// 接口成功后跳转
+									uni.navigateBack({
+										delta: 3
+									});
+								} else {
+									this.$message(data.msg)
+								}
+							}).catch(err => {
+								this.$message('网络错误')
 							})
-							uni.navigateBack({
-								delta: 3
-							});
 						} else {
 							//修改密码
 							uni.navigateTo({
@@ -154,8 +165,13 @@
 			},
 			// 发送验证码
 			sendCode() {
-				// 发送验证码逻辑
+				if (this.counter != 0) {
+					return
+				}
 				this.counter = 60;
+				this.calcCounter()
+
+				// 发送验证码逻辑
 				this.$api.send_sms(this.phone).then(data => {
 					if (data && data.code === 200) {
 						// this.$message('发送短信成功', function (phone) {

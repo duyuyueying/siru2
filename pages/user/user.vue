@@ -4,12 +4,12 @@
 		<view class="header">
 			<view class="userinfo" v-if="userId != null" @click="goPerson">
 				<view class="face">
-					<image :src="userinfo.face" class="face_img" mode="aspectFill"></image>
+					<image :src="userinfo.avatar_src!=''?userinfo.avatar_src:'/static/temp/avatar.jpeg'" class="face_img" mode="aspectFill"></image>
 				</view>
 				<view class="info flex_column">
-					<text class="u-title_txt">{{userinfo.username}}</text>
-					<text class="u_desc_txt">ddd</text>
-					<text class="u_desc_txt">UID:XXXXX</text>
+					<text class="u-title_txt">{{userinfo.nickname}}</text>
+					<text class="u_desc_txt">{{userinfo.verify_name}}</text>
+					<text class="u_desc_txt">UID:{{userinfo.id}}</text>
 				</view>
 			</view>
 			<view class="userinfo" v-else>
@@ -31,7 +31,7 @@
 					<text class="u_desc_txt">{{row.name}}</text>
 				</view>
 			</view>
-		</view> 
+		</view>
 		<view class="u-task_wrap">
 			<view class="box">
 				<view class="label" v-for="(row,index) in taskList" :key="row.name" hover-class="hover"  @tap="toPage(row.nikeName)">
@@ -123,9 +123,30 @@
 			loginLayout,
 			uniPopup
 		},
+		onShow(){
+			/** 执行页面数据刷新的方法 */
+
+
+		},
 		onLoad() {
-			if(this.userId != null) {
-				this.init();
+			const api_token = uni.getStorageSync('api_token');
+			if (api_token) {
+				this.$api.user().then(data => {
+					if (data && data.code === 200) {
+						uni.setStorage({
+							key:'USER_ID',
+							data: data.result.id
+						})
+						this.userinfo = data.result
+						this.init();
+					} else {
+						this.$message(data.msg)
+						uni.setStorage({
+							key:'USER_ID',
+							data: null
+						})
+					}
+				})
 			}
 		},
 		mounted() {
@@ -134,11 +155,11 @@
 		methods: {
 			init() {
 				//用户信息
-				this.userinfo={
-					face:'/static/temp/avatar.jpeg',
-					username:"VIP会员10240",
-					integral:"1435"
-				};
+				// this.userinfo={
+				// 	face:'/static/temp/avatar.jpeg',
+				// 	username:"VIP会员10240",
+				// 	integral:"1435"
+				// };
 				this.orderTypeLise=[
 					//name-标题 icon-图标 badge-角标
 					{name:'金币',count:1, nikeName: 'coin'},
@@ -180,6 +201,14 @@
 				this.$refs.sign.close()
 			},
 			toLogin() {
+				uni.setStorage({
+					key: 'USER_ID',
+					data: null
+				})
+				uni.setStorage({
+					key: 'api_token',
+					data: null
+				})
 				uni.navigateTo({
 					url: '/pages/login/login'
 				})
@@ -193,7 +222,7 @@
 				}
 				switch(type){
 					// 邀请好友
-					case 'invite': 
+					case 'invite':
 						url = '/pages/user/invite';
 						break;
 					// 金币记录页面/关注/粉丝/我的收藏/浏览历史
@@ -233,7 +262,7 @@
 					case 'about':
 						url = '/pages/about/about';
 						break;
-					
+
 				}
 				uni.navigateTo({
 					url
@@ -250,6 +279,7 @@
 		watch:{
 			userId(e) {
 				console.log(e);
+				debugger
 				this.init()
 			}
 		}

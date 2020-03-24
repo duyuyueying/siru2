@@ -167,6 +167,10 @@
 					key: 'USER_ID',
 					data: null
 				})
+				uni.setStorage({
+					key: 'api_token',
+					data: null
+				})
 				uni.navigateBack({
 					delta: 1
 				});

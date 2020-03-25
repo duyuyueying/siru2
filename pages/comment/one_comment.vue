@@ -1,56 +1,67 @@
 <template>
     <view class="media-item view">
-		<view class="list_wrap" @click="gotoDetail"><text class="list_wrap_txt">查看原内容</text></view>
-		<view class="flex_row main_comment">
-			<view class="img_wrapper">
-				<navigator url="../author/author" class="link_wrapper" hover-class="navigator-hover">
-					<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
-				</navigator>
-			</view>
-			<view class="content_wrapper">
-				<view class="flex_row">
-					<text class="info-text">{{item.comment_user}}</text>
-				</view>
-				<view><text class="comment_txt black">{{item.comment}}</text></view>
-				<view class="flex_row">
-					<text class="info-text" >{{friendlyDate(item.time)}}</text>
-					<text @tap="reply" class="info-text black">回复</text>
-				</view>
-			</view>
-			<view class="btn_wrapper flex_row" @tap.stop="doLike(item.id)">
-				<text class="btn_txt" :class="{isLike}">{{item.like>0 ? item.like : '点赞'}}</text><icons type="good" :color="isLike?'#ffb100' : '#999'"></icons>
-			</view>
-		</view>
-		<view class="sub_reply" v-if="item.reply&&item.reply.length > 0">
-			<view v-for="(subItem, index) in item.reply" :key="index" class="flex_row main_comment">
-				<view class="img_wrapper">
-					<navigator url="../author/author" class="link_wrapper" hover-class="navigator-hover">
-						<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
-					</navigator>
-				</view>
-				<view class="content_wrapper">
-					<view class="flex_row">
-						<text class="info-text">{{subItem.comment_user}}</text>
-						<text class="txt">评论</text>
-						<text class="info-text">{{subItem.reply_user_name}}</text>
+		<view class="relative_section" style="background-color: #fff;z-index: 2;"><view class="list_wrap" @click="gotoDetail"><text class="list_wrap_txt">查看原内容</text></view></view>
+		<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+			<scroll-view
+				class="panel-scroll-box" 
+				:scroll-y="enableScrollY" 
+				@scrolltolower="loadMore"
+				style="height: 100vh"
+				>
+				<view class="flex_row main_comment">
+					<view class="img_wrapper">
+						<navigator url="../author/author" class="link_wrapper" hover-class="navigator-hover">
+							<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
+						</navigator>
 					</view>
-					<view><text class="comment_txt black">{{subItem.comment}}</text></view>
-					<view class="flex_row">
-						<text class="info-text" >{{friendlyDate(subItem.time)}}</text>
-						<text @tap="reply" class="info-text black">回复</text>
+					<view class="content_wrapper">
+						<view class="flex_row">
+							<text class="info-text">{{item.comment_user}}</text>
+						</view>
+						<view><text class="comment_txt black">{{item.comment}}</text></view>
+						<view class="flex_row">
+							<text class="info-text" >{{friendlyDate(item.time)}}</text>
+							<text @tap="reply" class="info-text black">回复</text>
+						</view>
+					</view>
+					<view class="btn_wrapper flex_row" @tap.stop="doLike(item.id)">
+						<text class="btn_txt" :class="{isLike}">{{item.like>0 ? item.like : '点赞'}}</text><icons type="good" :color="isLike?'#ffb100' : '#999'"></icons>
 					</view>
 				</view>
-				<view class="btn_wrapper flex_row" @tap.stop="doLike(subItem.id)">
-					<text class="btn_txt" :class="{isLike}">{{subItem.like>0 ? subItem.like : '点赞'}}</text><icons type="good" :color="isLike?'#ffb100' : '#999'"></icons>
+				<view class="sub_reply" v-if="item.reply&&item.reply.length > 0">
+					<view v-for="(subItem, index) in item.reply" :key="index" class="flex_row main_comment">
+						<view class="img_wrapper">
+							<navigator url="../author/author" class="link_wrapper" hover-class="navigator-hover">
+								<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
+							</navigator>
+						</view>
+						<view class="content_wrapper">
+							<view class="flex_row">
+								<text class="info-text">{{subItem.comment_user}}</text>
+								<text class="txt">评论</text>
+								<text class="info-text">{{subItem.reply_user_name}}</text>
+							</view>
+							<view><text class="comment_txt black">{{subItem.comment}}</text></view>
+							<view class="flex_row">
+								<text class="info-text" >{{friendlyDate(subItem.time)}}</text>
+								<text @tap="reply" class="info-text black">回复</text>
+							</view>
+						</view>
+						<view class="btn_wrapper flex_row" @tap.stop="doLike(subItem.id)">
+							<text class="btn_txt" :class="{isLike}">{{subItem.like>0 ? subItem.like : '点赞'}}</text><icons type="good" :color="isLike?'#ffb100' : '#999'"></icons>
+						</view>
+					</view>
 				</view>
-			</view>
-		</view>
+				<!-- 上滑加载更多组件 -->
+				<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
+			</scroll-view>
+		</mix-pulldown-refresh>
     </view>
 </template>
 
 <script>
 	import  {identification} from '@/common/config.js';
-	import {friendlyDate} from '@/common/util.js';
+	import {friendlyDate, date2tamp, loadMore} from '@/common/util.js';
 	import icons from '@/components/icons/icons.vue';
     export default {
 		data() {
@@ -87,12 +98,17 @@
 					}],
 				}]
 			},
+			enableScrollY: true,
+			pageNum: 1,
+			total: 0,
+			pageSize: 15,
+			lastPage: 1,
 			}
 		},
 		components:{
 			icons
 		},
-		mixins:[friendlyDate],
+		mixins:[friendlyDate, date2tamp, loadMore],
 		mounted() {
 			// 这里需要根据接口返回来的关注人的列表判断当前这个人是否被点过赞过
 			this.isLike = false;

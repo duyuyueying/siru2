@@ -138,9 +138,10 @@ const loadMore = {
 const date2tamp = {
     methods: {
         date2tamp(dateStr) {
+			console.log(dateStr);
             if (dateStr!=undefined) {
                 dateStr = dateStr.substring(0, 19);
-                // dateStr = dateStr.replace(/-/g,'/');
+                dateStr = dateStr.replace(/-/g,'/');
                 return new Date(dateStr).getTime();
             }
         },

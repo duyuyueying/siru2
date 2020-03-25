@@ -47,7 +47,7 @@
 			<view class="flex_row main_comment">
 				<view class="img_wrapper">
 				</view>
-				<view class="content_wrapper">
+				<view class="content_wrapper" @click="toOneComment(item.id, item.article_id)">
 					<view><text class="comment_txt black">查看更多</text></view>
 				</view>
 			</view>
@@ -105,6 +105,11 @@
 				}
 				uni.navigateTo({
 					url: url
+				});
+			},
+			toOneComment(comment_id, article_id) {
+				uni.navigateTo({
+					url: "/pages/comment/one_comment?commentId="+comment_id+"&articaleId="+article_id
 				});
 			}
         },

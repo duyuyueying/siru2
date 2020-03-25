@@ -13,7 +13,7 @@
 					<text class="time_txt">{{timeFun(item.create_time)}}</text>
 				</view>
 				<view>
-					<view class="head_wrapper" @click="goPage(item.id)"><text class="head_txt">{{index}}==={{item.name}}</text></view>
+					<view class="head_wrapper" @click="goPage(item.id)"><text class="head_txt">{{item.name}}</text></view>
 					<view class="desc_wrapper"><text class="content_txt" v-html="item.content"></text></view>
 					<view v-if="item.coins && item.coins.length > 0" class="flex_row coin_wrapper">
 						<view v-for="(subItem, index) in item.coins" :key="index" class="mark_wrapper" :style="{width:markViewWidth}">
@@ -34,7 +34,7 @@
 				</view>
 			</view>
 			<!-- 上滑加载更多组件 -->
-			<mix-load-more :status="loadMoreStatus" @click.native="clickLoad"></mix-load-more>
+			<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
 		</scroll-view>
 		</mix-pulldown-refresh>
 	</view>
@@ -79,9 +79,6 @@
 		},
 		methods:{
 			//列表
-			clickLoad(){
-				this.loadList('add');
-			},
 			loadList(action){
 				//action= add上拉加载 refresh下拉刷新
 				if (action=='refresh') {

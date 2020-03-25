@@ -20,7 +20,7 @@ minRequest.interceptors.response((response) => {
 // 设置默认配置
 minRequest.setConfig((config) => {
     let api_token = uni.getStorageSync('api_token', '')
-    config.baseURL = 'http://192.168.50.29:8182'
+    config.baseURL = 'http://192.168.1.3:8182'
     config.header = {
         'content-type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -105,10 +105,11 @@ export default {
         /**
          * 获取文章评论
          * @param articleId
+		 * @param data 
          * @returns {Promise<unknown>}
          */
-        comments(articleId) {
-            return minRequest.get('/api/articles/' + articleId + '/comments')
+        comments(articleId,data) {
+            return minRequest.get('/api/articles/' + articleId + '/comments',data)
         },
         /**
          * 添加评论

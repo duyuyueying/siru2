@@ -36,9 +36,25 @@
 					@share="share">
 			</operation-btns>
 		</view>
-		<section-head title="评论"></section-head>
+		<view class="relative_section">
+			<section-head title="评论">
+				<view @click="loadList('refresh')"><text class="normal_txt">刷新</text></view>
+			</section-head>
+		</view>
+		
 		<view class="comment-wrap">
-			<comment-item v-for="(item, index) in commentList" :key="index" :item="item"></comment-item>
+			<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+				<scroll-view
+					class="panel-scroll-box" 
+					:scroll-y="enableScrollY" 
+					@scrolltolower="loadMore"
+					style="height: 100vh"
+					>
+					<comment-item v-for="(item, index) in commentList" :key="index" :item="item"></comment-item>
+					<!-- 上滑加载更多组件 -->
+					<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
+				</scroll-view>
+			</mix-pulldown-refresh>
 		</view>
 		<view class="fixed">
 			<uni-bottom-comment :options="options" @buttonClick="showReply(detail.id)" @clickItem="onClick"></uni-bottom-comment>
@@ -62,7 +78,7 @@
 	import newsItem from '@/components/list-item/news-item.vue';
 	import sectionHead from '@/components/sectionHead.vue';
 	import commentItem from '@/pages/comment/comment_item.vue';
-	import {friendlyDate, date2tamp} from '@/common/util.js';
+	import {friendlyDate, date2tamp, loadMore} from '@/common/util.js';
 	import markView from '@/components/markView.vue';
 	import {oneNews,newItem,comment} from '@/mock/data.js';
 	import {detailText, platform} from  '@/common/config.js';
@@ -89,10 +105,17 @@
 				listData: [], // 相关阅读列表
 				commentList: [], //评论列表
 				screenWidth: 0,
-				options: OPTIONS
+				options: OPTIONS,
+				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
+				refreshing: false, // 刷新状态
+				enableScrollY: true,
+				pageNum: 1,
+				total: 0,
+				pageSize: 15,
+				lastPage: 1,
 			}
 		},
-		mixins:[friendlyDate, date2tamp],
+		mixins:[friendlyDate, date2tamp, loadMore],
 		components:{
 			markView,
 			sectionHead,
@@ -110,11 +133,14 @@
 				path: '/pages/detail/detail?query=' + JSON.stringify(this.banner)
 			}
 		},
+		onShow(){
+			this.loadList('refresh');			
+		},
 		onLoad(event) {
 			this.id = event.id;
 			this.getDetail();
 			// this.getListData();
-			this.getCommentList();
+			// this.loadList('add');
 			let _this = this;
 			uni.getSystemInfo({
 				success(res) {
@@ -146,15 +172,51 @@
 			getListData(){
 				this.listData = newItem;
 			},
-			getCommentList() {
+			loadList(action) {
+				
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					this.commentList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+				
+				console.log("status:"+this.loadMoreStatus)
+				if (this.loadMoreStatus==0) {
+					this.loadMoreStatus = 1;
+					this.$api.comments(this.id,{
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+					}).then(data => {
+						if (data && data.code === 200) {
+							console.log(this.pageNum)
+				
+							const result = data.result.data
+							this.total = data.result.total
+							this.lastPage = data.result.last_page
+							this.commentList.push(...result);
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						} else {
+							this.commentList = [];
+							this.$message(data.msg)
+						}
+					})
+				}
 				// this.commentList = comment;
-				this.$api.comments(this.id).then(data => {
-					if (data && data.code === 200) {
-						this.commentList = data.result;
-					} else {
-						this.commentList = [];
-					}
-				})
+				// this.$api.comments(this.id).then(data => {
+				// 	if (data && data.code === 200) {
+				// 		this.commentList = data.result;
+				// 	} else {
+				// 		this.commentList = [];
+				// 	}
+				// })
 			},
 
 			share() {

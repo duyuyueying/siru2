@@ -66,7 +66,6 @@
 			loadList(type){
 				// let tabItem = this.tabBars[this.currTab];
 				//type add 加载更多 refresh下拉刷新
-				console.log(this.loadMoreStatus);
 				if(type === 'add'){
 					if(this.loadMoreStatus === 2){
 						return;

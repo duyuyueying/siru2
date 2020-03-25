@@ -1,7 +1,8 @@
 <template>
 	<view class="section_head">
 		<text class="head_txt">{{title}}</text>
-		<view class="media-item-line"></view>
+		<!-- <view class="media-item-line">111</view> -->
+		<slot></slot>
 	</view>
 </template>
 
@@ -15,25 +16,30 @@
 
 <style lang="scss">
 .section_head{
-	height: 60upx;
+	height: 48px;
+	line-height: 48px;
 	background-color: #f9f9f9;
 	position: relative;
+	display: flex;
+	padding: 0 $space-lg;
+	justify-content: space-between;
 }
 .head_txt{
 	color: #000;
 	font-weight: bold;
 	font-size: 28upx;
-	line-height: 60upx;
-	margin-left: 30upx;
+	
+	// margin-left: 30upx;
 }
 .media-item-line {
-	position: absolute;
-	left: 0upx;
-	top: 10upx;
-	bottom: 10upx;
-	width: 8upx;
-	// height: 2upx;
-	background-color: $mainColor;
-	z-index: 9;
+	// position: relative;
+	// left: 0upx;
+	// top: 10upx;
+	// bottom: 10upx;
+	// width: 20upx;
+	// height: 20upx;
+	// width: 8px;
+	// background-color: #000;
+	// z-index: 100;
 }
 </style>

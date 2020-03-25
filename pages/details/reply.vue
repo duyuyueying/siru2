@@ -42,12 +42,12 @@
 			})
 		},
 		onNavigationBarButtonTap(e) {
-			if(e.index == 0) {
-				//取消
-				uni.navigateBack({
-					delta:1
-				})
-			} else {
+			// if(e.index == 0) {
+			// 	//取消
+			// 	uni.navigateBack({
+			// 		delta:1
+			// 	})
+			// } else {
 				//发布
 				let content = this.value
 
@@ -63,13 +63,13 @@
 							uni.navigateBack({
 								delta:1
 							})
-						})
+						},800)
 					} else {
 						this.$message(data.msg)
 					}
 				})
 
-			}
+			// }
 		},
 		methods: {
 			caclLength(e){

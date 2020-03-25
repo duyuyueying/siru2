@@ -62,9 +62,17 @@
 				"navigationBarBackgroundColor": "#FFFFFF",
 				"navigationBarTextStyle": "black",
 				"titleNView": {
-					"backButton": {
-						"type": "back"
-					},
+					"buttons": [{
+						"float":"left",
+						"text": "取消",
+						"fontSize": "16px"
+					},{
+						"float":"right",
+						"text": "发布",
+						"color":"#ffb100",
+						"fontSize": "16px",
+						"width": "44px"
+					}],
 					"titleText": "回复"
 				}
 			}

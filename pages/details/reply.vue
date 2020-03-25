@@ -21,6 +21,16 @@
 				_this.bottom = res.height+10;
 			})
 		},
+		onNavigationBarButtonTap(e) {
+			if(e.index == 0) {
+				uni.navigateBack({
+					delta:1
+				})
+			} else {
+				console.log('发布')
+			}
+			console.log(e);
+		},
 		methods: {
 			caclLength(e){
 				let value = e.detail.value;

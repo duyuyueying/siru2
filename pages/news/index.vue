@@ -10,10 +10,10 @@
 				<view class="line"></view>
 				<view class="block"></view>
 				<view class="time_wrapper">
-					<text class="time_txt">{{item.create_time}}</text>
+					<text class="time_txt">{{timeFun(item.create_time)}}</text>
 				</view>
 				<view>
-					<view class="head_wrapper" @click="goPage(item.id)"><text class="head_txt">{{item.name}}</text></view>
+					<view class="head_wrapper" @click="goPage(item.id)"><text class="head_txt">{{index}}==={{item.name}}</text></view>
 					<view class="desc_wrapper"><text class="content_txt" v-html="item.content"></text></view>
 					<view v-if="item.coins && item.coins.length > 0" class="flex_row coin_wrapper">
 						<view v-for="(subItem, index) in item.coins" :key="index" class="mark_wrapper" :style="{width:markViewWidth}">
@@ -34,7 +34,7 @@
 				</view>
 			</view>
 			<!-- 上滑加载更多组件 -->
-			<mix-load-more :status="loadMoreStatus"></mix-load-more>
+			<mix-load-more :status="loadMoreStatus" @click.native="clickLoad"></mix-load-more>
 		</scroll-view>
 		</mix-pulldown-refresh>
 	</view>
@@ -47,7 +47,7 @@
 	import operationBtns from '@/components/operationBtns.vue';
 	import {loadMore} from '@/common/util.js';
 	import {oneNews} from '@/mock/data.js';
-	let PAGE_SIZE = 15;
+
 	export default {
 		data() {
 			return {
@@ -56,6 +56,9 @@
 				refreshing: false, // 刷新状态
 				dataList: [],
 				pageNum: 1,
+				pageSize: 15,
+				total: 0,
+				lastPage: 1,
 				// itemWatchFlag: false, // 用来监听
 			}
 		},
@@ -64,7 +67,7 @@
 			markView,
 			operationBtns
 		},
-		created() {
+		onShow() {
 			this.theme = uni.getStorageSync('markTheme') || 'greenUp';
 			let _this = this;
 			uni.getSystemInfo({
@@ -76,7 +79,47 @@
 		},
 		methods:{
 			//列表
-			loadList(type){
+			clickLoad(){
+				this.loadList('add');
+			},
+			loadList(action){
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					this.dataList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+
+				console.log("status:"+this.loadMoreStatus)
+				if (this.loadMoreStatus==0) {
+					this.loadMoreStatus = 1;
+					this.$api.articles({
+						type: 2,
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+					}).then(data => {
+						if (data && data.code === 200) {
+							console.log(this.pageNum)
+
+							const result = data.result.data
+							this.total = data.result.total
+							this.lastPage = data.result.last_page
+							this.dataList.push(...result);
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						} else {
+							this.$message(data.msg)
+						}
+					})
+				}
+			},
+			loadList2(type){
 				// let tabItem = this.tabBars[this.currTab];
 				//type add 加载更多 refresh下拉刷新
 				if(type === 'add'){
@@ -85,18 +128,16 @@
 					}
 					this.loadMoreStatus = 1;
 				}
-				// #ifdef APP-PLUS
 				else if(type === 'refresh'){
 					this.refreshing = true;
 					// 刷新前清空数组
 					this.dataList = [];
 				}
-				// #endif
-				
+
 				this.$api.articles({
 					type: 2,
 					pageNum: this.pageNum,
-					pageSize: PAGE_SIZE,
+					pageSize: this.pageSize,
 				}).then(data => {
 					if (data && data.code === 200) {
 						const result = data.result.data;
@@ -203,6 +244,17 @@
 	.timeline_item{
 		padding: 40upx 30upx 0upx 64upx;
 		position: relative;
+	}
+	/deep/ .timeline_item p{
+		margin: $space-lg 0;
+		color: #29293b;
+		line-height: 58upx;
+		word-break: break-word;
+	}
+	/deep/ .timeline_item img{
+		display: block;
+		width: 100%;
+		margin: 0 auto;
 	}
 	.block{
 		width: 12upx;

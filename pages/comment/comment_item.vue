@@ -13,11 +13,11 @@
 				<view><text class="comment_txt black">{{item.content}}</text></view>
 				<view class="flex_row">
 					<text class="info-text" >{{friendlyDate(date2tamp(item.create_time))}}</text>
-					<text @tap="reply(item.id,item.user.id)" class="info-text black">回复</text>
+					<text @tap="reply(item.id,item.user.id,item.user.nickname)" class="info-text black">回复</text>
 				</view>
 			</view>
-			<view class="btn_wrapper flex_row" @tap.stop="doLike(item.id)">
-				<text class="btn_txt" :class="{isLike}">{{item.zan>0 ? item.zan : '点赞'}}</text><icons type="good" :color="isLike?'#ffb100' : '#999'"></icons>
+			<view class="btn_wrapper flex_row" @tap.stop="doLike(item)">
+				<text class="btn_txt" :class="{isLike}">{{item.zan>0 ? item.zan : '点赞'}}</text><icons type="good" :color="item.is_zan?'#ffb100' : '#999'"></icons>
 			</view>
 		</view>
 		<view class="sub_reply" v-if="item.replys&&item.replys.length > 0">
@@ -36,11 +36,11 @@
 					<view><text class="comment_txt black">{{subItem.content}}</text></view>
 					<view class="flex_row">
 						<text class="info-text" >{{friendlyDate(date2tamp(subItem.create_time))}}</text>
-						<text @tap="reply(item.id,subItem.user.id,subItem.user.nickname)" class="info-text black">回复</text>
+						<text @tap="reply(item.id,subItem.user.id,subItem.user.nickname,subItem.id)" class="info-text black">回复</text>
 					</view>
 				</view>
-				<view class="btn_wrapper flex_row" @tap.stop="doLike(subItem.id)">
-					<text class="btn_txt" :class="{isLike}">{{subItem.zan>0 ? subItem.zan : '点赞'}}</text><icons type="good" :color="isLike?'#ffb100' : '#999'"></icons>
+				<view class="btn_wrapper flex_row" @tap.stop="doLike(subItem)">
+					<text class="btn_txt" :class="{isLike}">{{subItem.zan>0 ? subItem.zan : '点赞'}}</text><icons type="good" :color="subItem.is_zan?'#ffb100' : '#999'"></icons>
 				</view>
 			</view>
 
@@ -74,31 +74,34 @@
 			icons
 		},
 		mixins:[friendlyDate,date2tamp],
-		mounted() {
+		created() {
 			// 这里需要根据接口返回来的关注人的列表判断当前这个人是否被点过赞过
-			this.isLike = false;
+			// this.isLike = false;
 		},
         methods: {
             close(e) {
                 e.stopPropagation();
                 this.$emit('close');
             },
-			doLike(id) {
-				this.isLike = !this.isLike;
-				if(this.isLike) {
-					this.item.zan += 1;
-				} else {
-					this.item.zan -= 1;
-				}
+			doLike(item) {
+				this.$api.comments_zan(item.id).then(data => {
+					if (data && data.code === 200) {
+						item.zan = data.result.zan
+						item.is_zan = data.result.is_zan
+					}
+				})
 			},
 			// 去回复
-			reply(reply_id,reply_user_id,nickname){
+			reply(reply_id,reply_user_id,nickname,re_reply_id){
             	let url = '/pages/details/reply?article_id='+this.item.article_id+'&reply_id='+reply_id
 				if (reply_user_id) {
 					url += '&reply_user_id='+reply_user_id
 				}
 				if (nickname) {
 					url += '&nickname=' + nickname
+				}
+				if (re_reply_id) {
+					url += '&re_reply_id=' + re_reply_id
 				}
 				uni.navigateTo({
 					url: url

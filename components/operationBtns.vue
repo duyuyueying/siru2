@@ -56,27 +56,29 @@
 			},
 			// 利好
 			doGood(){
-				if(!this.isClick){
-					return;
-				}
-				this.goodFlag = !this.goodFlag;
-				if(this.goodFlag) {
-					this.goodCount++;
-				} else {
-					this.goodCount--;
-				}
+				this.$emit('doGood');
+				// if(!this.isClick){
+				// 	return;
+				// }
+				// this.goodFlag = !this.goodFlag;
+				// if(this.goodFlag) {
+				// 	this.goodCount++;
+				// } else {
+				// 	this.goodCount--;
+				// }
 			},
 			// 利空
 			doBad(){
-				if(!this.isClick){
-					return;
-				}
-				this.badFlag = !this.badFlag;
-				if(this.badFlag) {
-					this.badCount++;
-				} else {
-					this.badCount;
-				}
+				this.$emit('doBad');
+				// if(!this.isClick){
+				// 	return;
+				// }
+				// this.badFlag = !this.badFlag;
+				// if(this.badFlag) {
+				// 	this.badCount++;
+				// } else {
+				// 	this.badCount;
+				// }
 			},
 			doCommet() {
 				this.$emit('gotoCommet');

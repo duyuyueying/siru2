@@ -26,7 +26,15 @@
 			<text class="txt">{{helper.announce3}}</text>
 		</view>
 		<view style="padding: 20upx">
-			<operation-btns :goodCount="detail.good" :badCount="detail.bad" :commentCount="detail.comments_count" @gotoCommet="showReply(detail.id)" @share="share"></operation-btns>
+			<operation-btns
+					:goodCount="detail.good"
+					:badCount="detail.bad"
+					:commentCount="detail.comments_count"
+					@gotoCommet="showReply(detail.id)"
+					@doGood="doGood(detail)"
+					@doBad="doBad(detail)"
+					@share="share">
+			</operation-btns>
 		</view>
 		<section-head title="评论"></section-head>
 		<view class="comment-wrap">
@@ -68,22 +76,6 @@
 						icon: 'share',
 					}];
 
-	function parseImgs(nodes) {
-		nodes.forEach(node => {
-			if (
-				node.name === 'img'
-			) {
-				const sizes = node.attrs['data-img-size-val'].split(',')
-				const width = uni.upx2px(720 * 0.9)
-				const height = parseInt(width * (sizes[1] / sizes[0]))
-				node.attrs.style = `width:${width};height:${height};`
-			}
-			if (Array.isArray(node.children)) {
-				parseImgs(node.children)
-			}
-		})
-		return nodes
-	}
 
 	export default {
 		data() {
@@ -134,25 +126,9 @@
 			async getDetail() {
 				let content = FAIL_CONTENT
 				try{
-					/*
-                    let result = await getNormalNewsDetail('5299102');
-                    if (result.statusCode == 200) {
-                        content = result.data.content
-                    }
-                    const nodes = htmlParser(oneNews.detail);
-                    // #ifdef APP-PLUS-NVUE
-                    parseImgs(nodes)
-                    // #endif
-                    this.content = nodes;
-                    this.detail = oneNews;
-                    */
-
 					this.$api.article_info(this.id).then(data => {
 						if (data && data.code === 200) {
 							const nodes = htmlParser(data.result.content);
-							
-							// nodes = parseImgs(nodes)
-						
 							this.content = nodes;
 							this.detail = data.result;
 						} else {
@@ -195,7 +171,22 @@
 					this.$refs.popup.open();
 				}
 			},
-
+			doGood(item) {
+				this.$api.articles_good(item.id).then(data => {
+					if (data && data.code === 200) {
+						item.good = data.result.good
+						item.is_good = data.result.is_good
+					}
+				})
+			},
+			doBad(item) {
+				this.$api.articles_bad(item.id).then(data => {
+					if (data && data.code === 200) {
+						item.bad = data.result.bad
+						item.is_bad = data.result.is_bad
+					}
+				})
+			},
 		},
 	}
 </script>

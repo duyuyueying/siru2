@@ -63,10 +63,6 @@
 				"navigationBarTextStyle": "black",
 				"titleNView": {
 					"buttons": [{
-						"float":"left",
-						"text": "取消",
-						"fontSize": "16px"
-					},{
 						"float":"right",
 						"text": "发布",
 						"color":"#ffb100",

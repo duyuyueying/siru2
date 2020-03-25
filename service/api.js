@@ -87,13 +87,44 @@ export default {
             return minRequest.get('/api/articles/' + articleId)
         },
         /**
+         * 文章消息利好
+         * @param id
+         * @returns {Promise | Promise<unknown>}
+         */
+        articles_good(id){
+            return minRequest.put('/api/articles/'+id+'/good')
+        },
+        /**
+         * 文章消息利空
+         * @param id
+         * @returns {Promise | Promise<unknown>}
+         */
+        articles_bad(id){
+            return minRequest.put('/api/articles/'+id+'/bad')
+        },
+        /**
          * 获取文章评论
          * @param articleId
          * @returns {Promise<unknown>}
          */
         comments(articleId) {
             return minRequest.get('/api/articles/' + articleId + '/comments')
+        },
+        /**
+         * 添加评论
+         * @param data
+         * @returns {Promise<unknown>}
+         */
+        comments_add(data){
+            return minRequest.post('/api/comments', data)
+        },
+        /**
+         * 评论点赞
+         * @param id
+         * @returns {Promise | Promise<unknown>}
+         */
+        comments_zan(id){
+            return minRequest.put('/api/comments/'+id+'/zan')
         }
-
     }
 }

@@ -26,14 +26,14 @@
 			<text class="txt">{{helper.announce3}}</text>
 		</view>
 		<view style="padding: 20upx">
-			<operation-btns :goodCount="detail.good" :badCount="detail.bad" @gotoCommet="showReply(detail.id)" @share="share"></operation-btns>
+			<operation-btns :goodCount="detail.good" :badCount="detail.bad" :commentCount="detail.comments_count" @gotoCommet="showReply(detail.id)" @share="share"></operation-btns>
 		</view>
 		<section-head title="评论"></section-head>
 		<view class="comment-wrap">
 			<comment-item v-for="(item, index) in commentList" :key="index" :item="item"></comment-item>
 		</view>
 		<view class="fixed">
-			<uni-bottom-comment :options="options" @buttonClick="showReply" @clickItem="onClick"></uni-bottom-comment>
+			<uni-bottom-comment :options="options" @buttonClick="showReply(detail.id)" @clickItem="onClick"></uni-bottom-comment>
 		</view>
 		<uni-popup ref="popup" type="bottom">
 			<uni-title title="分享到" :isBold="false"></uni-title>
@@ -177,7 +177,6 @@
 						this.commentList = data.result;
 					} else {
 						this.commentList = [];
-						// this.$message('获取评论失败')
 					}
 				})
 			},
@@ -188,7 +187,7 @@
 			// 去回复页面
 			showReply(id){
 				uni.navigateTo({
-					url:'/pages/details/reply?id='+id
+					url:'/pages/details/reply?article_id='+id
 				});
 			},
 			onClick(index, item) {

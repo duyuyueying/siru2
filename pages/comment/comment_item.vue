@@ -3,44 +3,52 @@
 		<view class="flex_row main_comment">
 			<view class="img_wrapper">
 				<navigator url="../author/author" class="link_wrapper" hover-class="navigator-hover">
-					<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
+					<image class="image-list1" :src="item.user.avatar_src!=''?item.user.avatar_src:'../../static/temp/avatar.jpeg'"></image>
 				</navigator>
 			</view>
 			<view class="content_wrapper">
 				<view class="flex_row">
-					<text class="info-text">{{item.comment_user}}</text>
+					<text class="info-text">{{item.user.nickname}}</text>
 				</view>
-				<view><text class="comment_txt black">{{item.comment}}</text></view>
+				<view><text class="comment_txt black">{{item.content}}</text></view>
 				<view class="flex_row">
-					<text class="info-text" >{{friendlyDate(item.time)}}</text>
-					<text @tap="reply" class="info-text black">回复</text>
+					<text class="info-text" >{{friendlyDate(date2tamp(item.create_time))}}</text>
+					<text @tap="reply(item.id,item.user.id)" class="info-text black">回复</text>
 				</view>
 			</view>
 			<view class="btn_wrapper flex_row" @tap.stop="doLike(item.id)">
-				<text class="btn_txt" :class="{isLike}">{{item.like>0 ? item.like : '点赞'}}</text><icons type="good" :color="isLike?'#ffb100' : '#999'"></icons>
+				<text class="btn_txt" :class="{isLike}">{{item.zan>0 ? item.zan : '点赞'}}</text><icons type="good" :color="isLike?'#ffb100' : '#999'"></icons>
 			</view>
 		</view>
-		<view class="sub_reply" v-if="item.reply&&item.reply.length > 0">
-			<view v-for="(subItem, index) in item.reply" :key="index" class="flex_row main_comment">
+		<view class="sub_reply" v-if="item.replys&&item.replys.length > 0">
+			<view v-for="(subItem, index) in item.replys" :key="index" class="flex_row main_comment">
 				<view class="img_wrapper">
 					<navigator url="../author/author" class="link_wrapper" hover-class="navigator-hover">
-						<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
+						<image class="image-list1" :src="subItem.user.avatar_src!=''?subItem.user.avatar_src:'../../static/temp/avatar.jpeg'"></image>
 					</navigator>
 				</view>
 				<view class="content_wrapper">
 					<view class="flex_row">
-						<text class="info-text">{{subItem.comment_user}}</text>
+						<text class="info-text">{{subItem.user.nickname}}</text>
 						<text class="txt">评论</text>
 						<text class="info-text">{{subItem.reply_user_name}}</text>
 					</view>
-					<view><text class="comment_txt black">{{subItem.comment}}</text></view>
+					<view><text class="comment_txt black">{{subItem.content}}</text></view>
 					<view class="flex_row">
-						<text class="info-text" >{{friendlyDate(subItem.time)}}</text>
-						<text @tap="reply" class="info-text black">回复</text>
+						<text class="info-text" >{{friendlyDate(date2tamp(subItem.create_time))}}</text>
+						<text @tap="reply(item.id,subItem.user.id,subItem.user.nickname)" class="info-text black">回复</text>
 					</view>
 				</view>
 				<view class="btn_wrapper flex_row" @tap.stop="doLike(subItem.id)">
-					<text class="btn_txt" :class="{isLike}">{{subItem.like>0 ? subItem.like : '点赞'}}</text><icons type="good" :color="isLike?'#ffb100' : '#999'"></icons>
+					<text class="btn_txt" :class="{isLike}">{{subItem.zan>0 ? subItem.zan : '点赞'}}</text><icons type="good" :color="isLike?'#ffb100' : '#999'"></icons>
+				</view>
+			</view>
+
+			<view class="flex_row main_comment">
+				<view class="img_wrapper">
+				</view>
+				<view class="content_wrapper">
+					<view><text class="comment_txt black">查看更多</text></view>
 				</view>
 			</view>
 		</view>
@@ -49,7 +57,7 @@
 
 <script>
 	import  {identification} from '@/common/config.js';
-	import {friendlyDate} from '@/common/util.js';
+	import {friendlyDate,date2tamp} from '@/common/util.js';
 	import icons from '@/components/icons/icons.vue';
     export default {
 		data() {
@@ -60,12 +68,12 @@
 		},
         props: {
             item: Object,
-			
+
         },
 		components:{
 			icons
 		},
-		mixins:[friendlyDate],
+		mixins:[friendlyDate,date2tamp],
 		mounted() {
 			// 这里需要根据接口返回来的关注人的列表判断当前这个人是否被点过赞过
 			this.isLike = false;
@@ -78,15 +86,22 @@
 			doLike(id) {
 				this.isLike = !this.isLike;
 				if(this.isLike) {
-					this.item.like += 1;
+					this.item.zan += 1;
 				} else {
-					this.item.like -= 1;
+					this.item.zan -= 1;
 				}
 			},
 			// 去回复
-			reply(id){
+			reply(reply_id,reply_user_id,nickname){
+            	let url = '/pages/details/reply?article_id='+this.item.article_id+'&reply_id='+reply_id
+				if (reply_user_id) {
+					url += '&reply_user_id='+reply_user_id
+				}
+				if (nickname) {
+					url += '&nickname=' + nickname
+				}
 				uni.navigateTo({
-					url:'/pages/details/reply?id='+id
+					url: url
 				});
 			}
         },
@@ -96,7 +111,7 @@
 </script>
 
 <style scoped lang="scss">
-    
+
     .media-item {
         flex: 1;
         // flex-direction: row;
@@ -131,7 +146,7 @@
 		margin-right: 15upx;
 		position: relative;
 		z-index: 10;
-		
+
 	}
 	.image-list1 {
 	    @include circle(60upx);
@@ -153,7 +168,7 @@
 		flex: 1;
 		flex-direction: column;
 		justify-content: space-between;
-		
+
 	}
 	.info-text {
 	    margin-right: 20upx;

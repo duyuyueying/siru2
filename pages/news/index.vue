@@ -13,8 +13,8 @@
 					<text class="time_txt">{{item.create_time}}</text>
 				</view>
 				<view>
-					<view class="head_wrapper" @click="goPage(item.id)"><text class="head_txt">{{index--}}{{item.name}}</text></view>
-					<view class="desc_wrapper"><text class="content_txt">这是预览内容</text></view>
+					<view class="head_wrapper" @click="goPage(item.id)"><text class="head_txt">{{item.name}}</text></view>
+					<view class="desc_wrapper"><text class="content_txt" v-html="item.content"></text></view>
 					<view v-if="item.coins && item.coins.length > 0" class="flex_row coin_wrapper">
 						<view v-for="(subItem, index) in item.coins" :key="index" class="mark_wrapper" :style="{width:markViewWidth}">
 							<mark-view
@@ -30,7 +30,7 @@
 						<text class="time_txt">2MIN涨幅</text>
 						<text style="font-weight: bold;" :class="theme ==='greenUp' ? 'greenColor' : 'redColor'">+1.65%</text>
 					</view>
-					<operation-btns :goodCount="item.goodCount" :badCount="item.badCount" :commentCount="item.comment" @share="doShare" @gotoCommet="goPage(item.id)"></operation-btns>
+					<operation-btns :goodCount="item.good" :badCount="item.bad" :commentCount="item.comments_count" @share="doShare" @gotoCommet="goPage(item.id)"></operation-btns>
 				</view>
 			</view>
 			<!-- 上滑加载更多组件 -->

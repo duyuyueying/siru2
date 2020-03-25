@@ -13,9 +13,18 @@
 				bottom: 0,
 				length: 0,
 				value: '',
+
+				article_id:'0',
+				reply_id:'0',
+				reply_user_id:'0',
+				nickname:'',
 			}
 		},
-		onLoad() {
+		onLoad(e) {
+			this.article_id   = e.article_id || '0'
+			this.reply_id   = e.reply_id || '0'
+			this.reply_user_id   = e.reply_user_id || '0'
+			this.nickname   = e.nickname || ''
 			let _this = this;
 			uni.onKeyboardHeightChange(function(res){
 				_this.bottom = res.height+10;

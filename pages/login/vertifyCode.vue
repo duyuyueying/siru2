@@ -80,7 +80,7 @@
 			}
 		},
 		methods: {
-			...mapMutations(['USER_ID']),
+			...mapMutations(['API_TOKEN']),
 			// 移动自定义数字键盘
 			moveUp(x){
 				 var animation = uni.createAnimation({
@@ -122,17 +122,7 @@
 							// 这里写业务逻辑
 							this.$api.login_sms(this.phone, codePl).then(data => {
 								if (data && data.code === 200) {
-									this.USER_ID(data.result.user_id);
-									uni.setStorage({
-										key:'USER_ID',
-										data: data.result.user_id
-									})
-
-									uni.setStorage({
-										key:'api_token',
-										data: data.result.api_token
-									})
-
+									this.API_TOKEN(data.result.api_token)
 									// 接口成功后跳转
 									uni.navigateBack({
 										delta: 3

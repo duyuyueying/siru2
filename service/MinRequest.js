@@ -102,10 +102,12 @@ MinRequest.install = function (Vue) {
     Vue.mixin({
         beforeCreate: function () {
             if (this.$options.minRequest) {
-                console.log(this.$options.minRequest)
+                console.log(this.$options)
                 Vue._minRequest = this.$options.minRequest
             }
-        }
+			// console.log(this)
+			// this.test();
+        },
     })
     Object.defineProperty(Vue.prototype, '$api', {
         get: function () {

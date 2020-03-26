@@ -36,6 +36,8 @@
 					</message-item>
 					<!-- 系统消息 -->
 					<message-server-item :item="item" v-else-if="type == 'systemMessage'"></message-server-item>
+					<!-- 浏览历史 -->
+					<news-item :newsItem="item" v-else-if="type=='history'" timeStyle="update_time"></news-item>
 					<news-item :newsItem="item" v-else></news-item>
 				</view>
 				<!-- 上滑加载更多组件 -->
@@ -129,7 +131,6 @@
 				if (this.loadMoreStatus==0) {
 					this.loadMoreStatus = 1;
 					let options = {
-						type: 2,
 						pageNum: this.pageNum,
 						pageSize: this.pageSize,
 					};
@@ -165,6 +166,7 @@
 							data = await this.$api.get_follows(options);
 							break;
 					}
+					console.log('userCenterList', data);
 					
 					// let data = await this.$api.get_history(options);
 					

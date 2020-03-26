@@ -9,7 +9,7 @@
 				<text v-if="newsItem.depth && showTag" class="list_item_normal_txt focus_color right_space_base">深度</text>
 				<text class="list_item_normal_txt right_space_base" v-if="showSource">来源</text>
 				<text class="list_item_normal_txt right_space_base" v-if="newsItem.author.nickname && showAuthor">{{newsItem.author.nickname}}</text>
-				<text class="list_item_normal_txt right_space_base">{{friendlyDate(date2tamp(newsItem.create_time))}}</text>
+				<text class="list_item_normal_txt right_space_base">{{friendlyDate(date2tamp(newsItem[timeStyle]))}}</text>
 				<!-- 为了样式只取一条放在listitem -->
 				<view v-if="(newsItem.coins && (newsItem.coins.length > 0)) && showCoins">
 					<mark-view 
@@ -65,6 +65,10 @@
 			showCoins: {
 				type: Boolean,
 				default: true
+			},
+			timeStyle: {
+				type: String,
+				default: 'create_time'
 			}
         },
 		components:{
@@ -81,7 +85,8 @@
 				} else if(type === 'fastNews'){
 					url = '/pages/details/fastNewsDetail?id='+id
 				} else {
-					url = '/pages/details/details?id='+id
+					let type = this.newsItem.type == 3 ? 'vedio' : 'news';
+					url = '/pages/details/details?id='+id+'&type=' + type
 				}
 				uni.navigateTo({url});
             },

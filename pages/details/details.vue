@@ -70,10 +70,11 @@
 		<view class="announce_wrapper">
 			<text class="txt">{{helper.announce2}}</text>
 		</view>
-
-		<section-head title="评论" ref="commentBox" class="comment-title-wrap">
-			<view @click="loadList('refresh')"><text class="normal_txt">刷新</text></view>
-		</section-head>
+		<view class="relative_section">
+			<section-head title="评论" ref="commentBox" class="comment-title-wrap">
+				<view @click="loadList('refresh')"><text class="normal_txt">刷新</text></view>
+			</section-head>
+		</view>
 		<view class="comment-wrap">
 
 			<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
@@ -135,7 +136,7 @@
 				</view>
 				<view class="popupMore_wrapper flex_row">
 					<view v-for="(item, index) in popOperation" :key="index" @click="onClick(index, item, 'popup')" class="popShare_item">
-						<icons :type="item.icon" :color="item.icon == 'collect' && item.isCollect ? '#ffb011': '#333'"></icons>
+						<icons :type="item.icon" :color="item.icon == 'collect' && detail.is_collected ? '#ffb011': '#333'"></icons>
 						<text class="list_item_black_txt">{{item.name}}</text>
 					</view>
 				</view>
@@ -267,11 +268,10 @@
 		},
 		onLoad(event) {
 			this.id = event.id;
-			this.isVideo = !!event.type
-
+			this.isVideo = event.type == 'vedio'
 			let _this = this;
 			this.getDetail();
-			// this.getListData();	//相关
+			this.read();
 			uni.getSystemInfo({
 				success(res) {
 					_this.screenWidth = res.screenWidth;
@@ -281,10 +281,12 @@
 		onLoad2(event) {
 			this.id = event.id;
 			this.isVideo = !!event.type 
-			let _this = this;
+			// let _this = this;
 			this.getDetail();
 			this.getListData();
 			this.getCommentList();
+			
+			this.read();
 		},
 		mounted() {
 			// this.$nextTick(function(e){
@@ -293,6 +295,7 @@
 			// this.scrollTo();
 		},
 		methods: {
+			// 获取文章详情
 			async getDetail() {
 				let content = FAIL_CONTENT
 				try{
@@ -313,6 +316,7 @@
 
 				}
 			},
+			
 			//评论列表
 			loadList(action) {
 
@@ -360,6 +364,11 @@
 				// 	}
 				// })
 			},
+			// 添加浏览历史
+			read() {
+				this.$api.get_history_add(this.id);
+			},
+			// 点赞
 			doLike() {
 				this.$api.articles_zan(this.id).then(data => {
 					if (data && data.code === 200) {
@@ -368,7 +377,6 @@
 					}
 				})
 			},
-
 			async getDetail2() {
 				let content = FAIL_CONTENT
 				try{
@@ -402,7 +410,6 @@
 				this.listData = newItem;
 			},
 			getCommentList() {
-				console.log(comment);
 				this.commentList = comment;
 			},
 			share(name) {
@@ -437,11 +444,9 @@
 				});
 			},
 			onClick(index, item, fromTo) {
-				console.log(index, item);
 				if(item.icon == 'commet') {
 					this.scrollToComment();
 				} else if(item.icon == 'share'){
-					console.log(this.$refs);
 					if(fromTo == 'popup'){
 						this.$refs.popupMore.close();
 					}
@@ -474,16 +479,11 @@
 				this.options = tempArr;
 			},
 			// 收藏
-			doCollect() {
-				let tempArr = [];
-				for(let i = 0, len = this.popOperation.length; i < len; i++) {
-					let item = this.popOperation[i];
-					if(item.icon == 'collect') {
-						item.isCollect = !item.isCollect
-					}
-					tempArr[i] = Object.assign({}, item);
+			async doCollect() {
+				let data = await this.$api.articles_collect(this.id);
+				if (data && data.code === 200) {
+					this.detail.is_collected = data.result;
 				}
-				this.popOperation = tempArr;
 			},
 			// 滚动到评论区
 			scrollToComment(){

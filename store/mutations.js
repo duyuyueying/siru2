@@ -1,6 +1,6 @@
 
 const COLOR_THEME = 'COLOR_THEME'; // 存储币涨跌颜色状态。
-const USER_ID = 'USER_ID'; // 存储登录着的userid
+// const USER_ID = 'USER_ID'; // 存储登录着的userid
 const USER_INFO = 'USER_INFO'; // 存储登录者的info信息
 const API_TOKEN = 'API_TOKEN'; // 存储登录的token信息
 const PRICE_POSITION = 'PRICE_POSITION'; // 存储cny和usd哪个在上面显示
@@ -21,14 +21,25 @@ export default {
 	[PRICE_POSITION](state, position) {
 		state.pricePosition = position;
 	},
-	[USER_ID](state, userId) {
-		state.userId = userId;
-	},
+	// [USER_ID](state, userId) {
+	// 	state.userId = userId;
+	// },
+	// 登录信息
 	[USER_INFO](state, info) {
 		state.userInfo = info;
+		uni.setStorage({
+			key: USER_INFO,
+			data: info
+		});
 	},
+	// API token
 	[API_TOKEN](state, token) {
 		state.apiToken = token;
+		console.log(token);
+		uni.setStorage({
+			key:'api_token',
+			data: token
+		})
 	},
 	[FRONT_IMG](state, url) {
 		state.frontImg = url;

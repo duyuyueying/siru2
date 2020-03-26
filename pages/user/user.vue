@@ -125,34 +125,27 @@
 		},
 		onShow(){
 			/** 执行页面数据刷新的方法 */
-			this.init()
+			// this.init()
 		},
 		onLoad() {
-
+			this.init()
 		},
 		mounted() {
 		},
-		computed: mapState(['userId']),
+		computed: mapState(['userInfo', 'apiToken']),
 		methods: {
 			...mapMutations(['USER_INFO']),
 			init() {
-				this.userinfo = {}
-				this.orderTypeLise= defaultMessage;
-				this.checkInList = defaultCheckIn;
-				const api_token = uni.getStorageSync('api_token');
-				if (api_token) {
+				// this.apiToken
+				// const api_token = uni.getStorageSync('api_token');
+				if (this.apiToken) {
 					this.$api.user().then(data => {
 						if (data && data.code === 200) {
 							uni.setStorage({
 								key:'USER_ID',
 								data: data.result.id
 							})
-							uni.setStorage({
-								key: 'USER_INFO',
-								data: data.result
-							});
 							this.USER_INFO(data.result);
-							uni.setStorageSync('user_info',data.result);
 							this.userinfo = data.result
 							this.orderTypeLise=[
 								//name-标题 icon-图标 badge-角标
@@ -172,8 +165,8 @@
 							];
 						} else {
 							this.$message(data.msg)
-							uni.removeStorageSync('USER_ID')
-							uni.setStorageSync('user_info', null);
+							// uni.removeStorageSync('USER_ID')
+							// uni.setStorageSync('user_info', null);
 						}
 					})
 				}
@@ -187,7 +180,7 @@
 			},
 			//用户点击订单类型
 			toSign(index, item){
-				if(this.userId == null){
+				if(this.apiToken == null){
 					this.toLogin();
 					return
 				}
@@ -209,14 +202,6 @@
 				this.$refs.sign.close()
 			},
 			toLogin() {
-				uni.setStorage({
-					key: 'USER_ID',
-					data: null
-				})
-				uni.setStorage({
-					key: 'api_token',
-					data: null
-				})
 				uni.navigateTo({
 					url: '/pages/login/login'
 				})
@@ -224,7 +209,7 @@
 			//用户点击列表项
 			toPage(type){
 				let url = '';
-				if(this.userId == null){
+				if(this.apiToken == null){
 					this.toLogin();
 					return
 				}
@@ -285,9 +270,14 @@
 			}
 		},
 		watch:{
-			userId(e) {
-				console.log(e);
-				this.init()
+			apiToken(e){
+				if(e == null) {
+					this.userinfo = {}
+					this.orderTypeLise= defaultMessage;
+					this.checkInList = defaultCheckIn;
+				} else {
+					this.init()
+				}
 			}
 		}
 	}

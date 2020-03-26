@@ -52,7 +52,7 @@
 			uniPopup
 		},
 		onLoad() {
-			if(this.userId != null) {
+			if(this.apiToken != null) {
 				this.severList = LOGIN;
 			} else {
 				this.severList = LOGOUT;
@@ -60,7 +60,7 @@
 			this.calculateCache();
 		},
 		methods: {
-			...mapMutations(['USER_ID']),
+			...mapMutations(['API_TOKEN']),
 			//用户点击列表项
 			toPage(type){
 				let url = '';
@@ -162,21 +162,13 @@
 				this.$refs.logout.close();
 			},
 			sure() {
-				this.USER_ID(null);
-				uni.setStorage({
-					key: 'USER_ID',
-					data: null
-				})
-				uni.setStorage({
-					key: 'api_token',
-					data: null
-				})
+				this.API_TOKEN(null);
 				uni.navigateBack({
 					delta: 1
 				});
 			}
 		},
-		computed: mapState(['userId'])
+		computed: mapState(['apiToken'])
 	}
 </script>
 

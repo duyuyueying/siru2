@@ -1,10 +1,11 @@
 import MinRequest from './MinRequest';
+import store from '@/store/index';
 
 const minRequest = new MinRequest()
 
 // 请求拦截器
 minRequest.interceptors.request((request) => {
-    let api_token = uni.getStorageSync('api_token', '')
+    let api_token = uni.getStorageSync('api_token', '');
     if (request.data === undefined) {
         request.data = {}
     }
@@ -14,13 +15,21 @@ minRequest.interceptors.request((request) => {
 
 // 响应拦截器
 minRequest.interceptors.response((response) => {
+	console.log('=  ======', response.data, store.state);
+	if(response.data.code == 401 || response.data.code == 402) {
+		store.commit("USER_INFO", null);
+	}
+	console.log('=======22', store.state.userInfo);
     return response.data
 })
 
 // 设置默认配置
 minRequest.setConfig((config) => {
     let api_token = uni.getStorageSync('api_token', '')
-    config.baseURL = 'http://192.168.1.3:8182'
+	// 192.168.123.224
+	// 192.168.1.3 192.168.123.90
+	
+    config.baseURL = 'http://192.168.123.90:8182'
     config.header = {
         'content-type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -186,21 +195,28 @@ export default {
 		    return minRequest.get('/api/histories', data)
 		},
 		/**
-		 * 获取收藏
+		 * 添加浏览历史
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		get_history_add(id) {
+		    return minRequest.post('/api/histories', {article_id: id});
+		},
+		/**
+		 * 获取收藏列表
 		 * @param data
 		 * @returns {Promise | Promise<unknown>}
 		 */
 		get_collection(data) {
 		    return minRequest.get('/api/collections', data)
 		},
-		
 		/**
-		 * 获取收藏
+		 * 取消/收藏文章
 		 * @param data
 		 * @returns {Promise | Promise<unknown>}
 		 */
-		get_collection(data) {
-		    return minRequest.get('/api/collections', data)
+		articles_collect(id){
+			return minRequest.put('/api/articles/' + id + '/collect')
 		},
 		/**
 		 * 获取我的关注

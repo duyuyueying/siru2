@@ -5,9 +5,10 @@
 			console.log('App Launch');
 			let _this = this;
 			uni.getStorage({
-				key: 'USER_ID',
+				key: 'api_token',
 				success(e) {
-					_this.USER_ID(e.data);
+					console.log(e);
+					_this.API_TOKEN(e.data);
 				}
 			});
 			uni.getStorage({
@@ -36,7 +37,7 @@
 			console.log('App Hide')
 		},
 		methods:{
-			...mapMutations(['COLOR_THEME', 'USER_ID', 'USER_INFO','PRICE_POSITION']),
+			...mapMutations(['COLOR_THEME', 'API_TOKEN', 'USER_INFO','PRICE_POSITION']),
 		}
 	}
 </script>

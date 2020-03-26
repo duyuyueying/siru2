@@ -1,7 +1,7 @@
 <template>
 	<view class="live_item" @click="toPage(item.id)">
 		<view class="banner" auto-focus>
-			<image class="banner-img" src="https://img.36krcdn.com/20200307/v2_945dcd5d78514102a1e83a016bfbb2a6_img_000" mode="aspectFill"></image>
+			<image class="banner-img" :src="item.img_src" mode="aspectFill"></image>
 			<view class="title-area" style="{background-color: detail.status === '未开始' ? '#e44d66': '#aaa' }">
 				<view class="rotate_icon">
 					<icons type="down" color="#fff" size="45"></icons>
@@ -9,10 +9,11 @@
 			</view>
 		</view>
 		<view class="u-head">
-			<text class="u-head_title">{{item.title}}</text>
+			<text class="u-head_title">{{item.name}}</text>
 			<view class="flex_row sub_title_wrap">
-				<text class="u-head_time" style="color: #333">{{item.source}}</text>
-				<text class="u-head_time">{{startTime(item.time)}}</text>
+				<text class="list_item_normal_txt focus_color">视频</text>
+				<text class="u-head_time" style="color: #333">{{item.author.nickname}}</text>
+				<text class="u-head_time">{{startTime(item.create_time)}}</text>
 			</view>
 		</view>
 	</view>

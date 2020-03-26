@@ -2,21 +2,25 @@
     <view class="list_item_wrap" hover-class="hover">
 		<navigator url="/pages/author/author" class="link_wrapper flex1" hover-class="none">
 			<view class="img_wrapper">
-				<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
+				<image class="image-list1" :src="item.avatar_src!=''?item.avatar_src:'../../static/temp/avatar.jpeg'"></image>
 				<view class="icon_v" :style="{backgroundColor: identification != null ? identification.color: '#ccc'}"><text style="color:#fff;font-size: 20upx;">v</text></view>
 			</view>
 			
 			<view class="space_between flex_row flex1">
 				<view class="flex_column flex1 space_between">
 					<view class="flex_row" style="align-items: center;">
-						<text class="list_item_black_title_sm mr20">{{item&&item.name}}</text>
-						<text class="list_item_normal_txt" v-if="showIdentification && identification != null" :style="{color:identification != null ? identification.color: '#ccc'}">{{identification.name}}</text>
+						<text class="list_item_black_title_sm mr20">{{item.nickname}}</text>
+						<text class="list_item_normal_txt"
+							  v-if="showIdentification && identification != null"
+							  :style="{color:identification != null ? identification.color: '#ccc'}">
+							{{item.verify_name}}
+						</text>
 					</view>
 					<slot></slot>
-					<text class="list_item_normal_txt" v-if="showDetail">{{item.description}}</text>
+					<text class="list_item_normal_txt" v-if="showDetail">{{item.verify_name}}</text>
 				</view>
 				<view class="btn_wrapper">
-					<view  @tap.stop="focus" class="button" :class="{isFocus}"><text class="btn_txt" :style="{color: isFocus? '#999' :'#f39700' }">{{isFocus ? '已关注' : '+  关注'}}</text></view>
+					<view  @tap.stop="focus" class="button" :class="{isFocus}"><text class="btn_txt" :style="{color: isFocus? '#999' :'#f39700' }">{{item.is_follow ? '已关注' : '+  关注'}}</text></view>
 				</view>
 			</view>
 		</navigator>

@@ -139,8 +139,6 @@
 		onLoad(event) {
 			this.id = event.id;
 			this.getDetail();
-			// this.getListData();
-			// this.loadList('add');
 			let _this = this;
 			uni.getSystemInfo({
 				success(res) {
@@ -159,18 +157,15 @@
 							this.detail = data.result;
 						} else {
 							this.$message(data.msg, function () {
-								// uni.navigateBack({
-								// 	delta: 1
-								// });
+								uni.navigateBack({
+									delta: 1
+								});
 							})
 						}
 					})
 				} catch (e){
 
 				}
-			},
-			getListData(){
-				this.listData = newItem;
 			},
 			loadList(action) {
 				

@@ -70,14 +70,14 @@ export default {
         user() {
             return minRequest.get('/api/user')
         },
-		/**
-		 * 获取文章列表
-		 * @param articleId
-		 * @returns {Promise<unknown>}
-		 */
-		articles(data) {
-		    return minRequest.get('/api/articles', data)
-		},
+        /**
+         * 获取文章列表
+         * @param articleId
+         * @returns {Promise<unknown>}
+         */
+        articles(data) {
+            return minRequest.get('/api/articles', data)
+        },
         /**
          * 获取文章详情
          * @param articleId
@@ -91,32 +91,32 @@ export default {
          * @param id
          * @returns {Promise | Promise<unknown>}
          */
-        articles_good(id){
-            return minRequest.put('/api/articles/'+id+'/good')
+        articles_good(id) {
+            return minRequest.put('/api/articles/' + id + '/good')
         },
         /**
          * 文章消息利空
          * @param id
          * @returns {Promise | Promise<unknown>}
          */
-        articles_bad(id){
-            return minRequest.put('/api/articles/'+id+'/bad')
+        articles_bad(id) {
+            return minRequest.put('/api/articles/' + id + '/bad')
         },
         /**
          * 获取文章评论
          * @param articleId
-		 * @param data 
+         * @param data
          * @returns {Promise<unknown>}
          */
-        comments(articleId,data) {
-            return minRequest.get('/api/articles/' + articleId + '/comments',data)
+        comments(articleId, data) {
+            return minRequest.get('/api/articles/' + articleId + '/comments', data)
         },
         /**
          * 添加评论
          * @param data
          * @returns {Promise<unknown>}
          */
-        comments_add(data){
+        comments_add(data) {
             return minRequest.post('/api/comments', data)
         },
         /**
@@ -124,11 +124,31 @@ export default {
          * @param id
          * @returns {Promise | Promise<unknown>}
          */
-        comments_zan(id){
-            return minRequest.put('/api/comments/'+id+'/zan')
+        comments_zan(id) {
+            return minRequest.put('/api/comments/' + id + '/zan')
         },
-        comments_info(id,data) {
-            return minRequest.get('/api/comments/' + id + '/comment',data)
-        }
+        /**
+         * 获取评论详情页
+         * @param id
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        comments_info(id, data) {
+            return minRequest.get('/api/comments/' + id + '/comment', data)
+        },
+        /**
+         * 获取Banners
+         * @returns {Promise<unknown>}
+         */
+        banners() {
+            return minRequest.get('/api/banners')
+        },
+        /**
+         * 获取tabbar
+         * @returns {Promise | Promise<unknown>}
+         */
+        tabbars() {
+            return minRequest.get('/api/tabbars')
+        },
     }
 }

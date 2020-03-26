@@ -12,14 +12,23 @@
 			<view class="flex uni-tab__cart-sub-left">
 				<view v-for="(item,index) in options" :key="index" class="flex uni-tab__cart-button-left uni-tab__shop-cart" @click="onClick(index,item)">
 					<view class="uni-tab__icon">
-						<uni-icons :type="item.icon" size="20" :color="(item.icon == 'good' && item.isLike ) ? '#ffb011' : '#646566'"></uni-icons>
+						<uni-icons :type="item.icon" size="20" :color="(item.icon == 'good' && info.is_zan ) ? '#ffb011' : '#646566'"></uni-icons>
 					</view>
-					<view class="flex uni-tab__dot-box" v-if="item.icon != 'good'">
-						<text v-if="item.info" :class="{ 'uni-tab__dots': item.info > 9 }" class="uni-tab__dot ">{{ item.info }}</text>
+					<view class="flex uni-tab__dot-box" v-if="item.icon == 'good'">
+						<text v-if="info" class="invert_txt" :style="{color: (item.icon == 'good' && info.is_zan ) ? '#ffb011' : '#646566' }">{{info.zan}}</text>
+					</view>
+					<view class="flex uni-tab__dot-box" v-if="item.icon == 'commet'">
+						<text v-if="info" class="invert_txt">{{info.comments_count}}</text>
+					</view>
+					<!--<view class="flex uni-tab__dot-box" v-if="item.icon != 'good'">
+						<text v-if="item.info" :class="{ 'uni-tab__dots': item.info > 9 }" class="uni-tab__dot ">{{info.zan}}</text>
+					</view>
+					<view class="flex uni-tab__dot-box" v-else-if="item.icon == 'commet'">
+						<text v-if="info" class="invert_txt" style="#ffb011" >{{info.comments_count}}</text>
 					</view>
 					<view class="flex uni-tab__dot-box" v-else>
-						<text v-if="item.info" class="invert_txt" :style="{color: (item.icon == 'good' && item.isLike ) ? '#ffb011' : '#646566' }">{{ item.info }}</text>
-					</view>
+						<text v-if="info" class="invert_txt" :style="{color: (item.icon == 'good' && info.is_zan ) ? '#ffb011' : '#646566' }">{{info.zan}}</text>
+					</view>-->
 				</view>
 			</view>
 		</view>
@@ -78,7 +87,8 @@
 			fill: {
 				type: Boolean,
 				default: false
-			}
+			},
+			info: {}
 		},
 		methods: {
 			onClick(index, item) {

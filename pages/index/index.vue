@@ -40,29 +40,31 @@
 				class="nav-item"
 				:class="{current: index === tabCurrentIndex}"
 				:id="'tab'+index"
-				@click="changeTab(index)"
+				@click="changeTab(index,item)"
 			>{{item.name}}</view>
 		</scroll-view>
+
 		<!-- 下拉刷新组件 -->
 		<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 			<swiper
 				id="swiper"
 				class="swiper-box"
+				:scroll-y="enableScrollY"
 				:duration="300"
 				:current="tabCurrentIndex"
-				@change="changeTab"
 			>
 				<swiper-item v-for="(tabItem, index) in tabBars" :key="index">
 					<scroll-view
 						class="panel-scroll-box"
 						:scroll-y="enableScroll"
 						@scrolltolower="loadMore"
-						>
-						<!-- 最新tab内容 -->
-						<view class="main_news_section" v-if="tabItem.name == '最新'">
+					>
+						<!-- 最新/头条,id为top tab内容 -->
+						<view class="main_news_section" v-if="tabItem.id == 'top'">
 							<view class="banner_wrapper">
 								<swiper-banner :swiperList="bannerList" :autoplay="true"></swiper-banner>
 							</view>
+
 							<view class="import_news_wrapper" v-if="importNews.length > 0">
 								<view class="import_item" v-for="(item, index) in importNews" :key="index" @click="toPage(item.id, item.type)">
 									<view class="import_item_head">
@@ -82,6 +84,7 @@
 								<swiper-banner :swiperList="specialList" :autoplay="false" cornerMark="专题"></swiper-banner>
 							</view>
 						</view>
+
 						<!-- 关注头部 -->
 						<view v-if="tabItem.name == '关注'" class="row_wrap focus_head_tab_wrap">
 							<view class="flex_row_center">
@@ -96,19 +99,21 @@
 								<text class="list_item_more_black_txt">+订阅</text>
 							</view>
 						</view>
+
 						<!--
 							* 新闻列表
 							* 和nvue的区别只是需要把uni标签转为weex标签而已
 							* class 和 style的绑定限制了一些语法，其他并没有不同
 						-->
-							<view v-for="(item, index) in tabItem.newsList" :key="index" class="news-item">
-								<uni-vedio-list-item :item="item" v-if="tabItem.name == '视频'"></uni-vedio-list-item >
-								<tag-list-item :items="item" v-else-if="tabItem.name == '关注' && focusTabCurr == 1"></tag-list-item>
-								<person-list-item :item="item" v-else-if="tabItem.name == '关注' && focusTabCurr == 0" showDetail></person-list-item>
+							<view v-for="(item, index) in dataList" :key="index" class="news-item">
+								<uni-vedio-list-item :item="item" v-if="item.type == '3'"></uni-vedio-list-item >
+								<tag-list-item :items="item" v-else-if="category_id == 'follow' && focusTabCurr == 1"></tag-list-item>
+								<person-list-item :item="item" v-else-if="category_id == 'follow' && focusTabCurr == 0" showDetail></person-list-item>
 								<news-item :newsItem="item" v-else></news-item>
 							</view>
+
 						<!-- 上滑加载更多组件 -->
-						<mix-load-more :status="tabItem.loadMoreStatus"></mix-load-more>
+						<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
 					</scroll-view>
 				</swiper-item>
 			</swiper>
@@ -145,15 +150,25 @@
 		},
 		data() {
 			return {
-				tabCurrentIndex: 1, //当前选项卡索引
 				scrollLeft: 0, //顶部选项卡左滑距离
 				enableScroll: true,
-				tabBars: [],
 				importNewsListData: [], // 存放专题和新闻早八点之间的5条新闻
 				specialList: [], // 专栏图片
-				bannerList: [], // banner图片
 				importNews: [], // 存放新闻早八点、专题的两条新闻
 				focusTabCurr: 0, // 存放关注页面【作者|标签】的tab
+
+				dataList:[],
+				tabCurrentIndex: 1, //当前选项卡索引
+				tabBars: [],
+				bannerList: [], // banner图片
+				category_id: 'top',
+				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
+				enableScrollY: true,
+				refreshing: false, // 刷新状态
+				pageNum: 1,
+				total: 0,
+				pageSize: 8,
+				lastPage: 1,
 			}
 		},
 		computed: {
@@ -166,10 +181,22 @@
 				return `/pages/details/details?data=${JSON.stringify(data)}`;
 			}
 		},
-		async onLoad() {
+		onShow() {
+			//重新加载当前类型文章
+			this.loadNewsList('add');
+		},
+		onLoad() {
 			// 获取屏幕宽度
 			windowWidth = uni.getSystemInfoSync().windowWidth;
+
+			//加载bannaer
+			this.loadBanners();
+			//加载tabbar
 			this.loadTabbars();
+			//初始化新闻列表
+			this.dataList = [];
+			this.pageNum = 1;
+			this.loadMoreStatus = 0;
 		},
 		onReady(){
 			/**
@@ -193,158 +220,39 @@
 			// this.$refs.mixAdvert.initAdvert();
 			// #endif
 		},
+		watch: {
+			category_id: function (val, oldVal) {
+				console.log("分类改变了")
+				this.loadNewsList('refresh')
+			}
+		},
 		methods: {
 			/**
 			 * 数据处理方法在vue和nvue中通用，可以直接用mixin混合
 			 * 这里直接写的
 			 * mixin使用方法看index.nuve
 			 */
-			//获取分类
+
+			//获取Banner
+			loadBanners() {
+				this.$api.banners().then(data => {
+					if (data && data.code === 200) {
+						this.bannerList = data.result;
+						// this.specialList = data.result;
+					} else {
+					}
+				})
+			},
+			//获取Tabbar
 			loadTabbars(){
-				this.$http.get('/api/categories').then(res=>{
-					// debugger;
-					if (res && res.code === 200) {
-						let tabList = res.result;
-						tabList.unshift({name: '关注'},{name:'热门'});
-						tabList.forEach(item=>{
-							item.newsList = [];
-							item.loadMoreStatus = 0;  //加载更多 0加载前，1加载中，2没有更多了
-							item.refreshing = 0;
-						})
-						this.tabBars = tabList;
-						this.loadNewsList('add');
+				this.$api.tabbars().then(data=>{
+					if (data && data.code === 200) {
+						this.tabBars = data.result;
 					}
 				})
 			},
-			//新闻列表
-			loadNewsList(type){
-				let tabItem = this.tabBars[this.tabCurrentIndex];
-				//type add 加载更多 refresh下拉刷新
-				if(type === 'add'){
-					if(tabItem.loadMoreStatus === 2){
-						return;
-					}
-					tabItem.loadMoreStatus = 1;
-				}
-				// #ifdef APP-PLUS
-				else if(type === 'refresh'){
-					tabItem.refreshing = true;
-				}
-				// #endif
-				//setTimeout模拟异步请求数据
-				setTimeout(()=>{
-					let list = [];
-					if(tabItem.name === '关注') {
-						if(this.focusTabCurr === 0) {
-							// 构造是否关注的数据
-							list = focusAuthors.map(item=>Object(item, {isFocus: false}));
-						} else {
-							let tempTags = [].concat(tags);
-							let tempArr = [];
-							for (let i = 0, j = 0, tagsLen = tempTags.length; i < tagsLen; i += 2, j++) {
-								tempArr[j] = tempTags.splice(0, 2)
-							 }
-							list = tempArr;
-						}
-					} else if(tabItem.name === '最新'){
-						this.specialList = banner;
-						this.bannerList = banner;
-						this.importNewsListData = newItem;
-						this.importNews=[{
-							source: '新华社', // 来源/require
-							time: '08:08', // 时间/require
-							author_name: '王大仙', // 作者，非必须
-							live: false, // 是否直播类型资讯
-							recommend: false, // 是否是推广类资讯
-							onlyOne: false, // 是否是独家资讯
-							depth: false, // 是否是深度类型资讯
-							coins: [{
-								startPrice: '1000',
-								endPrice: '1035',
-							}],
-							detail: '面对这一场世所罕见、突如其来、异常凶猛的新冠肺炎疫情，习近平总书记始终把人民生命安全和身体健康放在第一位，带领全党全军全国人民沉着应对危机、果断处置危机、科学防控危机，忧人民之所忧、想人民之所想，及时制定疫情防控战略策略，凝聚起全中国人民奋起抗疫的磅礴力量。'
-						}, {
-							source: '新华社', // 来源/require
-							time: '08:08', // 时间/require
-							author_name: '王大仙', // 作者，非必须
-							live: false, // 是否直播类型资讯
-							recommend: false, // 是否是推广类资讯
-							onlyOne: false, // 是否是独家资讯
-							depth: false, // 是否是深度类型资讯
-							coins: [{
-								startPrice: '1000',
-								endPrice: '1035',
-							}],
-							type: 'specialTopic',
-							detail: '面对这一场世所罕见、突如其来、异常凶猛的新冠肺炎疫情，习近平总书记始终把人民生命安全和身体健康放在第一位，带领全党全军全国人民沉着应对危机、果断处置危机、科学防控危机，忧人民之所忧、想人民之所想，及时制定疫情防控战略策略，凝聚起全中国人民奋起抗疫的磅礴力量。'
-						}];
-						list = newsItems;
-					}else{
-						list = newsItems;
-					}
-					/**
-					 *  请求分类下的新闻列表
-					 */
-					this.$http.get("/api/articles", {category_id: tabItem.id}).then(response => {
-						if (response.code === 200) {
-							list = response.result
-						}
-					})
-					list.sort((a,b)=>{
-						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
-					})
-					if(type === 'refresh'){
-						tabItem.newsList = []; //刷新前清空数组
-					}
-					list.forEach(item=>{
-						item.id = parseInt(Math.random() * 10000);
-						tabItem.newsList.push(item);
-					})
-					//下拉刷新 关闭刷新动画
-					if(type === 'refresh'){
-						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-						// #ifdef APP-PLUS
-						tabItem.refreshing = false;
-						// #endif
-						tabItem.loadMoreStatus = 0;
-					}
-					//上滑加载 处理状态
-					if(type === 'add'){
-						tabItem.loadMoreStatus = tabItem.newsList.length > 40 ? 2: 0;
-					}
-				}, 600)
-
-			},
-			// 新闻详情
-			navToDetails(item){
-				let data = {
-					id: item.id,
-					title: item.title,
-					author: item.author,
-					time: item.time
-				}
-				let url = item.videoSrc ? 'videoDetails' : 'details';
-
-				uni.navigateTo({
-					url: `/pages/details/${url}?data=${JSON.stringify(data)}`
-				})
-			},
-			// 下拉刷新
-			onPulldownReresh(){
-				this.loadNewsList('refresh');
-			},
-			//上滑加载
-			loadMore(){
-				this.loadNewsList('add');
-			},
-			//设置scroll-view是否允许滚动，在小程序里下拉刷新时避免列表可以滑动
-			setEnableScroll(enable){
-				if(this.enableScroll !== enable){
-					this.enableScroll = enable;
-				}
-			},
-			//tab切换
-			async changeTab(e){
+			//切换Tabbar
+			async changeTab(e,item){
 				if(scrollTimer){
 					//多次切换只执行最后一次
 					clearTimeout(scrollTimer);
@@ -390,11 +298,80 @@
 					//第一次切换tab，动画结束后需要加载数据
 					let tabItem = this.tabBars[this.tabCurrentIndex];
 					if(tabItem.loaded !== true){
-						this.loadNewsList('add');
+						// this.loadNewsList('add');
 						tabItem.loaded = true;
 					}
 				}, 300)
 
+				this.category_id = item.id
+			},
+			loadNewsList(action){
+				console.log("请求文章:"+this.category_id)
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					this.dataList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+
+				console.log("status:"+this.loadMoreStatus)
+				if (this.loadMoreStatus==0) {
+					this.loadMoreStatus = 1;
+					this.$api.articles({
+						category_id: this.category_id,
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+					}).then(data => {
+						if (data && data.code === 200) {
+							console.log(this.pageNum)
+
+							const result = data.result.data
+							this.total = data.result.total
+							this.lastPage = data.result.last_page
+							this.dataList.push(...result);
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						} else {
+							this.$message(data.msg)
+						}
+					})
+				}
+			},
+			// 下拉刷新
+			onPulldownReresh(){
+				this.loadNewsList('refresh');
+			},
+			//上滑加载
+			loadMore(){
+				this.loadNewsList('add');
+			},
+
+			// 新闻详情
+			navToDetails(item){
+				let data = {
+					id: item.id,
+					title: item.title,
+					author: item.author,
+					time: item.time
+				}
+				let url = item.videoSrc ? 'videoDetails' : 'details';
+
+				uni.navigateTo({
+					url: `/pages/details/${url}?data=${JSON.stringify(data)}`
+				})
+			},
+
+			//设置scroll-view是否允许滚动，在小程序里下拉刷新时避免列表可以滑动
+			setEnableScroll(enable){
+				if(this.enableScroll !== enable){
+					this.enableScroll = enable;
+				}
 			},
 			//获得元素的size
 			getElSize(id) {

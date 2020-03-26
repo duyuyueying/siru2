@@ -1,15 +1,15 @@
 <template>
     <view class="media-item view list_item_wrap" @click="gotoDetail(newsItem.id, newsItem.type)">
 		<view class="content_wrapper">
-			<text class="media-title list_item_black_title_base">{{newsItem.title}}</text>
+			<text class="media-title list_item_black_title_base">{{newsItem.name}}</text>
 			<view class="media-info flex-row">
 				<text v-if="newsItem.live && showTag" class="list_item_normal_txt focus_color right_space_base">直播</text>
 				<text v-if="newsItem.recommend && showTag" class="list_item_normal_txt focus_color right_space_base">推广</text>
 				<text v-if="newsItem.onlyOne && showTag" class="list_item_normal_txt focus_color right_space_base">独家</text>
 				<text v-if="newsItem.depth && showTag" class="list_item_normal_txt focus_color right_space_base">深度</text>
 				<text class="list_item_normal_txt right_space_base" v-if="showSource">来源</text>
-				<text class="list_item_normal_txt right_space_base" v-if="newsItem.author_name && showAuthor">{{newsItem.author_name}}</text>
-				<text class="list_item_normal_txt right_space_base">{{friendlyDate(newsItem.time || newsItem.datetime)}}</text>
+				<text class="list_item_normal_txt right_space_base" v-if="newsItem.author.nickname && showAuthor">{{newsItem.author.nickname}}</text>
+				<text class="list_item_normal_txt right_space_base">{{friendlyDate(date2tamp(newsItem.create_time))}}</text>
 				<!-- 为了样式只取一条放在listitem -->
 				<view v-if="(newsItem.coins && (newsItem.coins.length > 0)) && showCoins">
 					<mark-view 
@@ -22,21 +22,24 @@
 		</view>
 		<view class="img_wrapper" v-if="showImg">
 			<image class="image"
-				v-if="newsItem.image_url" :src="newsItem.image_url" mode="aspectFill"></image>
+				v-if="newsItem.img_src" :src="newsItem.img_src" mode="aspectFill"></image>
 		</view>
     </view>
 </template>
 
 <script>
 	import markView from '@/components/markView.vue';
-	import {friendlyDate} from '@/common/util.js';
+	import {friendlyDate,date2tamp} from '@/common/util.js';
     export default {
         props: {
             newsItem: {
                 type: Object,
                 default: function(e) {
                     return {}
-                }
+                },
+				author:{
+					nickname:''
+				}
             },
 			// 是否需要展示图片
 			showImg: {
@@ -67,7 +70,7 @@
 		components:{
 			markView
 		},
-		mixins:[friendlyDate],
+		mixins:[friendlyDate,date2tamp],
 		created() {
 		},
         methods: {

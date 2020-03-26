@@ -5,8 +5,8 @@
 	  next-margin="10px"
 	  interval="5000" duration="500">
 		<swiper-item v-for="(item,index) in swiperList" :key="index" :class="cardCur==index?'cur':''" class="banner_item">
-			<view class="swiper-item" @click="onClick(item.id, item.type)">
-				<image :src="item.url" mode="aspectFill" class="swiper_img"></image>
+			<view v-if="item.img_src" class="swiper-item" @click="onClick(item)">
+				<image :src="item.img_src" mode="aspectFill" class="swiper_img"></image>
 				<view class="cornerMark" v-if="cornerMark"><text class="cornerMark_txt">{{cornerMark}}</text></view>
 			</view>
 		</swiper-item>
@@ -42,17 +42,16 @@
 			console.log('======',this.swiperList);
 		},
 		methods:{
-			onClick(id, type) {
-				
-				if(type === 'specialTopic' || this.cornerMark) {
-					uni.navigateTo({
-						url:'/pages/specialTopic/specialTopic?id='+id
-					})
-				} else {
-					uni.navigateTo({
-						url:'/pages/details/details?id='+id
-					})
-				}
+			onClick(item) {
+				// if(item.type === 'specialTopic' || this.cornerMark) {
+				// 	uni.navigateTo({
+				// 		url:'/pages/specialTopic/specialTopic?id='+item.id
+				// 	})
+				// } else {
+				// 	uni.navigateTo({
+				// 		url:'/pages/details/details?id='+item.id
+				// 	})
+				// }
 				
 			}
 		}

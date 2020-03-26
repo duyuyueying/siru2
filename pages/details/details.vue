@@ -1,12 +1,12 @@
 <template>
 	<view class="detail_page container">
-		<view v-if="isVideo">
+		<view v-if="isVideo&&detail.video_src!=''">
 			<view class="video-wrapper">
 				<video 
 					class="video"
-					src="https://dcloud-img.oss-cn-hangzhou.aliyuncs.com/guide/uniapp/%E7%AC%AC1%E8%AE%B2%EF%BC%88uni-app%E4%BA%A7%E5%93%81%E4%BB%8B%E7%BB%8D%EF%BC%89-%20DCloud%E5%AE%98%E6%96%B9%E8%A7%86%E9%A2%91%E6%95%99%E7%A8%8B@20181126.mp4" 
+					:src="detail.video_src"
 					controls
-					poster="https://img.36krcdn.com/20200307/v2_945dcd5d78514102a1e83a016bfbb2a6_img_000"
+					:poster="detail.img_src"
 					objectFit="fill"
 					:autoplay="false"
 				></video>
@@ -14,15 +14,15 @@
 		</view>
 		<view class="banner" auto-focus>
 			<view class="title-area">
-				<text class="title-text">{{detail.title}}</text>
+				<text class="title-text">{{detail.name}}</text>
 			</view>
 		</view>
 		<person-list-item  v-if="detail.author" :item="detail.author" showIdentification >
 			<view class="txt_wrapper">
-				<text class="txt mr20">{{friendlyDate(detail.time)}}</text>
+				<text class="txt mr20">{{friendlyDate(date2tamp(detail.create_time))}}</text>
 				<view class="flex_row ">
-					<icons type="fire" color="#a0a0a0"></icons>
-					<text class="txt"> {{detail.hot}}</text>
+					<icons type="fire" :color="detail.number > 100 ? '#ff7900':'#a0a0a0'"></icons>
+					<text class="txt"> {{detail.number}}</text>
 				</view>
 			</view>
 		</person-list-item>
@@ -43,8 +43,8 @@
 				<text class="txt helper_txt">{{helper.hepler[0]}}</text><text class="txt link_txt">{{helper.hepler[1]}}</text>
 			</view>
 			<view class="flex_row author_wrapper">
-				<text class="txt mr20">本文作者：{{detail.author_name}}</text>
-				<text class="txt">责任编辑：{{detail.author_name}}</text>
+				<text class="txt mr20" v-if="detail.author">本文作者：{{detail.author.nickname}}</text>
+<!--				<text class="txt">责任编辑：{{detail.author_name}}</text>-->
 			</view>
 			<view>
 				<text class="txt">{{helper.announce1}}</text>
@@ -62,6 +62,7 @@
 				</view>
 			</view>
 		</view>
+
 		<section-head title="相关阅读"></section-head>
 		<view class="list_wrapper">
 			<news-item :newsItem="item" @click="goDetail(item)" v-for="(item, index) in listData" :key="index"></news-item>
@@ -69,14 +70,37 @@
 		<view class="announce_wrapper">
 			<text class="txt">{{helper.announce2}}</text>
 		</view>
-		<section-head title="评论" ref="commentBox" class="comment-title-wrap"></section-head>
+
+		<section-head title="评论" ref="commentBox" class="comment-title-wrap">
+			<view @click="loadList('refresh')"><text class="normal_txt">刷新</text></view>
+		</section-head>
 		<view class="comment-wrap">
-			<comment-item v-for="(item, index) in commentList" :key="index" :item="item"></comment-item>
+
+			<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+				<scroll-view
+						class="panel-scroll-box"
+						:scroll-y="enableScrollY"
+						@scrolltolower="loadMore"
+						style="height: 100vh"
+				>
+					<comment-item v-for="(item, index) in commentList" :key="index" :item="item"></comment-item>
+					<!-- 上滑加载更多组件 -->
+					<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
+				</scroll-view>
+			</mix-pulldown-refresh>
 		</view>
+
 		<!-- 底部操作 -->
 		<view class="fixed">
-			<uni-bottom-comment :options="options" @buttonClick="showReply" @clickItem="onClick" :commentCount="detail.comment" :likeCount="detail.like"></uni-bottom-comment>
+			<uni-bottom-comment :options="options"
+								@buttonClick="showReply(detail.id)"
+								@clickItem="onClick"
+								:info="detail"
+			>
+
+			</uni-bottom-comment>
 		</view>
+
 		<uni-popup ref="popup" type="bottom">
 			<uni-title title="分享到" :isBold="false"></uni-title>
 			<view class="popShare_wrapper flex_row">
@@ -86,8 +110,10 @@
 				</view>
 			</view>
 		</uni-popup>
+
 		<!-- 更多弹出框 -->
 		<uni-popup ref="popupMore" type="bottom">
+
 			<view v-if="showQuotations" style="backgroundColor: #f5f5f5;">
 				<uni-title title="相关行情" :isBold="false"></uni-title>
 				<uni-self-dish-table-head>
@@ -98,6 +124,7 @@
 				</scroll-view>
 				<view class="popupMore_btn" @click="changFlag"><text class="popupMore_btn_txt">取消</text></view>
 			</view>
+
 			<view style="backgroundColor: #f5f5f5;" v-else>
 				<view class="slider_wrap flex_row">
 					<text class="list_item_black_txt sm">A</text>
@@ -128,7 +155,7 @@
 	import newsItem from '@/components/list-item/news-item.vue';
 	import sectionHead from '@/components/sectionHead.vue';
 	import commentItem from '@/pages/comment/comment_item.vue';
-	import {friendlyDate} from '@/common/util.js';
+	import {friendlyDate, date2tamp, loadMore} from '@/common/util.js';
 	import markView from '@/components/markView.vue';
 	import {detailText, platform} from  '@/common/config.js';
 	import {newItem,comment,oneNews, coins} from '@/mock/data.js';
@@ -187,14 +214,9 @@
 	export default {
 		data() {
 			return {
-				id: '', // 文章id
 				banner: {},
-				content: [],
-				detail: {},
-				helper: detailText ,// 声明，及帮助文档
 				sharePlatform: platform, // 分享平台
 				listData: [], // 相关阅读列表
-				commentList: [], //评论列表
 				options: OPTIONS,
 				scrollFlag: 0, // 滚动标准，为true滚动到评论区，false滚动到顶部
 				screenWidth: 0,
@@ -202,11 +224,25 @@
 				fontSize: 34,
 				showQuotations: false, // 控制是否显示操作栏内的行情的开关
 				coins: coins,
-				isVideo: false, // 是否是video类型的新闻
 				// data: {},
+
+
+				id: '', // 文章id
+				isVideo: false, // 是否是video类型的新闻
+				content: [],
+				detail: {},
+				helper: detailText ,// 声明，及帮助文档
+				commentList: [], //评论列表
+				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
+				enableScrollY: true,
+				refreshing: false, // 刷新状态
+				pageNum: 1,
+				total: 0,
+				pageSize: 8,
+				lastPage: 1,
 			}
 		},
-		mixins:[friendlyDate],
+		mixins:[friendlyDate, date2tamp, loadMore],
 		components:{
 			personListItem,
 			markView,
@@ -226,7 +262,23 @@
 				path: '/pages/detail/detail?query=' + JSON.stringify(this.banner)
 			}
 		},
+		onShow(){
+			this.loadList('refresh');
+		},
 		onLoad(event) {
+			this.id = event.id;
+			this.isVideo = !!event.type
+
+			let _this = this;
+			this.getDetail();
+			// this.getListData();	//相关
+			uni.getSystemInfo({
+				success(res) {
+					_this.screenWidth = res.screenWidth;
+				}
+			});
+		},
+		onLoad2(event) {
 			this.id = event.id;
 			this.isVideo = !!event.type 
 			let _this = this;
@@ -242,6 +294,75 @@
 		},
 		methods: {
 			async getDetail() {
+				let content = FAIL_CONTENT
+				try{
+					this.$api.article_info(this.id).then(data => {
+						if (data && data.code === 200) {
+							const nodes = htmlParser(data.result.content);
+							this.content = nodes;
+							this.detail = data.result;
+						} else {
+							this.$message(data.msg, function () {
+								uni.navigateBack({
+									delta: 1
+								});
+							})
+						}
+					})
+				} catch (e){
+
+				}
+			},
+			//评论列表
+			loadList(action) {
+
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					this.commentList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+
+				console.log("status:"+this.loadMoreStatus)
+				if (this.loadMoreStatus==0) {
+					this.loadMoreStatus = 1;
+					this.$api.comments(this.id,{
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+					}).then(data => {
+						if (data && data.code === 200) {
+							console.log(this.pageNum)
+
+							const result = data.result.data
+							this.total = data.result.total
+							this.lastPage = data.result.last_page
+							this.commentList.push(...result);
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						} else {
+							this.commentList = [];
+							this.$message(data.msg)
+						}
+					})
+				}
+				// this.commentList = comment;
+				// this.$api.comments(this.id).then(data => {
+				// 	if (data && data.code === 200) {
+				// 		this.commentList = data.result;
+				// 	} else {
+				// 		this.commentList = [];
+				// 	}
+				// })
+			},
+
+
+			async getDetail2() {
 				let content = FAIL_CONTENT
 				try{
 					let result = await getNormalNewsDetail('5299102');
@@ -303,9 +424,9 @@
 				
 			},
 			// 去回复页面
-			showReply(){
+			showReply(id){
 				uni.navigateTo({
-					url:'./reply'
+					url:'/pages/details/reply?article_id='+id
 				});
 			},
 			onClick(index, item, fromTo) {

@@ -103,6 +103,14 @@ export default {
             return minRequest.put('/api/articles/' + id + '/bad')
         },
         /**
+         * 文章点赞
+         * @param id
+         * @returns {Promise | Promise<unknown>}
+         */
+        articles_zan(id) {
+            return minRequest.put('/api/articles/' + id + '/zan')
+        },
+        /**
          * 获取文章评论
          * @param articleId
          * @param data
@@ -149,6 +157,17 @@ export default {
          */
         tabbars() {
             return minRequest.get('/api/tabbars')
+        },
+        follows(){
+
+        },
+        /**
+         * 取消/关注用户
+         * @param id
+         * @returns {Promise | Promise<unknown>}
+         */
+        follows_add(id) {
+            return minRequest.put('/api/users/' + id + '/follow')
         },
     }
 }

@@ -109,7 +109,7 @@
 			},
 			toOneComment(comment_id, article_id) {
 				uni.navigateTo({
-					url: "/pages/comment/one_comment?commentId="+comment_id+"&articaleId="+article_id
+					url: "/pages/comment/one_comment?commentId="+comment_id+"&articleId="+article_id
 				});
 			}
         },

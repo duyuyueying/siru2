@@ -126,6 +126,9 @@ export default {
          */
         comments_zan(id){
             return minRequest.put('/api/comments/'+id+'/zan')
+        },
+        comments_info(id,data) {
+            return minRequest.get('/api/comments/' + id + '/comment',data)
         }
     }
 }

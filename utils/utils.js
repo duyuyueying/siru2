@@ -8,9 +8,17 @@ export function showMsg(msg, callback, time) {
     time = time || 2000
     callback = callback || function () {
     }
-
+	let icon = 'success', title = '';
+	if(typeof msg === 'string') {
+		title = msg;
+	}
+	if(typeof msg == 'object'){
+		icon = msg.icon || 'none';
+		title = msg.title;
+	}
     uni.showToast({
-        title: msg,
+		icon,
+        title
     });
 
     setTimeout(function () {

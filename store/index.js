@@ -10,9 +10,10 @@ const state = {
   downTheme: {txt: '#e54d42', bg: '#fadbd9'},
   pricePosition: 'CNYUP',
   userId: null,
+  userInfo: null,
   apiToken: null,
   frontImg: null,
-  backImg: null
+  backImg: null,
 }
 
 export default new Vuex.Store({

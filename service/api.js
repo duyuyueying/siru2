@@ -70,6 +70,13 @@ export default {
         user() {
             return minRequest.get('/api/user')
         },
+		/**
+		 * 修改用户信息
+		 * @returns {Promise<unknown>}
+		 */
+		user_modify() {
+		    return minRequest.put('/api/users')
+		},
         /**
          * 获取文章列表
          * @param articleId
@@ -150,5 +157,47 @@ export default {
         tabbars() {
             return minRequest.get('/api/tabbars')
         },
+		
+		/**
+		 * 获取浏览历史
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		get_history(data) {
+		    return minRequest.get('/api/histories', data)
+		},
+		/**
+		 * 获取收藏
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		get_collection(data) {
+		    return minRequest.get('/api/collections', data)
+		},
+		
+		/**
+		 * 获取收藏
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		get_collection(data) {
+		    return minRequest.get('/api/collections', data)
+		},
+		/**
+		 * 获取我的关注
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		get_follows(data) {
+		    return minRequest.get('/users/follows', data)
+		},
+		/**
+		 * 获取我的粉丝
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		get_fans(data) {
+		    return minRequest.get('/users/fans', data)
+		},
     }
 }

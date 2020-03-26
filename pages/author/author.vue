@@ -83,8 +83,9 @@
 </template>
 
 <script>
+	import {mapState} from 'vuex';
 	import {focusAuthor, newsItems} from '@/mock/data.js';
-	import  {identification} from '@/common/config.js';
+	import {identification} from '@/common/config.js';
 	import tabs from '@/components/tabs.vue';
 	import uniTitle from '@/components/uni-title.vue';
 	import newsItem from '@/components/list-item/news-item.vue';
@@ -114,24 +115,31 @@
 			icons,
 			uniPopup
 		},
-		onLoad() {
+		onLoad(query) {
 			this.iStatusBarHeight  = uni.getSystemInfoSync().statusBarHeight;
 			this.identification = identification[this.data.identification];
+			this.type = query.type;
 			this.loadList('add');
+			this.modifyStatusBarButtonStyle();
+			if(this.type == 'self') {
+				this.data = this.userInfo;
+				console.log(this.userInfo);
+			} else {
+				console.log('请求接口去');
+			}
 			uni.setNavigationBarTitle({
-				title: this.data.name
+				title: this.data.nickname
 			});
 		},
 		onShareAppMessage() {
 			console.log('分享...');
 		},
 		onNavigationBarButtonTap(e) {
-			if(e.text == '关注') {
+			if(this.type == 'self' && e.index == 1) {
 				uni.navigateTo({
 					url: '/pages/user/userEdit'
 				})
 			}
-			console.log(e);
 		},
 		mounted() {
 			this.getElSize();
@@ -143,6 +151,7 @@
 				this.enableScrollY = false;
 			}
 		},
+		computed: mapState(['userInfo']),
 		methods: {
 			//列表
 			loadList(type){
@@ -239,6 +248,19 @@
 			},
 			close() {
 				this.$refs.sign.close();
+			},
+			// 修改状态栏上的buton的文字样式
+			modifyStatusBarButtonStyle() {
+				if(this.type == 'self') {
+					// #ifdef APP-PLUS  
+					var webView = this.$mp.page.$getAppWebview();  
+					// 修改buttons  
+					// index: 按钮索引, style {WebviewTitleNViewButtonStyles }  
+					webView.setTitleNViewButtonStyle(1, {  
+					    text: '编辑',  
+					}); 
+					 // #endif
+				}
 			}
 		}
 	}

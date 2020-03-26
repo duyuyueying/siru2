@@ -70,7 +70,8 @@
 			coinListItem,
 			inviteListItem,
 			messageItem,
-			messageServerItem
+			messageServerItem,
+			
 		},
 		props: {
 			nid: {
@@ -92,6 +93,10 @@
 				isFocus: false, // 是否被关注
 				swiperHeight: 0,
 				loadMoreStatus: 0,
+				pageNum: 1,
+				pageSize: 15,
+				total: 0,
+				lastPage: 1,
 			}
 		},
 		onLoad(e) {
@@ -112,70 +117,145 @@
 		},
 		methods: {
 			//列表
-			loadList(type){
+			async loadList(action){
+				
+				if (action=='refresh') {
+					this.dataList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+				
+				console.log("status:"+this.loadMoreStatus)
+				if (this.loadMoreStatus==0) {
+					this.loadMoreStatus = 1;
+					let options = {
+						type: 2,
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+					};
+					console.log(this.type);
+					// 	if(this.type == 'invite') {
+					// 		list = focusAuthors;
+					// 	}
+					// 	if(this.type === 'focus'){
+					// 		let temp = [].concat(focusAuthors);
+					// 		list = temp.map((item)=>{return Object.assign({},item, {isFocus: true})});
+					// 	}
+					// 	if(this.type === 'fans' || this.type == 'systemMessage') {
+					// 		list = focusAuthors;
+					// 	}
+					// 	if(this.type == 'replyMe' || this.type == 'likeMe' || this.type == 'focusMe'){
+					// 		list = focusAuthors;
+					// 	}
+					// 	if(this.type === 'myCollect' || this.type === 'history') {
+					// 		list = newsItems;
+					// 	}
+					let data = null;
+					switch(this.type) {
+						case 'myCollect':
+							data = await this.$api.get_collection(options);
+							break;
+						case 'history':
+							data = await this.$api.get_history(options);
+							break;
+						case 'fans':
+							data = await this.$api.get_fans(options);
+							break;
+						case 'focus':
+							data = await this.$api.get_follows(options);
+							break;
+					}
+					
+					// let data = await this.$api.get_history(options);
+					
+				// 	this.$api.articles({
+				// 		type: 2,
+				// 		pageNum: this.pageNum,
+				// 		pageSize: this.pageSize,
+				// 	}).then(data => {
+						if (data && data.code === 200) {
+							console.log(this.pageNum)
+				
+							const result = data.result.data
+							this.total = data.result.total
+							this.lastPage = data.result.last_page
+							this.dataList.push(...result);
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						} else {
+							this.$message(data.msg)
+						}
+				// 	})
+				}
 				// let tabItem = this.tabBars[this.currTab];
 				//type add 加载更多 refresh下拉刷新
-				if(type === 'add'){
-					if(this.loadMoreStatus === 2){
-						return;
-					}
-					this.loadMoreStatus = 1;
-				}
-				// #ifdef APP-PLUS
-				else if(type === 'refresh'){
-					this.refreshing = true;
-				}
+				// if(type === 'add'){
+				// 	if(this.loadMoreStatus === 2){
+				// 		return;
+				// 	}
+				// 	this.loadMoreStatus = 1;
+				// }
+				// // #ifdef APP-PLUS
+				// else if(type === 'refresh'){
+				// 	this.refreshing = true;
+				// }
 				// #endif
 				
 				//setTimeout模拟异步请求数据
-				setTimeout(()=>{
-					let list;
-					if(this.type === 'coin') {
-						list = goldList;
-					}
-					if(this.type == 'invite') {
-						list = focusAuthors;
-					}
-					if(this.type === 'focus'){
-						let temp = [].concat(focusAuthors);
-						list = temp.map((item)=>{return Object.assign({},item, {isFocus: true})});
-					}
-					if(this.type === 'fans' || this.type == 'systemMessage') {
-						list = focusAuthors;
-					}
-					if(this.type == 'replyMe' || this.type == 'likeMe' || this.type == 'focusMe'){
-						list = focusAuthors;
-					}
-					if(this.type === 'myCollect' || this.type === 'history') {
-						list = newsItems;
-					}
-					console.log(this.type);
-					list.sort((a,b)=>{
-						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
-					})
-					if(type === 'refresh'){
-						// 刷新前清空数组
-						this.dataList = [];
-					}
-					let tempArr = [];
-					list.forEach(item=>{
-						item.id = parseInt(Math.random() * 10000);
-						tempArr.push(item);
-					});
-					this.dataList.push(...tempArr);
-					//下拉刷新 关闭刷新动画
-					if(type === 'refresh'){
-						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-						// #ifdef APP-PLUS
-						this.refreshing = false;
-						// #endif
-						this.loadMoreStatus = 0;
-					}
-					//上滑加载 处理状态
-					if(type === 'add'){
-						this.loadMoreStatus = this.dataList.length > 40 ? 2: 0;
-					}
-				}, 600)
+				// setTimeout(()=>{
+				// 	let list;
+				// 	if(this.type === 'coin') {
+				// 		list = goldList;
+				// 	}
+				// 	if(this.type == 'invite') {
+				// 		list = focusAuthors;
+				// 	}
+				// 	if(this.type === 'focus'){
+				// 		let temp = [].concat(focusAuthors);
+				// 		list = temp.map((item)=>{return Object.assign({},item, {isFocus: true})});
+				// 	}
+				// 	if(this.type === 'fans' || this.type == 'systemMessage') {
+				// 		list = focusAuthors;
+				// 	}
+				// 	if(this.type == 'replyMe' || this.type == 'likeMe' || this.type == 'focusMe'){
+				// 		list = focusAuthors;
+				// 	}
+				// 	if(this.type === 'myCollect' || this.type === 'history') {
+				// 		list = newsItems;
+				// 	}
+				// 	console.log(this.type);
+				// 	list.sort((a,b)=>{
+				// 		return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
+				// 	})
+				// 	if(type === 'refresh'){
+				// 		// 刷新前清空数组
+				// 		this.dataList = [];
+				// 	}
+				// 	let tempArr = [];
+				// 	list.forEach(item=>{
+				// 		item.id = parseInt(Math.random() * 10000);
+				// 		tempArr.push(item);
+				// 	});
+				// 	this.dataList.push(...tempArr);
+				// 	//下拉刷新 关闭刷新动画
+				// 	if(type === 'refresh'){
+				// 		this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+				// 		// #ifdef APP-PLUS
+				// 		this.refreshing = false;
+				// 		// #endif
+				// 		this.loadMoreStatus = 0;
+				// 	}
+				// 	//上滑加载 处理状态
+				// 	if(type === 'add'){
+				// 		this.loadMoreStatus = this.dataList.length > 40 ? 2: 0;
+				// 	}
+				// }, 600)
 			},
 			
 			goDetail(detail) {

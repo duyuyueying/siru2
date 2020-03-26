@@ -11,6 +11,12 @@
 				}
 			});
 			uni.getStorage({
+				key: 'USER_INFO',
+				success(e) {
+					_this.USER_INFO(e.data);
+				}
+			});
+			uni.getStorage({
 				key: 'COLOR_THEME',
 				success(e) {
 					_this.COLOR_THEME(e.data);
@@ -30,7 +36,7 @@
 			console.log('App Hide')
 		},
 		methods:{
-			...mapMutations(['COLOR_THEME', 'USER_ID', 'PRICE_POSITION']),
+			...mapMutations(['COLOR_THEME', 'USER_ID', 'USER_INFO','PRICE_POSITION']),
 		}
 	}
 </script>

@@ -13,7 +13,7 @@
 		<view class="input_wrap flex_row mb20" style="position: relative;">
 			<view class="label_wrap"><text class="list_item_black_title_sm">性别</text></view>
 			<input type="text" class="u-input" placeholder="手机号" v-model="sex">
-			<picker :range="['男','女']" class="picker" @change="modifySex"></picker>
+			<picker :range="['男','女','保密']" class="picker" @change="modifySex"></picker>
 		</view>
 		<view class="input_wrap flex_row">
 			<view class="label_wrap"><text class="list_item_black_title_sm">Title</text></view>
@@ -33,7 +33,7 @@
 		</view>
 		<view class="input_wrap flex_row">
 			<view class="label_wrap"><text class="list_item_black_title_sm">公众号</text></view>
-			<input type="text" class="u-input" placeholder="请填写您的公众号" v-model="wechat">
+			<input type="text" class="u-input" placeholder="请填写您的公众号" v-model="wechat_official">
 		</view>
 		<view class="input_wrap flex_row">
 			<view class="label_wrap"><text class="list_item_black_title_sm">Twitter</text></view>
@@ -51,14 +51,11 @@
 </template>
 
 <script>
+	import {mapState} from 'vuex';
 	import {focusAuthor, newsItems} from '@/mock/data.js';
-	import  {identification} from '@/common/config.js';
-	import tabs from '@/components/tabs.vue';
-	import uniTitle from '@/components/uni-title.vue';
-	import newsItem from '@/components/list-item/news-item.vue';
 	import icons from '@/components/icons/icons.vue';
-	import {loadMore} from '@/common/util.js';
 	import {uniPopup} from '@dcloudio/uni-ui';
+	import {isEmail, isPhone} from '@/utils/validate.js';
 	
 	export default {
 		data() {
@@ -69,30 +66,35 @@
 				position: '',
 				phoneNumber: '',
 				wechat: '',
+				wechat_official: '',
 				email: '',
 				twitter: '',
 				profile: '',
 			}
 		},
 		components:{
-			tabs,
-			uniTitle,
-			newsItem,
 			icons,
 			uniPopup
 		},
 		onLoad() {
+			this.init();
 		},
-		onShareAppMessage() {
-			console.log('分享...');
-		},
-		onNavigationBarButtonTap(e) {
-			if(e.text == '关注') {
-				
-			}
-			console.log(e);
-		},
+		computed:mapState(['userInfo']),
 		methods: {
+			// 初始化
+			init() {
+				let userInfo = this.userInfo;
+				this.nikeName = userInfo.nickname || '';
+				this.sex = userInfo.sex || '保密';
+				this.position = userInfo.job || ''
+				this.profile = userInfo.introduce || '';
+				this.phoneNumber = userInfo.phone || '';
+				this.wechat = userInfo.wx_no || '';
+				this.wechat_official = this.wx_no || '';
+				this.twitter = this.twitter_no || '';
+				this.email = this.email || '';
+			},
+			// 去裁剪头像
 			goCrop() {
 				let _this = this;
 				uni.chooseImage({
@@ -105,16 +107,44 @@
 						})
 					}
 				})
-				
 			},
 			modifySex(e) {
 				let value = e.detail.value;
 				this.sex = ['男','女'][value];
 			},
-			submit() {
-				uni.navigateBack({
-					delta:1
-				})
+			async submit() {
+				if(this.phoneNumber != '' && !isPhone(this.phoneNumber)){
+					this.$message({title: '请输入正确的手机号码！'});
+					return;
+				}
+				if(this.email != '' && !isEmail(this.email)){
+					this.$message({title: '请输入正确的邮箱地址！'});
+					return;
+				}
+				let options = {
+					nickname: this.nikeName,
+					sex: this.sex,
+					job: this.position,
+					introduce: this.profile,
+					phone: this.phoneNumber,
+					wx_no: this.wechat,
+					wx_official: this.wechat_official,
+					twitter_no: this.twitter,
+					email: this.email
+				}
+				let data = await this.$api.user_modify(options)
+				if (data && data.code === 200){
+					this.$message(data.msg, function(){
+						uni.navigateBack({
+							delta:1
+						})
+					})
+				} else {
+					this.$message(data.msg)
+				}
+				// uni.navigateBack({
+				// 	delta:1
+				// })
 			}
 		}
 	}

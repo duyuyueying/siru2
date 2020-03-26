@@ -75,7 +75,7 @@
 	import uniTitle from '@/components/uni-title.vue';
 	import icons from '@/components/icons/icons.vue';
 	import loginLayout from '@/pages/login/login-layout.vue';
-	import {mapState} from 'vuex';
+	import {mapState, mapMutations} from 'vuex';
 	import {uniPopup} from '@dcloudio/uni-ui';
 	const defaultMessage = [
 					//name-标题 icon-图标 badge-角标
@@ -134,6 +134,7 @@
 		},
 		computed: mapState(['userId']),
 		methods: {
+			...mapMutations(['USER_INFO']),
 			init() {
 				this.userinfo = {}
 				this.orderTypeLise= defaultMessage;
@@ -146,7 +147,11 @@
 								key:'USER_ID',
 								data: data.result.id
 							})
-							// this.USER_ID(data.result.id);
+							uni.setStorage({
+								key: 'USER_INFO',
+								data: data.result
+							});
+							this.USER_INFO(data.result);
 							uni.setStorageSync('user_info',data.result);
 							this.userinfo = data.result
 							this.orderTypeLise=[
@@ -275,7 +280,7 @@
 			// 去个人中心页面
 			goPerson(id){
 				uni.navigateTo({
-					url: '/pages/author/author?id='+id
+					url: '/pages/author/author?id='+id+'&type=self'
 				})
 			}
 		},

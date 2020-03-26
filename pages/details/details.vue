@@ -360,7 +360,14 @@
 				// 	}
 				// })
 			},
-
+			doLike() {
+				this.$api.articles_zan(this.id).then(data => {
+					if (data && data.code === 200) {
+						this.detail.zan = data.result.zan
+						this.detail.is_zan = data.result.is_zan
+					}
+				})
+			},
 
 			async getDetail2() {
 				let content = FAIL_CONTENT
@@ -450,7 +457,7 @@
 				}
 			},
 			// 点赞
-			doLike() {
+			doLike2() {
 				let tempArr = [];
 				for(let i = 0, len = this.options.length; i < len; i++) {
 					let item = this.options[i];

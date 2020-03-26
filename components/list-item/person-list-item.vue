@@ -58,7 +58,13 @@
 		},
         methods: {
             focus() {
-               this.isFocus = !this.isFocus;
+            	// console.log(this.item)
+               // this.isFocus = !this.isFocus;
+				this.$api.follows_add(this.item.id).then(data => {
+					if (data && data.code === 200) {
+						this.item.is_follow = data.result
+					}
+				})
             }
         },
 		watch:{

@@ -10,6 +10,9 @@
 				:duration="300" 
 				:current="currTab" 
 				@change="changeTab"
+
+				:scroll-y="enableScrollY"
+				@scrolltolower="loadMore"
 			>
 				<swiper-item v-for="(tabItem, tabItemIndex) in tabBars" :key="tabItemIndex">
 					<scroll-view 
@@ -22,12 +25,12 @@
 							* 和nvue的区别只是需要把uni标签转为weex标签而已
 							* class 和 style的绑定限制了一些语法，其他并没有不同
 						-->
-						<view v-for="(item, index) in tabItem.newsList" :key="index" class="news-item">
+						<view v-for="(item, index) in dataList" :key="index" class="news-item">
 							<tag-list-item :items="item" v-if=" tabItemIndex == 1"></tag-list-item>
 							<person-list-item :item="item" v-else-if=" tabItemIndex == 0" showDetail></person-list-item>
-						</view> 
+						</view>
 						<!-- 上滑加载更多组件 -->
-						<mix-load-more :status="tabItem.loadMoreStatus"></mix-load-more>
+						<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
 					</scroll-view>
 				</swiper-item>
 			</swiper>
@@ -47,6 +50,16 @@
 				currTab: 0,
 				personList: [],
 				tabBars: [],
+
+				followType: 'user',
+				dataList:[],
+				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
+				enableScrollY: true,
+				refreshing: false, // 刷新状态
+				pageNum: 1,
+				total: 0,
+				pageSize: 8,
+				lastPage: 1,
 			}
 		},
 		mixins:[loadMore],
@@ -61,58 +74,54 @@
 		},
 		methods: {
 			//列表
-			loadList(type){
-				let tabItem = this.tabBars[this.currTab];
-				//type add 加载更多 refresh下拉刷新
-				if(type === 'add'){
-					if(tabItem.loadMoreStatus === 2){
-						return;
-					}
-					tabItem.loadMoreStatus = 1;
+			loadList(action){
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					this.dataList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
 				}
-				// #ifdef APP-PLUS
-				else if(type === 'refresh'){
-					tabItem.refreshing = true;
+
+				console.log("status:"+this.loadMoreStatus)
+				if (this.loadMoreStatus==0) {
+					this.loadMoreStatus = 1;
+
+					if(this.followType == 'tag') {
+						//获取tag列表
+						this.$api.tags({}).then(data=>{
+							if (data && data.code === 200) {
+								this.dataList = data.result;
+								this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+								this.refreshing = false;
+								this.loadMoreStatus = 2;
+							}
+						})
+						return
+					}
+
+					this.$api.authors({
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+					}).then(data => {
+						if (data && data.code === 200) {
+							this.info = data.result.info
+							const result = data.result.data
+							this.total = data.result.total
+							this.lastPage = data.result.last_page
+							this.dataList.push(...result);
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						} else {
+							this.errorBack()
+						}
+					})
 				}
-				// #endif
-				
-				//setTimeout模拟异步请求数据
-				setTimeout(()=>{
-					let list = [];
-					if(this.currTab == 0) {
-						list = focusAuthors;
-					} else {
-						let tempTags = [].concat(tags);
-						let tempArr = [];
-						for (let i = 0, j = 0, tagsLen = tempTags.length; i < tagsLen; i += 2, j++) {
-							tempArr[j] = tempTags.splice(0, 2)
-						 }
-						list = tempArr;
-					}
-				
-					list.sort((a,b)=>{
-						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
-					})
-					if(type === 'refresh'){
-						tabItem.newsList = []; //刷新前清空数组
-					}
-					list.forEach(item=>{
-						item.id = parseInt(Math.random() * 10000);
-						tabItem.newsList.push(item);
-					})
-					//下拉刷新 关闭刷新动画
-					if(type === 'refresh'){
-						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-						// #ifdef APP-PLUS
-						tabItem.refreshing = false;
-						// #endif
-						tabItem.loadMoreStatus = 0;
-					}
-					//上滑加载 处理状态
-					if(type === 'add'){
-						tabItem.loadMoreStatus = tabItem.newsList.length > 40 ? 2: 0;
-					}
-				}, 600)
 			},
 			// 切换tab
 			changeTab(e) { 
@@ -121,8 +130,10 @@
 					return;
 				}
 				this.currTab = index;
+				this.followType = (this.currTab == 0) ? 'user': 'tag'
+
 				if(!(this.tabBars[index] && this.tabBars[index].newsList.length > 0)){
-					this.loadList('add')
+					this.loadList('refresh')
 				}
 			}
 		}

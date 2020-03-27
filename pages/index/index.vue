@@ -105,9 +105,13 @@
 							* 和nvue的区别只是需要把uni标签转为weex标签而已
 							* class 和 style的绑定限制了一些语法，其他并没有不同
 						-->
-							<view v-for="(item, index) in dataList" :key="index" class="news-item">
+
+							<view v-if="category_id == 'follow' && focusTabCurr == 1" class="news-item">
+								<tag-list-item :items="dataList"></tag-list-item>
+							</view>
+
+							<view v-else="" v-for="(item, index) in dataList" :key="index" class="news-item">
 								<uni-vedio-list-item :item="item" v-if="item.type == '3'"></uni-vedio-list-item >
-								<tag-list-item :items="item" v-else-if="category_id == 'follow' && focusTabCurr == 1"></tag-list-item>
 								<person-list-item :item="item" v-else-if="category_id == 'follow' && focusTabCurr == 0" showDetail></person-list-item>
 								<news-item :newsItem="item" v-else></news-item>
 							</view>
@@ -134,6 +138,7 @@
 	import icons from '@/components/icons/icons.vue'
 	import {homeTab, newsItems, focusAuthors, tags, banner, newItem} from '@/mock/data.js';
 	import json from '@/json'
+	import {mapState} from "vuex";
 	let windowWidth = 0, scrollTimer = false, tabBar;
 	export default {
 		components: {
@@ -157,6 +162,8 @@
 				importNews: [], // 存放新闻早八点、专题的两条新闻
 				focusTabCurr: 0, // 存放关注页面【作者|标签】的tab
 
+				tags:[],
+				authors:[],
 				dataList:[],
 				tabCurrentIndex: 1, //当前选项卡索引
 				tabBars: [],
@@ -180,7 +187,8 @@
 					time: '2019-04-26 21:21'
 				}
 				return `/pages/details/details?data=${JSON.stringify(data)}`;
-			}
+			},
+			...mapState(['userInfo'])
 		},
 		onShow() {
 			//重新加载当前类型文章
@@ -194,6 +202,7 @@
 			this.loadBanners();
 			//加载tabbar
 			this.loadTabbars();
+			this.loadAuthorTag();
 			//初始化新闻列表
 			this.dataList = [];
 			this.pageNum = 1;
@@ -252,6 +261,103 @@
 					}
 				})
 			},
+			loadNewsList(action){
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					this.dataList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+
+				// console.log("请求文章:"+this.category_id)
+				// console.log("status:"+this.loadMoreStatus)
+				if (this.loadMoreStatus==0) {
+					if (this.category_id=='follow') {
+						this.loadFollow()
+						return
+					}
+
+					if (this.category_id=='top') {
+						console.log("头条:"+this.category_id)
+						return
+					}
+
+					this.loadMoreStatus = 1;
+					this.$api.articles({
+						category_id: this.category_id,
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+					}).then(data => {
+						if (data && data.code === 200) {
+							console.log(this.pageNum)
+
+							const result = data.result.data
+							this.total = data.result.total
+							this.lastPage = data.result.last_page
+							this.dataList.push(...result);
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						} else {
+							this.$message(data.msg)
+						}
+					})
+				}
+			},
+			loadAuthorTag() {
+				this.$api.authors({}).then(data=>{
+					if (data && data.code === 200) {
+						this.authors = data.result;
+					}
+				})
+
+				this.$api.tags({}).then(data=>{
+					if (data && data.code === 200) {
+						this.tags = data.result;
+					}
+				})
+			},
+			loadFollow() {
+				if(this.followType == 'tag') {
+					let flag = this.userInfo&&(this.userInfo.follows_tag_count > 0) ? true : false
+					if (flag) {
+						// 获取关注内容
+					}else{
+						this.loadMoreStatus = 1;
+						//获取tag列表
+						setTimeout(()=>{
+							this.dataList = this.tags;
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							this.loadMoreStatus = 2;
+						},300)
+					}
+				}else {
+					//默认作者
+					let flag = this.userInfo&&(this.userInfo.follows_count > 0) ? true : false
+					flag = false
+					if (flag) {
+						// 获取关注内容
+					}else{
+						this.loadMoreStatus = 1;
+						//获取作者列表
+						setTimeout(()=>{
+							this.dataList = this.authors;
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							this.loadMoreStatus = 2;
+						},300)
+					}
+
+				}
+			},
+
+
 			//切换Tabbar
 			async changeTab(e,item){
 				if(scrollTimer){
@@ -305,54 +411,6 @@
 				}, 300)
 
 				this.category_id = item.id
-			},
-			loadNewsList(action){
-				//action= add上拉加载 refresh下拉刷新
-				if (action=='refresh') {
-					this.dataList = [];
-					this.pageNum = 1;
-					this.loadMoreStatus = 0;
-				}
-
-				if (this.category_id=='follow') {
-					console.log("关注:" + this.followType)
-					return
-				}
-
-				if (this.category_id=='top') {
-					console.log("头条:"+this.category_id)
-					return
-				}
-
-				// console.log("请求文章:"+this.category_id)
-				// console.log("status:"+this.loadMoreStatus)
-				if (this.loadMoreStatus==0) {
-					this.loadMoreStatus = 1;
-					this.$api.articles({
-						category_id: this.category_id,
-						pageNum: this.pageNum,
-						pageSize: this.pageSize,
-					}).then(data => {
-						if (data && data.code === 200) {
-							console.log(this.pageNum)
-
-							const result = data.result.data
-							this.total = data.result.total
-							this.lastPage = data.result.last_page
-							this.dataList.push(...result);
-							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-							this.refreshing = false;
-							if (this.pageNum==this.lastPage) {
-								this.loadMoreStatus = 2;
-							}else{
-								this.loadMoreStatus = 0;
-							}
-							this.pageNum += 1;
-						} else {
-							this.$message(data.msg)
-						}
-					})
-				}
 			},
 			// 下拉刷新
 			onPulldownReresh(){
@@ -420,8 +478,8 @@
 				if( focusTabindex == this.focusTabCurr){
 					return;
 				}
-				this.followType = focusTabindex == 0 ? 'user': 'tag'
 				this.focusTabCurr = focusTabindex;
+				this.followType = (this.focusTabCurr == 0) ? 'user': 'tag'
 				// 清空之前缓存的newsList避免样式污染
 				// if(this.tabBars[tabItemIndex] && this.tabBars[tabItemIndex].newsList && this.tabBars[tabItemIndex].newsList.length > 0){
 				// 	this.tabBars[tabItemIndex].newsList = []

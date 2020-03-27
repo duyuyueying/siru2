@@ -3,10 +3,10 @@
 			<view class="link_wrapper" v-for="(item, index) in items" :key="index" :style="{marginRight: index == 0 ? '30upx' : '0upx'}"  @tap="gotoDetail" hover-class="hover">
 				<view class="content_wrapper flex_row" >
 					<text class="list_item_black_title_base right_space_base">{{item.name}}</text>
-					<text class="tag">热</text>
+					<text class="tag" v-if="item.number>49">热</text>
 				</view>
-				<view class="btn_wrapper"  @tap.stop="focus(index)" >
-					<text :class="{isFocus:isFocus[index]}">{{isFocus[index] ? '-' : '+'}}</text>
+				<view class="btn_wrapper"  @tap.stop="focus(item)" >
+					<text :class="{isFocus:item.is_follow}">{{item.is_follow ? '-' : '+'}}</text>
 				</view>
 			</view>
 		</view>
@@ -27,15 +27,18 @@
         },
 		created() {
 			// 这里需要根据接口返回来的关注人的列表判断当前这个人是否被关注过
-			this.isFocus = [this.items[0].focus || false, this.items[1].focus || false];
+			// this.isFocus = [this.items[0].focus || false, this.items[1].focus || false];
 		},
         methods: {
 			// 关注
-            focus(index) {
-				let tempArr = [...this.isFocus];
-               tempArr[index] = !tempArr[index];
-			   this.isFocus = tempArr;
-            },
+			focus(item) {
+				// this.isFocus = !this.isFocus;
+				this.$api.follows_tag(item.id).then(data => {
+					if (data && data.code === 200) {
+						item.is_follow = data.result
+					}
+				})
+			},
 			gotoDetail() {
 				uni.navigateTo({
 					url: '/pages/tagPage/tagPage'

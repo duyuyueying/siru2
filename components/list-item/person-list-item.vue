@@ -20,7 +20,7 @@
 					<text class="list_item_normal_txt" v-if="showDetail">{{item.verify_name}}</text>
 				</view>
 				<view class="btn_wrapper">
-					<view  @tap.stop="focus" class="button" :class="{isFocus}"><text class="btn_txt" :style="{color: isFocus? '#999' :'#f39700' }">{{item.is_follow ? '已关注' : '+  关注'}}</text></view>
+					<view  @tap.stop="focus" class="button" :class="item.is_follow"><text class="btn_txt" :style="{color: isFocus? '#999' :'#f39700' }">{{item.is_follow ? '已关注' : '+  关注'}}</text></view>
 				</view>
 			</view>
 		</navigator>
@@ -52,15 +52,13 @@
         },
 		mounted() {
 			// 这里需要根据接口返回来的关注人的列表判断当前这个人是否被关注过
-			console.log(this.item);
-			this.isFocus = this.item &&this.item.isFocus || false;
-			this.identification = identification[this.item.identification];	
+			// this.isFocus = this.item &&this.item.isFocus || false;
+			// this.identification = identification[this.item.identification];
 		},
         methods: {
             focus() {
-            	// console.log(this.item)
                // this.isFocus = !this.isFocus;
-				this.$api.follows_add(this.item.id).then(data => {
+				this.$api.follows_user(this.item.id).then(data => {
 					if (data && data.code === 200) {
 						this.item.is_follow = data.result
 					}

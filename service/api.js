@@ -171,18 +171,22 @@ export default {
         tabbars() {
             return minRequest.get('/api/tabbars')
         },
-		follows(){
-
-        },
         /**
          * 取消/关注用户
          * @param id
          * @returns {Promise | Promise<unknown>}
          */
-        follows_add(id) {
+        follows_user(id) {
             return minRequest.put('/api/users/' + id + '/follow')
         },
-
+        /**
+         * 取消/关注标签
+         * @param id
+         * @returns {Promise | Promise<unknown>}
+         */
+        follows_tag(id) {
+            return minRequest.put('/api/tags/' + id + '/follow')
+        },
 		/**
 		 * 获取浏览历史
 		 * @param data
@@ -231,5 +235,11 @@ export default {
 		get_fans(data) {
 		    return minRequest.get('/api/users/fans', data)
 		},
+        authors(data) {
+            return minRequest.get('/api/users/authors', data)
+        },
+        tags(data) {
+            return minRequest.get('/api/tags', data)
+        },
     }
 }

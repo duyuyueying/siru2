@@ -2,9 +2,11 @@
 	<view class="base_info_box">
 		<view class="flex_row">
 			<view class="label_key"><text class="lable_key_txt">{{name}}</text></view>
-			<view class="flex1">
-				<navigator url="link_url" v-if="isLink" cLass="link_txt">{{value}}</navigator>
-				<text class="list_item_black_title_sm" v-else>{{value}}</text>
+			<view class="flex1" v-if="typeof value == 'string'">
+				<text class="list_item_black_title_sm">{{value}}</text>
+			</view>
+			<view class="flex1" v-else>
+				<text class="link_txt" v-for="(item,index) in value" :key="index" @click="openUrl(item.url)">{{item.name}}</text>
 			</view>
 		</view>
 	</view>
@@ -18,8 +20,20 @@
 				type: Boolean,
 				default: false,
 			},
-			value: String,
+			value: {
+				type: [String, Array]
+			},
 			link_url: String
+		},
+		methods:{
+			openUrl(url) {
+				if(!this.isLink) {
+					return;
+				}
+				// #ifdef  APP-PLUS
+				plus.runtime.openURL(url);
+				// #endif
+			}
 		}
 	}
 </script>
@@ -38,5 +52,6 @@
 	}
 	.link_txt{
 		@include txt(30upx, #489aff);
+		margin-right: 8upx;
 	}
 </style>

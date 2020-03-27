@@ -473,6 +473,17 @@
             "path" : "pages/crop/crop",
             "style" : {}
         }
+        ,{
+            "path" : "pages/details/announce-detail",
+            "style" : {
+				"titleNView": {
+					"backButton": {
+						"type": "back"
+					},
+					"titleText": "公告"
+				}
+			}
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

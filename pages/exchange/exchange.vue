@@ -75,11 +75,11 @@
 							<uni-title title="基本信息" :height="65" :isBold="false">
 							</uni-title>
 						</view>
-						<base-info-label name="官网" isLink link_url="www.baidu.com" value="www.baidu.com"></base-info-label>
+						<base-info-label name="官网" isLink :value="[{name:'百度', url: 'https://www.baidu.com'}]"></base-info-label>
 						<base-info-label name="国家"  value="英国"></base-info-label>
 						<base-info-label name="成立时间"  value="2019-2"></base-info-label>
 						<base-info-label name="交易模式"  value="现货交易 场外交易"></base-info-label>
-						<base-info-label name="社交帐号" isLink link_url="www.baidu.com" value="微博"></base-info-label>
+						<base-info-label name="社交帐号" isLink  :value="[{name:'微博', url:'https://www.baidu.com'},{name:'微信',url:'https://www.iqiyi.com/'}]"></base-info-label>
 						<base-info-label name="简介" value="我是简介啦啦啦啦, 我是简介啦啦啦啦,我是简介啦啦啦啦 ,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦"></base-info-label>
 					</view>
 				</scroll-view>
@@ -89,7 +89,7 @@
 					<scroll-view id="tab-bar" class="tab-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft" :show-scrollbar="false">
 						<view 
 							v-for="(item,index) in tradeTabBar" :key="index"
-							class="tab-bar-item"
+							class="tab-bar-item 'tab'"
 							:class="{current: index === tradeTabCurrentIndex}"
 							:id="'tab'+index"
 							@click="changeTabBar(index)"
@@ -124,7 +124,19 @@
 				</mix-pulldown-refresh>
 			</swiper-item>
 			<swiper-item>
-			我是公共
+				<mix-pulldown-refresh ref="mixPulldownRefresh3" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+					<scroll-view
+						class="panel-scroll-box" 
+						:scroll-y="enableScrollY" 
+						@scrolltolower="loadMore"
+						:style="{height: swiperHeight+'px'}"
+						>
+						<announce-item :newsItem="item" v-for="(item, index) in tabBars[3].newsList" :key="index"></announce-item>
+						<!-- <news-item :newsItem="item" v-for="(item, index) in tabBars[2].newsList" :key="index"></news-item> -->
+						<!-- 上滑加载更多组件 -->
+						<mix-load-more :status="tabBars[3].loadMoreStatus"></mix-load-more>
+					</scroll-view>
+				</mix-pulldown-refresh>
 			</swiper-item>
 		</swiper>
 		<uni-popup ref="tips">
@@ -154,6 +166,7 @@
 	import uniSelfDishTableHead from '@/components/list-item/uni-self-dish-table-head.vue';
 	import uniSelfDishTableCell from '@/components/list-item/uni-self-dish-table-cell.vue'
 	import baseInfoLabel from '@/pages/exchange/base-info-label.vue';
+	import announceItem from '@/components/list-item/announce-item.vue';
 	import {mapState} from 'vuex';
 	import {uniPopup} from '@dcloudio/uni-ui';
 	let windowWidth = 0, scrollTimer = false, tabBar, scrollTimer1 = false;
@@ -194,7 +207,8 @@
 			baseInfoLabel,
 			uniSelfDishTableHead,
 			uniSelfDishTableCell,
-			uniPopup
+			uniPopup,
+			announceItem
 		},
 		onReady() {
 			let _this = this;
@@ -206,13 +220,15 @@
 			})
 		},
 		onLoad(e) {
+			// 获取屏幕宽度
+			windowWidth = uni.getSystemInfoSync().windowWidth;
 			this.tabBars = this.initTab(this.tabBars);
 			uni.setNavigationBarTitle({
 				title: e.exChangeName
 			});
 		},
 		mounted() {
-			this.getElSize();
+			this.getElSize('.swiper');
 		},
 		onPageScroll(e) {
 			if(Math.ceil(e.scrollTop) + 20 > this.headScrollTop ) {
@@ -227,7 +243,7 @@
 		onNavigationBarButtonTap(e) {
 			console.log(e);
 		},
-		computed:mapState(['upTheme', 'downTheme']),
+		computed:mapState(['upTheme', 'downTheme', 'userInfo']),
 		methods: {
 			//列表
 			loadList(type){
@@ -325,6 +341,7 @@
 			},
 			// 改变行情栏目下的tabcurr值
 			async changeTabBar(e, item) {
+				console.log(e,item);
 				if(scrollTimer){
 					//多次切换只执行最后一次
 					clearTimeout(scrollTimer);
@@ -336,7 +353,7 @@
 					index = e.detail.current
 				}
 				if(typeof tabBar !== 'object'){
-					tabBar = await this.getElSize("tab-bar")
+					tabBar = await this.getElSize(".tab-bar", 'scrollLeft')
 				}
 				//计算宽度相关
 				let tabBarScrollLeft = tabBar.scrollLeft;
@@ -344,7 +361,7 @@
 				let nowWidth = 0;
 				//获取可滑动总宽度
 				for (let i = 0; i <= index; i++) {
-					let result = await this.getElSize('tab' + i);
+					let result = await this.getElSize('#tab' + i, 'scrollLeft');
 					width += result.width;
 					if(i === index){
 						nowWidth = result.width;
@@ -358,7 +375,7 @@
 				scrollTimer = setTimeout(()=>{
 					if (width - nowWidth/2 > windowWidth / 2) {
 						//如果当前项越过中心点，将其放在屏幕中心
-						this.scrollLeft = width - nowWidth/2 - windowWidth / 2;
+						this.scrollLeft = width - nowWidth/2 -  windowWidth / 2;
 					}else{
 						this.scrollLeft = 0;
 					}
@@ -380,15 +397,20 @@
 				}, 300)
 			},
 			
-			getElSize(id) {
-				let el = uni.createSelectorQuery().select('.swiper');
-				el.fields({
-					size: true,
-					scrollOffset: true,
-					rect: true
-				}, (data) => {
-					this.headScrollTop = data.top;
-				}).exec();
+			getElSize(selector, type) {
+				return new Promise((res, rej) => {
+					let el = uni.createSelectorQuery().select(selector);
+					el.fields({
+						size: true,
+						scrollOffset: true,
+						rect: true
+					}, (data) => {
+						this.headScrollTop = data.top;
+						if(type) {
+							res(data);
+						}
+					}).exec();
+				}); 
 			},
 			showTips() {
 				this.$refs.tips.open();

@@ -162,6 +162,7 @@
 				tabBars: [],
 				bannerList: [], // banner图片
 				category_id: 'top',
+				followType: 'user', // 存放关注页面【作者|标签】的tab
 				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
 				enableScrollY: true,
 				refreshing: false, // 刷新状态
@@ -222,7 +223,7 @@
 		},
 		watch: {
 			category_id: function (val, oldVal) {
-				console.log("分类改变了")
+				// console.log("分类改变了")
 				this.loadNewsList('refresh')
 			}
 		},
@@ -306,7 +307,6 @@
 				this.category_id = item.id
 			},
 			loadNewsList(action){
-				console.log("请求文章:"+this.category_id)
 				//action= add上拉加载 refresh下拉刷新
 				if (action=='refresh') {
 					this.dataList = [];
@@ -314,7 +314,18 @@
 					this.loadMoreStatus = 0;
 				}
 
-				console.log("status:"+this.loadMoreStatus)
+				if (this.category_id=='follow') {
+					console.log("关注:" + this.followType)
+					return
+				}
+
+				if (this.category_id=='top') {
+					console.log("头条:"+this.category_id)
+					return
+				}
+
+				// console.log("请求文章:"+this.category_id)
+				// console.log("status:"+this.loadMoreStatus)
 				if (this.loadMoreStatus==0) {
 					this.loadMoreStatus = 1;
 					this.$api.articles({
@@ -409,11 +420,12 @@
 				if( focusTabindex == this.focusTabCurr){
 					return;
 				}
+				this.followType = focusTabindex == 0 ? 'user': 'tag'
 				this.focusTabCurr = focusTabindex;
 				// 清空之前缓存的newsList避免样式污染
-				if(this.tabBars[tabItemIndex] && this.tabBars[tabItemIndex].newsList.length > 0){
-					this.tabBars[tabItemIndex].newsList = []
-				}
+				// if(this.tabBars[tabItemIndex] && this.tabBars[tabItemIndex].newsList && this.tabBars[tabItemIndex].newsList.length > 0){
+				// 	this.tabBars[tabItemIndex].newsList = []
+				// }
 				this.loadNewsList('refresh');
 			},
 			// 去订阅页面

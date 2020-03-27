@@ -39,7 +39,7 @@
 			}
 		},
 		created() {
-			console.log('======',this.swiperList);
+			// console.log('======',this.swiperList);
 		},
 		methods:{
 			onClick(item) {

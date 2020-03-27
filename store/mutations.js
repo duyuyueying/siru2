@@ -35,7 +35,6 @@ export default {
 	// API token
 	[API_TOKEN](state, token) {
 		state.apiToken = token;
-		console.log(token);
 		uni.setStorage({
 			key:'api_token',
 			data: token

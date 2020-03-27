@@ -138,7 +138,7 @@ const loadMore = {
 const date2tamp = {
     methods: {
         date2tamp(dateStr) {
-			console.log(dateStr);
+			// console.log(dateStr);
             if (dateStr!=undefined) {
                 dateStr = dateStr.substring(0, 19);
                 dateStr = dateStr.replace(/-/g,'/');
@@ -163,7 +163,7 @@ const getElSize = {
 				scrollOffset: true,
 				rect: true
 			}, (data) => {
-				console.log(data);
+				// console.log(data);
 				this.elSize = {width: data.width, height: data.height};
 				this.elOffsetTop = data.top;
 			}).exec();

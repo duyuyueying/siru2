@@ -2,12 +2,12 @@
 	import {mapState, mapMutations} from 'vuex';
 	export default {
 		onLaunch: function() {
-			console.log('App Launch');
+			// console.log('App Launch');
 			let _this = this;
 			uni.getStorage({
 				key: 'api_token',
 				success(e) {
-					console.log(e);
+					// console.log(e);
 					_this.API_TOKEN(e.data);
 				}
 			});
@@ -31,10 +31,10 @@
 			})
 		},
 		onShow: function() {
-			console.log('App Show')
+			// console.log('App Show')
 		},
 		onHide: function() {
-			console.log('App Hide')
+			// console.log('App Hide')
 		},
 		methods:{
 			...mapMutations(['COLOR_THEME', 'API_TOKEN', 'USER_INFO','PRICE_POSITION']),

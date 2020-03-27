@@ -90,7 +90,13 @@
 						//获取tag列表
 						this.$api.tags({}).then(data=>{
 							if (data && data.code === 200) {
-								this.dataList = data.result;
+								console.log(data);
+								let tempTags = [].concat(data.result);
+								let tempArr = [];
+								for (let i = 0, j = 0, tagsLen = tempTags.length; i < tagsLen; i += 2, j++) {
+									tempArr[j] = tempTags.splice(0, 2)
+								}
+								this.dataList = tempArr;
 								this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
 								this.refreshing = false;
 								this.loadMoreStatus = 2;

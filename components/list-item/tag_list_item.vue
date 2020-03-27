@@ -26,6 +26,7 @@
             }
         },
 		created() {
+			console.log("tag_list_item",this.items);
 			// 这里需要根据接口返回来的关注人的列表判断当前这个人是否被关注过
 			// this.isFocus = [this.items[0].focus || false, this.items[1].focus || false];
 		},
@@ -33,9 +34,11 @@
 			// 关注
 			focus(item) {
 				// this.isFocus = !this.isFocus;
-				this.$api.follows_tag(item.id).then(data => {
+				this.$api.follows_tag(item.id).then(data => { 	
 					if (data && data.code === 200) {
 						item.is_follow = data.result
+					} else {
+						this.$message({icon: 'none', title: data.msg});
 					}
 				})
 			},

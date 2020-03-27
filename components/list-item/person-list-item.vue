@@ -20,7 +20,7 @@
 					<text class="list_item_normal_txt" v-if="showDetail">{{item.verify_name}}</text>
 				</view>
 				<view class="btn_wrapper">
-					<view  @tap.stop="focus" class="button" :class="item.is_follow"><text class="btn_txt" :style="{color: isFocus? '#999' :'#f39700' }">{{item.is_follow ? '已关注' : '+  关注'}}</text></view>
+					<view  @tap.stop="focus" class="button" :class="{isFocus:item.is_follow}"><text class="btn_txt" :style="{color: item.is_follow? '#999' :'#f39700' }">{{item.is_follow ? '已关注' : '+  关注'}}</text></view>
 				</view>
 			</view>
 		</navigator>

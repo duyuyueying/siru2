@@ -106,13 +106,14 @@
 							* class 和 style的绑定限制了一些语法，其他并没有不同
 						-->
 
-							<view v-if="category_id == 'follow' && focusTabCurr == 1" class="news-item">
+							<!-- <view v-if="category_id == 'follow' && focusTabCurr == 1" class="news-item">
 								<tag-list-item :items="dataList"></tag-list-item>
-							</view>
+							</view> -->
 
-							<view v-else="" v-for="(item, index) in dataList" :key="index" class="news-item">
+							<view v-for="(item, index) in dataList" :key="index" class="news-item">
 								<uni-vedio-list-item :item="item" v-if="item.type == '3'"></uni-vedio-list-item >
 								<person-list-item :item="item" v-else-if="category_id == 'follow' && focusTabCurr == 0" showDetail></person-list-item>
+								<tag-list-item :items="item" v-else-if="category_id == 'follow' && focusTabCurr == 1"></tag-list-item>
 								<news-item :newsItem="item" v-else></news-item>
 							</view>
 
@@ -318,7 +319,12 @@
 
 				this.$api.tags({}).then(data=>{
 					if (data && data.code === 200) {
-						this.tags = data.result;
+						let tempTags = [].concat(data.result);
+						let tempArr = [];
+						for (let i = 0, j = 0, tagsLen = tempTags.length; i < tagsLen; i += 2, j++) {
+							tempArr[j] = tempTags.splice(0, 2)
+						 }
+						this.tags = tempArr;
 					}
 				})
 			},

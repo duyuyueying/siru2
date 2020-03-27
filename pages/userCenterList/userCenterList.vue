@@ -177,7 +177,7 @@
 				// 	}).then(data => {
 						if (data && data.code === 200) {
 							console.log(this.pageNum)
-				
+
 							const result = data.result.data
 							this.total = data.result.total
 							this.lastPage = data.result.last_page
@@ -190,7 +190,7 @@
 								this.loadMoreStatus = 0;
 							}
 							this.pageNum += 1;
-						} else {
+						} else if (data){
 							this.$message(data.msg)
 						}
 				// 	})

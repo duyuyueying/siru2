@@ -46,7 +46,7 @@
 		<view class="mb20">
 			<view class="box u-checkIn_list">
 				<view class="label u-checkIn_item" v-for="(row,index) in checkInList" :key="row.name" hover-class="hover"  @tap="toSign(index, row)">
-					<view class="icon"><image class="u-checkIn_item_img" :src="'/static/userCenter/'+(row.checkIn ? 'x.png' : row.count > 1 ? 'gift.png' : 'money.png')"></image></view>
+					<view class="icon"><image class="u-checkIn_item_img" src="/static/userCenter/gift.png"></image></view>
 					<text class="u-link_txt">{{row.checkIn?'已签':'+'+row.count}}</text>
 					<view class="u-checkIn-flag" v-if="row.sign"></view>
 				</view>
@@ -149,20 +149,21 @@
 							this.userinfo = data.result
 							this.orderTypeLise=[
 								//name-标题 icon-图标 badge-角标
-								{name:'金币',count:1, nikeName: 'coin'},
-								{name:'关注',count:2, nikeName: 'focus'},
-								{name:'粉丝',count:3, nikeName: 'fans'},
-								{name:'消息',count:4, nikeName: 'message'},
+								{name:'金币',count:0, nikeName: 'coin'},
+								{name:'关注',count:data.result.follows_count, nikeName: 'focus'},
+								{name:'粉丝',count:data.result.fans_count, nikeName: 'fans'},
+								{name:'消息',count:0, nikeName: 'message'},
 							];
-							this.checkInList = [
-								{count: 1, checkIn: true},
-								{count: 2, sign: true},
-								{count: 2},
-								{count: 1},
-								{count: 1},
-								{count: 2},
-								{count: 3},
-							];
+
+							// this.checkInList = [
+							// 	{count: 1, sign: true},
+							// 	{count: 2},
+							// 	{count: 2},
+							// 	{count: 1},
+							// 	{count: 1},
+							// 	{count: 2},
+							// 	{count: 3},
+							// ];
 						} else {
 							this.$message(data.msg)
 							// uni.removeStorageSync('USER_ID')
@@ -178,25 +179,38 @@
 				// };
 
 			},
-			//用户点击订单类型
+			//用户点击签到
 			toSign(index, item){
 				if(this.apiToken == null){
 					this.toLogin();
 					return
 				}
-				let tempArr = [];
-				this.checkInList.forEach(item=>{
-					let newItem = Object.assign({}, item);
-					if(newItem.sign) {
-						newItem.sign = false;
-						newItem.checkIn = true;
+
+				if (this.checkInList[index].sign) {
+
+					//response 服务端签到请求结果
+					let response = true
+					if (response) {
+						let tempArr = [];
+						this.checkInList.forEach(item=>{
+							let newItem = Object.assign({}, item);
+							if(newItem.sign) {
+								newItem.sign = false;
+								newItem.checkIn = true;
+							}
+							tempArr.push(newItem);
+						})
+						if (tempArr[index+1]!=undefined) {
+							tempArr[index+1].sign = true
+						}
+						this.checkInList = tempArr;
+						if(item.sign) {
+							this.$refs.sign.open()
+						}
 					}
-					tempArr.push(newItem);
-				})
-				this.checkInList = tempArr;
-				if(item.sign) {
-					this.$refs.sign.open()
+
 				}
+
 			},
 			close() {
 				this.$refs.sign.close()

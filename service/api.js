@@ -15,11 +15,9 @@ minRequest.interceptors.request((request) => {
 
 // 响应拦截器
 minRequest.interceptors.response((response) => {
-	console.log('=  ======', response.data, store.state);
 	if(response.data.code == 401 || response.data.code == 402) {
 		store.commit("USER_INFO", null);
 	}
-	console.log('=======22', store.state.userInfo);
     return response.data
 })
 
@@ -185,7 +183,7 @@ export default {
         follows_add(id) {
             return minRequest.put('/api/users/' + id + '/follow')
         },
-		
+
 		/**
 		 * 获取浏览历史
 		 * @param data
@@ -224,7 +222,7 @@ export default {
 		 * @returns {Promise | Promise<unknown>}
 		 */
 		get_follows(data) {
-		    return minRequest.get('/users/follows', data)
+		    return minRequest.get('/api/users/follows', data)
 		},
 		/**
 		 * 获取我的粉丝
@@ -232,7 +230,7 @@ export default {
 		 * @returns {Promise | Promise<unknown>}
 		 */
 		get_fans(data) {
-		    return minRequest.get('/users/fans', data)
+		    return minRequest.get('/api/users/fans', data)
 		},
     }
 }

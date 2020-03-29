@@ -2,17 +2,19 @@
 	<view class="detail_wrap">
 		<view class="head_wrap space_between flex_row">
 			<view class="flex2 space_between flex_column">
-				<text class="bold_txt" :style="{color: isUp > 0 ? upTheme.txt : downTheme.txt}">&yen;5431.78</text>
-				<text class="sm_txt" :style="{color: isUp > 0 ? upTheme.txt : downTheme.txt}">=5431.78</text>
-				<text class="sm_txt" :style="{color: isUp > 0 ? upTheme.txt : downTheme.txt}">-5431.78%</text>
+				<text class="bold_txt" :style="{color: detail.change_percent > 0 ? upTheme.txt : downTheme.txt}">&yen;{{detail.price_cny}}</text>
+				<text class="sm_txt" :style="{color: detail.change_percent > 0 ? upTheme.txt : downTheme.txt}">={{detail.price}}&nbsp;&nbsp;({{detail.change_percent}}%)</text>
+				<text class="sm_txt" :style="{color: detail.change_percent > 0 ? upTheme.txt : downTheme.txt}">市值：{{unitConvert(detail.marketcap)}}</text>
 			</view>
 			<view class="flex1 flex_column">
-				<text class="sm_txt">24h最高价    11111</text>
-				<text class="sm_txt">24h最低价    11111</text>
-				<text class="sm_txt">24h成交量    11111</text>
+				<text class="mini_txt">最高 {{detail.high}}</text>
+				<text class="mini_txt">最低  {{detail.low}}</text>
+				<text class="mini_txt">24H量  {{unitConvert(detail.vol_btc)}}</text>
+				<text class="mini_txt">24H额  {{unitConvert(detail.vol)}}</text>
+				<text class="mini_txt">24H换手率  {{detail.turn_over}}</text>
 			</view>
 		</view>
-		<k-lines></k-lines>
+		<k-lines :code="code"></k-lines>
 		<tabs :tabs="['报价','简介']" @changeTab="changeTab" :defaultTab="currTab"></tabs>
 		<swiper
 			id="swiper"
@@ -24,9 +26,14 @@
 		>
 			<swiper-item>
 				<view class="relative_section">
-					<uni-self-dish-table-head>
-						<view class="edit_cell"><text class="normal_txt">交易所</text></view>
-					</uni-self-dish-table-head>
+					<view class="table_head">
+						<view class="flex flex_row">
+							<view class="flex5"><text class="normal_txt">交易对</text></view>
+							<view class="flex6"><text class="normal_txt">最新价($)</text></view>
+							<view class="flex6"><text class="normal_txt">24额</text></view>
+							<view class="flex4"><text class="normal_txt">成交额占比</text></view>
+						</view>
+					</view>
 				</view>
 				<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<scroll-view
@@ -35,19 +42,14 @@
 						@scrolltolower="loadMore"
 						:style="{height: swiperHeight+'px'}"
 						>
-						<uni-self-dish-table-cell v-for="(item, index) in dataList" :key="index" :isSelect="index == 0" :item="item" hasCollect @collect="collect"></uni-self-dish-table-cell>
+						<uni-coins-detail-table-cell v-for="(item, index) in dataList" :key="index" :isSelect="index == 0" :item="item" hasCollect @collect="collect"></uni-coins-detail-table-cell>
 						<!-- 上滑加载更多组件 -->
 						<mix-load-more :status="loadMoreStatus"></mix-load-more>
 					</scroll-view>
 				</mix-pulldown-refresh>
 			</swiper-item>
 			<swiper-item>
-				<view class="profile_wrap flex_column" v-if="currTab == 1">
-					<text class="desc_txt">比特币（英语：Bitcoin，缩写：BTC或XBT）是一种基于去中心化，采用点对点网路与共识主动性，开放原始码，以区块链作为底层技术的加密货币，比特币由中本聪（Satoshi Nakamoto）于2008年10月31日发表论文，
-					2009年1月3日，创世区块诞生。在某些国家则将比特币视为虚拟商品，并非货币。</text>
-					<text class="desc_txt"> 流通总量   222222亿</text>
-					<text class="desc_txt"> 发行总量   222222亿</text>
-					<text class="desc_txt"> 发行时间   222222亿</text>
+				<view class="profile_wrap flex_column" v-if="currTab == 1" v-html="detail.coindesc">
 				</view>
 			</swiper-item>
 		</swiper>
@@ -67,9 +69,9 @@
 <script>
 	import tabs from '@/components/tabs.vue';
 	import uniSelfDishTableHead from '@/components/list-item/uni-self-dish-table-head.vue';
-	import uniSelfDishTableCell from '@/components/list-item/uni-self-dish-table-cell.vue';
+	import uniCoinsDetailTableCell from '@/components/list-item/uni-coins-detail-table-cell.vue';
 	import kLines from '@/pages/quotations/kLine.vue';
-	import {loadMore} from '@/common/util.js';
+	import {loadMore, unitConvert} from '@/common/util.js';
 	import {coins} from '@/mock/data.js';
 	import {mapState} from 'vuex';
 	export default {
@@ -89,13 +91,19 @@
 				isSelect: false, // 是否被加入了自选列表
 				id: 123,
 				swiperHeight: 0,
+				code: '',
+				pageNum: 1,
+				pageSize: 15,
+				total: 0,
+				lastPage: 1,
+				detail: null
 			};
 		},
-		mixins:[loadMore],
+		mixins:[loadMore, unitConvert],
 		components:{
 			tabs,
 			uniSelfDishTableHead,
-			uniSelfDishTableCell,
+			uniCoinsDetailTableCell,
 			kLines,
 			loadMore
 		},
@@ -103,8 +111,12 @@
 			uni.setNavigationBarTitle({
 				title: query.symbol+'/USDT('+(query.exChangeName == '' ? '全球均价' : query.exChangeName)+')'
 			});
+			this.symbol = query.symbol;
+			this.exChangeName = '';
+			this.code = query.code;
 			this.startPrice = 2;
 			this.endPrice =1;
+			this.init();
 			this.loadList('add');
 		},
 		onReady() {
@@ -133,53 +145,55 @@
 			}
 		},
 		methods:{
-			loadList(type){
-				//type add 加载更多 refresh下拉刷新
-				if(type === 'add'){
-					if(this.loadMoreStatus === 2){
-						return;
-					}
+			init() {
+				this.getDetail();
+				// this.getMarket();
+			},
+			async getDetail() {
+				let data = await this.$api.coins_detail(this.code);
+				if (data && data.code === 200) {
+					this.detail = data.result.data;
+					console.log(this.detail);
+				}
+			},
+			// async getMarket() {
+			// 	let detail = await this.$api.coins_markets(this.code);
+			// },
+			async loadList(action){
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					this.dataList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+				
+				console.log("status:"+this.loadMoreStatus)
+				if (this.loadMoreStatus==0) {
 					this.loadMoreStatus = 1;
+					let data = await this.$api.coins_markets(this.code,{
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+					});
+						if (data && data.code === 200) {
+							console.log(this.pageNum)
+				
+							const result = data.result.data.markets
+							this.total = data.result.total_count
+							this.lastPage = data.result.total_pages
+							this.dataList.push(...result);
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						} else {
+							this.$message(data.msg)
+						}
+					// })
 				}
-				// #ifdef APP-PLUS
-				else if(type === 'refresh'){
-					this.refreshing = true;
-				}
-				// #endif
-				//setTimeout模拟异步请求数据
-				setTimeout(()=>{
-					let list = coins;
-					// TODO:删除
-					list.sort((a,b)=>{
-						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
-					})
-					// TODO:END
-					if(type === 'refresh'){
-						this.dataList = []; //刷新前清空数组
-					}
-					let tempArr = []
-					list.forEach(item=>{
-						// TODO:删除
-						item.id = parseInt(Math.random() * 10000);
-						// TODO:END
-						tempArr.push(item);
-					})
-					this.dataList.push(...tempArr);
-					//下拉刷新 关闭刷新动画
-					if(type === 'refresh'){
-						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-						// #ifdef APP-PLUS
-						this.refreshing = false;
-						// #endif
-						this.loadMoreStatus = 0;
-						this.page = 0;
-					}
-					//上滑加载 处理状态
-					if(type === 'add'){
-						this.page++;
-						this.loadMoreStatus = this.dataList.length > 40 ? 2: 0;
-					}
-				}, 600)
 			},
 			changeTab(e){
 				let index;
@@ -209,26 +223,31 @@
 				})
 			},
 			// 自选切换
-			collect(id) {
-				console.log(id);
-				if(id == this.id) {
+			async collect(exchange_code) {
+				if(exchange_code == this.exchange_code) {
 					this.isSelect = !this.isSelect;
 				}
-				let tempArr = []
-				this.dataList.forEach((item, index)=>{
-					let newObj = Object.assign({},item);
-					if( index == 0) {
-						newObj.isCollect = !newObj.isCollect
-					}
-					tempArr.push(newObj);
-				})
-				this.dataList = tempArr;
+				let data = await this.$api.coins_add(this.code, {exchange_code: exchange_code}); 
+				if (data && data.code === 200) {
+					let tempArr = []
+					this.dataList.forEach((item, index)=>{
+						let newObj = Object.assign({},item);
+						if( item.exchange_code == exchange_code) {
+							newObj.is_focus = !newObj.isCollect
+						}
+						tempArr.push(newObj);
+					})
+					this.dataList = tempArr;
+				} else {
+					this.$message({icon: 'none', title: data.msg})
+				}
 			}
 		}
 	}
 </script>
 
 <style lang="scss">
+	@import '@/common/quotations.scss';
 	page, .detail_wrap, .swiper{
 		height: 100%;
 	}
@@ -253,6 +272,11 @@
 		color: #fff;
 		line-height: 52upx;
 	}
+	.mini_txt{
+		font-size: 20upx;
+		color: #fff;
+		// line-height: 52upx;
+	}
 	.desc_txt{
 		font-size: 26upx;
 		color: #959595;
@@ -260,6 +284,18 @@
 	}
 	.profile_wrap{
 		padding: 0 $space-lg;
+	}
+	/deep/ .profile_wrap p{
+		margin: $space-base 0;
+		color: #29293b;
+		font-size: 28upx;
+		line-height: 48upx;
+		word-break: break-word;
+	}
+	/deep/ .profile_wrap img{
+		display: block;
+		width: 100%;
+		margin: 0 auto;
 	}
 	.fixed_bottom{
 		position: fixed;
@@ -286,5 +322,11 @@
 		background-color: $mainColor;
 		border-color: #a0a0a0;
 		@include sideBorder(left, $color: $mainColor)
+	}
+	.table_head{
+		height: 32px;
+		background-color: $bgColor;
+		justify-content: center;
+		padding: 0 $space-lg;
 	}
 </style>

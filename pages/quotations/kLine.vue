@@ -311,10 +311,17 @@ var dataMA20 = calculateMA(20, data);
 				}
 			}
 		},
+		props:{
+			code:String,
+		},
 		created() {
+			this.init();
 			console.log(this.splitData(data, volumes));
 		},
 		methods: {
+			async init() {
+				let data = await this.$api.coins_kLines(this.code, {type: 'd'});
+			},
 			changeOption() {
 				const data = this.option.series[1].data;
 				// 随机更新示例数据

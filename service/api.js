@@ -289,12 +289,45 @@ export default {
 			return minRequest.get('/api/coins/maxchange', data)
 		},
 		/**
+		 * 自选列表
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		coins_focus_list(data) {
+		    // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
+			return minRequest.get('/api/users/coinfocus',data)
+		},
+		/**
 		 * 添加自选
 		 * @param data
 		 * @returns {Promise | Promise<unknown>}
 		 */
-		coins_add(code) {
-		    return minRequest.put('/api/users/' + id + '/coins')
+		coins_add(code, data) {
+		    return minRequest.put('/api/users/' + code + '/coins', data)
+		},
+		/**
+		 * 交易对
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		coins_markets(code,data) {
+		    return minRequest.get('/api/coins/' + code + '/markets',data)
+		},
+		/**
+		 * kLines
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		coins_kLines(code) {
+		    return minRequest.get('/api/coins/' + code + '/kline')
+		},
+		/**
+		 * 详情
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		coins_detail(code) {
+		    return minRequest.get('/api/coins/' + code )
 		},
         /**
          * 获取单个币种

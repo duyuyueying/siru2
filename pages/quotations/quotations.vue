@@ -39,7 +39,7 @@
 							:style="{height: (swiperHeight-30)+'px'}"
 							>
 							<view class="list_wrap">
-								<uni-self-dish-table-cell v-for="(item, index) in swiperItems[0].newsList" :key="index" :item="item" @click="goPage(item.name, item.exChange)"></uni-self-dish-table-cell>
+								<uni-self-dish-table-cell v-for="(item, index) in swiperItems[0].newsList" :key="index" :item="item" @click="goPage(item.name, item.exChange, item.code)"></uni-self-dish-table-cell>
 							</view>
 							<!-- 上滑加载更多组件 -->
 							<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
@@ -74,7 +74,7 @@
 										@scrolltolower="loadMore"
 										:style="{height: (swiperHeight-62)+'px'}"
 										>
-										<uni-big-dish-table-cell v-for="(item, index) in swiperItems[1].newsList" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-table-cell>
+										<uni-big-dish-table-cell v-for="(item, index) in swiperItems[1].newsList" :key="index" :item="item" @click="goPage(item.name, '', item.code)"></uni-big-dish-table-cell>
 										<!-- 上滑加载更多组件 -->
 										<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
 									</scroll-view>
@@ -89,9 +89,10 @@
 									<scroll-view
 										class="panel-scroll-box"
 										@scrolltolower="loadMore"
+										:scroll-y="enableScrollY"
 										:style="{height: (swiperHeight-62)+'px'}"
 										>
-										<uni-big-dish-chg-table-cell v-for="(item, index) in swiperItems[2].newsList" :rank="index+1" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-chg-table-cell>
+										<uni-big-dish-chg-table-cell v-for="(item, index) in swiperItems[2].newsList" :rank="index+1" :key="index" :item="item" @click="goPage(item.name, '',item.code)"></uni-big-dish-chg-table-cell>
 										<!-- <uni-big-dish-table-cell></uni-big-dish-table-cell> -->
 										<!-- 上滑加载更多组件 -->
 										<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
@@ -110,7 +111,7 @@
 										@scrolltolower="loadMore"
 										:style="{height: (swiperHeight-62)+'px'}"
 										>
-										<uni-big-dish-chg-table-cell v-for="(item, index) in swiperItems[3].newsList" :rank="index" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-chg-table-cell>
+										<uni-big-dish-chg-table-cell v-for="(item, index) in swiperItems[3].newsList" :rank="index+1"  :key="index" :item="item" @click="goPage(item.name, '', item.code)"></uni-big-dish-chg-table-cell>
 										<!-- 上滑加载更多组件 -->
 										<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
 									</scroll-view>
@@ -201,11 +202,11 @@
 					// 自盘？
 					let data = 0;
 					if(this.currTab == 0){
-						// data = await this.$api.coins({
-						// 	page: this.pageNum,
-						// 	pageSize: this.pageSize,
-						// });
-						data = [];
+						data = await this.$api.coins_focus_list({
+							page: this.pageNum,
+							pageSize: this.pageSize,
+						});
+						// data = [];
 					}
 					// 市值榜
 					if(this.currTab == 1 && this.currSubTab == 0) {
@@ -226,23 +227,26 @@
 							isup: 0
 						});
 					}
-					console.log(data);
-						if (data && data.code === 200) {
-							const result = data.result.data || []
-							this.lastPage = data.result.maxpage
-							tabItem.newsList.push(...result);
-							this.$refs['mixPulldownRefresh'+currTab] && this.$refs['mixPulldownRefresh'+currTab].endPulldownRefresh();
-							this.refreshing = false;
-							if (this.pageNum * this.pageSize >= tabItem.newsList.length) {
-								this.loadMoreStatus = 2;
-							}else{
-								this.loadMoreStatus = 0;
-							}
-							this.pageNum += 1;
-							
+					if (data && data.code === 200) {
+						const result = data.result.data || []
+						if(this.currTab == 1 && (this.currSubTab == 1 || this.currSubTab == 2 )) {
+							this.lastPage = 1
 						} else {
-							this.$message(data.msg)
+							this.lastPage = data.result.maxpage
 						}
+						tabItem.newsList.push(...result);
+						this.$refs['mixPulldownRefresh'+currTab] && this.$refs['mixPulldownRefresh'+currTab].endPulldownRefresh();
+						this.refreshing = false;
+						if (this.pageNum==this.lastPage) {
+							this.loadMoreStatus = 2;
+						}else{
+							this.loadMoreStatus = 0;
+						}
+						this.pageNum += 1;
+						
+					} else {
+						this.$message(data.msg)
+					}
 					// })
 				}
 				//type add 加载更多 refresh下拉刷新
@@ -315,17 +319,22 @@
 					//点击切换时先切换再滚动tabbar，避免同时切换视觉错位
 					this[keyName] = index;
 				}
-				if(typeof e === 'object'){
-					this[keyName] = index;
-				}
-				let currtTab = this.caclcurrTab();
-				this.loadList('refresh');
+				setTimeout(()=>{
+					if(typeof e === 'object'){
+						this[keyName] = index;
+					}
+					let currtTab = this.caclcurrTab();
+					this.loadList('refresh');
+				}, 100)
+				
 				
 			},
 			transition(e) {
-				let dx = e.detail.dx
+				let dx = e.detail.dx;
+				console.log(e.detail.dx);
 				if(this.currTab != 0 && this.currSubTab == 0 && dx < 0){
-					if(dx < -50 && dx > -300){
+					
+					if(dx < -150 && dx > -300){
 						this.currTab = 0;
 					}
 				}
@@ -334,9 +343,9 @@
 				console.log('animationend==', e);
 			},
 			// 去详情页面
-			goPage(symbol, exChangeName) {
+			goPage(symbol, exChangeName, code) {
 				uni.navigateTo({
-					url: '/pages/quotations/coinDetail?symbol='+symbol+'&exChangeName='+exChangeName
+					url: '/pages/quotations/coinDetail?symbol='+symbol+'&exChangeName='+exChangeName+'&code='+code
 				});
 			},
 			// 去编辑页面

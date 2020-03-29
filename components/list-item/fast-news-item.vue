@@ -1,12 +1,14 @@
 <template>
     <view class="media-item view list_item_wrap" @click="gotoDetail(newsItem.id, newsItem.type)">
 		<view class="content_wrapper">
-			<text class="media-title list_item_black_title_base">{{newsItem.title}}</text>
+			<text class="media-title list_item_black_title_base">{{newsItem.name}}</text>
 			<view class="media-info flex-row space_between">
-				<text class="list_item_normal_txt right_space_base">{{friendlyDate(newsItem.time || newsItem.datetime)}}</text>
+				<text class="list_item_normal_txt focus_color">快讯</text>
+				<text class="list_item_normal_txt right_space_base">{{friendlyDate(date2tamp(newsItem.create_time))}}</text>
 				<!-- 为了样式只取一条放在listitem -->
 				<view>
-					<operation-btns :goodCount="newsItem.goodCount" :badCount="newsItem.badCount" :showComment="false" :showShare="false" :isClick="false"></operation-btns>
+					<operation-btns :goodCount="newsItem.good" :badCount="newsItem.bad" :showComment="false" :showShare="false" :isClick="false"></operation-btns>
+
 				</view>
 			</view>
 		</view>
@@ -14,7 +16,7 @@
 </template>
 
 <script>
-	import {friendlyDate} from '@/common/util.js';
+	import {friendlyDate,date2tamp} from '@/common/util.js';
 	import operationBtns from '@/components/operationBtns.vue';
     export default {
         props: {
@@ -28,7 +30,7 @@
 		components:{
 			operationBtns
 		},
-		mixins:[friendlyDate],
+		mixins:[friendlyDate,date2tamp],
 		created() {
 		},
         methods: {

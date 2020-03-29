@@ -80,7 +80,7 @@
 							<view class="import_news_list_wrapper">
 								<news-item :newsItem="item" v-for="(item, index) in importNewsListData" :key="index"></news-item>
 							</view>
-							<view class="banner_wrapper" style="margin-bottom: 5px;">
+							<view class="banner_wrapper" v-if="specialList.length > 0" style="margin-bottom: 5px;">
 								<swiper-banner :swiperList="specialList" :autoplay="false" cornerMark="专题"></swiper-banner>
 							</view>
 						</view>
@@ -112,8 +112,9 @@
 
 							<view v-for="(item, index) in dataList" :key="index" class="news-item">
 								<uni-vedio-list-item :item="item" v-if="item.type == '3'"></uni-vedio-list-item >
-								<person-list-item :item="item" v-else-if="category_id == 'follow' && focusTabCurr == 0" showDetail></person-list-item>
-								<tag-list-item :items="item" v-else-if="category_id == 'follow' && focusTabCurr == 1"></tag-list-item>
+								<person-list-item :item="item" v-else-if="hasFollow==false && category_id == 'follow' && focusTabCurr == 0" showDetail></person-list-item>
+								<tag-list-item :items="item" v-else-if="hasFollow==false && category_id == 'follow' && focusTabCurr == 1"></tag-list-item>
+								<fast-news-item :newsItem="item" v-else-if="item.type == '2'"></fast-news-item >
 								<news-item :newsItem="item" v-else></news-item>
 							</view>
 
@@ -131,6 +132,7 @@
 	import mixPulldownRefresh from '@/components/mix-pulldown-refresh/mix-pulldown-refresh';
 	import mixLoadMore from '@/components/mix-load-more/mix-load-more';
 	import uniVedioListItem from '@/components/list-item/uni-video-list-item.vue';
+	import fastNewsItem from '@/components/list-item/fast-news-item.vue';
 	import newsItem from '@/components/list-item/news-item.vue';
 	import personListItem from '@/components/list-item/person-list-item.vue';
 	import TagListItem from '@/components/list-item/tag_list_item.vue';
@@ -140,12 +142,15 @@
 	import {homeTab, newsItems, focusAuthors, tags, banner, newItem} from '@/mock/data.js';
 	import json from '@/json'
 	import {mapState} from "vuex";
+
+
 	let windowWidth = 0, scrollTimer = false, tabBar;
 	export default {
 		components: {
 			mixPulldownRefresh,
 			mixLoadMore,
 			mixAdvert,
+			fastNewsItem,
 			newsItem,
 			personListItem,
 			TagListItem,
@@ -163,6 +168,7 @@
 				importNews: [], // 存放新闻早八点、专题的两条新闻
 				focusTabCurr: 0, // 存放关注页面【作者|标签】的tab
 
+				hasFollow: false,
 				tags:[],
 				authors:[],
 				dataList:[],
@@ -279,7 +285,7 @@
 					}
 
 					if (this.category_id=='top') {
-						console.log("头条:"+this.category_id)
+						this.loadTop()
 						return
 					}
 
@@ -290,8 +296,6 @@
 						pageSize: this.pageSize,
 					}).then(data => {
 						if (data && data.code === 200) {
-							console.log(this.pageNum)
-
 							const result = data.result.data
 							this.total = data.result.total
 							this.lastPage = data.result.last_page
@@ -333,7 +337,31 @@
 					let flag = this.userInfo&&(this.userInfo.follows_tag_count > 0) ? true : false
 					if (flag) {
 						// 获取关注内容
+						this.loadMoreStatus = 1;
+						this.$api.articles_tag({
+							pageNum: this.pageNum,
+							pageSize: this.pageSize,
+						}).then(data => {
+							if (data && data.code === 200) {
+								this.hasFollow = true
+								const result = data.result.data
+								this.total = data.result.total
+								this.lastPage = data.result.last_page
+								this.dataList.push(...result);
+								this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+								this.refreshing = false;
+								if (this.pageNum==this.lastPage) {
+									this.loadMoreStatus = 2;
+								}else{
+									this.loadMoreStatus = 0;
+								}
+								this.pageNum += 1;
+							} else {
+								this.$message(data.msg)
+							}
+						})
 					}else{
+						this.hasFollow = false
 						this.loadMoreStatus = 1;
 						//获取tag列表
 						setTimeout(()=>{
@@ -346,10 +374,33 @@
 				}else {
 					//默认作者
 					let flag = this.userInfo&&(this.userInfo.follows_count > 0) ? true : false
-					flag = false
 					if (flag) {
 						// 获取关注内容
+						this.loadMoreStatus = 1;
+						this.$api.articles_author({
+							pageNum: this.pageNum,
+							pageSize: this.pageSize,
+						}).then(data => {
+							if (data && data.code === 200) {
+								this.hasFollow = true
+								const result = data.result.data
+								this.total = data.result.total
+								this.lastPage = data.result.last_page
+								this.dataList.push(...result);
+								this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+								this.refreshing = false;
+								if (this.pageNum==this.lastPage) {
+									this.loadMoreStatus = 2;
+								}else{
+									this.loadMoreStatus = 0;
+								}
+								this.pageNum += 1;
+							} else {
+								this.$message(data.msg)
+							}
+						})
 					}else{
+						this.hasFollow = false
 						this.loadMoreStatus = 1;
 						//获取作者列表
 						setTimeout(()=>{
@@ -362,7 +413,30 @@
 
 				}
 			},
-
+			loadTop() {
+				this.loadMoreStatus = 1;
+				this.$api.articles_top({
+					pageNum: this.pageNum,
+					pageSize: this.pageSize,
+				}).then(data => {
+					if (data && data.code === 200) {
+						const result = data.result.data
+						this.total = data.result.total
+						this.lastPage = data.result.last_page
+						this.dataList.push(...result);
+						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+						this.refreshing = false;
+						if (this.pageNum==this.lastPage) {
+							this.loadMoreStatus = 2;
+						}else{
+							this.loadMoreStatus = 0;
+						}
+						this.pageNum += 1;
+					} else {
+						this.$message(data.msg)
+					}
+				})
+			},
 
 			//切换Tabbar
 			async changeTab(e,item){

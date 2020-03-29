@@ -7,12 +7,13 @@
 				<text v-if="newsItem.recommend && showTag" class="list_item_normal_txt focus_color right_space_base">推广</text>
 				<text v-if="newsItem.onlyOne && showTag" class="list_item_normal_txt focus_color right_space_base">独家</text>
 				<text v-if="newsItem.depth && showTag" class="list_item_normal_txt focus_color right_space_base">深度</text>
+				<text v-if="newsItem.type==2" class="list_item_normal_txt focus_color right_space_base">快讯</text>
 				<text class="list_item_normal_txt right_space_base" v-if="showSource">来源</text>
 				<text class="list_item_normal_txt right_space_base" v-if="newsItem.author.nickname && showAuthor">{{newsItem.author.nickname}}</text>
 				<text class="list_item_normal_txt right_space_base">{{friendlyDate(date2tamp(newsItem[timeStyle]))}}</text>
 				<!-- 为了样式只取一条放在listitem -->
 				<view v-if="(newsItem.coins && (newsItem.coins.length > 0)) && showCoins">
-					<mark-view 
+					<mark-view
 						:end="newsItem.coins[0].endPrice"
 						:start="newsItem.coins[0].startPrice"
 						:item = "newsItem.coins[0]"

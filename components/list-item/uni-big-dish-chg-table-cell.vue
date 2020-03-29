@@ -1,18 +1,18 @@
 <template>
 	<view class="flex flex_row list_item" @click="onClick">
 		<view class="flex3 center">
-			<text class="blod_black_txt">{{item.rank}}</text>
+			<text class="blod_black_txt">{{rank}}</text>
 		</view>
 		<view class="flex4 flex_column">
 			<text class="blod_black_txt">{{item.name}}</text>
-			<text class="normal_txt">{{item.fullname}}</text>
+			<text class="normal_txt">{{item.name_zh}}</text>
 		</view>
 		<view class="flex7 flex_column">
-			<text class="blod_black_txt">&yen;{{unitConvert(item.market_value)}}</text>
-			<text class="normal_txt">24h:&yen;{{unitConvert(item.vol)}}</text>
+			<!-- <text class="blod_black_txt">&yen;{{item.volume}}</text> -->
+			<text class="normal_txt">24h:{{unitConvert(item.volume)}}USD</text>
 		</view>
 		<view class="flex6 flex_column">
-			<text class="blod_black_txt" :style="{color:item.change_percent>0 ? upTheme.txt: downTheme.txt}">&yen;{{item.current_price}}</text>
+			<text class="blod_black_txt" :style="{color:item.change_percent>0 ? upTheme.txt: downTheme.txt}">&yen;{{item.price_cny}}</text>
 			<text class="normal_txt" :style="{color: item.change_percent>0 ? upTheme.txt : downTheme.txt}">{{item.change_percent>0?'+':''}}{{item.change_percent}}%</text>
 		</view>
 	</view>
@@ -29,7 +29,8 @@
 			};
 		},
 		props:{
-			item: Object
+			item: Object,
+			rank: Number,
 		},
 		mixins:[unitConvert],
 		created() {

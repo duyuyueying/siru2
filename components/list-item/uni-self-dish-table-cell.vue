@@ -5,23 +5,23 @@
 			<text class="normal_txt">1942233.1</text>
 		</view>
 		<view class="flex5 flex_column" v-else>
-			<view class="flex_row"><text class="list_item_black_title_sm heavy right_space_base">{{item.name}}</text><text class="normal_txt">/{{item.unit}}</text></view>
-			<text class="normal_txt">{{item.exChange}}</text>
+			<view class="flex_row"><text class="list_item_black_title_sm heavy right_space_base">{{item.name}}</text><text class="normal_txt">/{{item.code}}</text></view>
+			<text class="normal_txt">{{item.fullname}}</text>
 		</view>
 		<view class="flex6" v-if="type != 'search'">
 			<view class="flex_column" v-if="pricePosition == 'CNYUP'">
-				<text class="list_item_black_title_sm heavy">&yen;{{item.cnyPrice}}</text>
-				<text class="normal_txt">={{item.price}}USDT</text>
+				<text class="list_item_black_title_sm heavy">&yen;{{item.current_price}}</text>
+				<text class="normal_txt">={{item.current_price_usd}}USDT</text>
 			</view>
 			<view class="flex_column" v-else-if="pricePosition == 'CNYUP'">
-				<text class="list_item_black_title_sm heavy">${{item.price}}</text>
-				<text class="normal_txt">={{item.cnyPrice}}CNY</text>
+				<text class="list_item_black_title_sm heavy">${{item.current_price_usd}}</text>
+				<text class="normal_txt">={{item.current_price}}CNY</text>
 			</view>
 		</view>
 		<view class="flex6" v-else></view>
 		<view class="flex4 flex_row">
-			<view class="btn" :style="{backgroundColor: isUp > 0 ? upTheme.txt: downTheme.txt}" v-if="type !='search'">
-				<text class="list_item_black_title_sm btn_txt" style="color:#fff">{{isUp>0?'+':'-'}}{{item.rate}}%</text>
+			<view class="btn" :style="{backgroundColor: item.change_percent > 0 ? upTheme.txt: downTheme.txt}" v-if="type !='search'">
+				<text class="list_item_black_title_sm btn_txt" style="color:#fff">{{item.change_percent}}%</text>
 			</view>
 			<view style="width: 100upx;" v-else></view>
 			<view @click.stop="collect" class="collect_btn_wrap flex center" v-if="hasCollect">
@@ -55,12 +55,13 @@
 				default: 'quotations'
 			}
 		},
+		
 		components:{
 			icons
 		},	
 		created() {
 			// this.isCollect = this.item.isCollect || false;
-			console.log(this.isSelect);
+			console.log(this.isSelect,this.item);
 		},
 		methods:{
 			onClick(){

@@ -13,12 +13,6 @@
 			<uni-status-bar />
 			<view class="uni-navbar__placeholder-view" />
 		</view>
-		<!-- <uni-nav-bar statusBar :fixed="true">
-			<view class="flex2"><tabs :tabs="['自选','大盘']" @changeTab="changeTab($event, 'currTab')" :defaultTab="currTab"></tabs></view>
-			 <view @click="goSearch">
-				<uni-icons type="search" v-slot="right"></uni-icons>
-			 </view>
-		</uni-nav-bar> -->
 		<!-- 下拉刷新组件 -->
 		<!--  -->
 			<swiper 
@@ -55,7 +49,7 @@
 				<swiper-item>
 					<!-- 大盘 -->
 					<view class="list_wrap">
-						<view class="progress_box">
+						<view class="progress_box" v-if="false">
 							<progress percent="80" :activeColor="upTheme.txt" stroke-width="8" :backgroundColor="downTheme.txt"/>
 							<view class="flex_row space_between">
 								<text class="normal_txt progress_txt" :style="{color:upTheme.txt}">涨 123 个币种</text>
@@ -78,7 +72,7 @@
 										class="panel-scroll-box"
 										:scroll-y="enableScrollY"
 										@scrolltolower="loadMore"
-										:style="{height: (swiperHeight-112)+'px'}"
+										:style="{height: (swiperHeight-62)+'px'}"
 										>
 										<uni-big-dish-table-cell v-for="(item, index) in swiperItems[1].newsList" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-table-cell>
 										<!-- 上滑加载更多组件 -->
@@ -86,8 +80,8 @@
 									</scroll-view>
 								</mix-pulldown-refresh>
 							</swiper-item>
-
 							<swiper-item>
+								<!-- 涨幅榜 -->
 								<view class="relative_section">
 									<uni-big-dish-table-head></uni-big-dish-table-head>
 								</view>
@@ -95,15 +89,17 @@
 									<scroll-view
 										class="panel-scroll-box"
 										@scrolltolower="loadMore"
-										:style="{height: (swiperHeight-112)+'px'}"
+										:style="{height: (swiperHeight-62)+'px'}"
 										>
-										<uni-big-dish-table-cell v-for="(item, index) in swiperItems[2].newsList" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-table-cell>
+										<uni-big-dish-chg-table-cell v-for="(item, index) in swiperItems[2].newsList" :rank="index+1" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-chg-table-cell>
+										<!-- <uni-big-dish-table-cell></uni-big-dish-table-cell> -->
 										<!-- 上滑加载更多组件 -->
 										<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
 									</scroll-view>
 								</mix-pulldown-refresh>
 							</swiper-item>
 							<swiper-item>
+								<!-- 跌幅榜 -->
 								<view class="relative_section">
 									<uni-big-dish-table-head></uni-big-dish-table-head>
 								</view>
@@ -112,8 +108,9 @@
 										class="panel-scroll-box"
 										:scroll-y="enableScrollY"
 										@scrolltolower="loadMore"
+										:style="{height: (swiperHeight-62)+'px'}"
 										>
-										<uni-big-dish-table-cell v-for="(item, index) in swiperItems[3].newsList" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-table-cell>
+										<uni-big-dish-chg-table-cell v-for="(item, index) in swiperItems[3].newsList" :rank="index" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-chg-table-cell>
 										<!-- 上滑加载更多组件 -->
 										<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
 									</scroll-view>
@@ -130,11 +127,11 @@
 <script>
 	import tabs from '@/components/tabs.vue';
 	import {uniIcons, uniStatusBar} from '@dcloudio/uni-ui';
-	
 	import uniSelfDishTableHead from '@/components/list-item/uni-self-dish-table-head.vue';
 	import uniSelfDishTableCell from '@/components/list-item/uni-self-dish-table-cell.vue';
 	import uniBigDishTableHead from '@/components/list-item/uni-big-dish-table-head.vue';
 	import uniBigDishTableCell from '@/components/list-item/uni-big-dish-table-cell.vue';
+	import uniBigDishChgTableCell from '@/components/list-item/uni-big-dish-chg-table-cell.vue';
 	import uniTitle from '@/components/uni-title.vue';
 	import { loadMore} from '@/common/util.js';
 	import {coins} from '@/mock/data.js';
@@ -159,7 +156,7 @@
 				refreshing: false, // 刷新状态
 				pageNum: 1,
 				total: 0,
-				pageSize: 8,
+				pageSize: 20,
 				lastPage: 1,
 			}
 		},
@@ -172,13 +169,11 @@
 			uniBigDishTableCell,
 			uniTitle,
 			uniIcons,
-			uniStatusBar
+			uniStatusBar,
+			uniBigDishChgTableCell
 		},
 		created() {
 			this.swiperItems = this.initTab(swiperItem);
-			// this.loadList('add');
-		},
-		onShow(){
 			this.loadList('refresh');
 		},
 		onReady() {
@@ -192,54 +187,109 @@
 		},
 		computed: mapState(['upTheme', 'downTheme']),
 		methods: {
-			loadList(type){
+			async loadList(action){
 				let currTab = this.caclcurrTab()
 				let tabItem = this.swiperItems[currTab];
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					tabItem.newsList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+				if (this.loadMoreStatus==0) {
+					this.loadMoreStatus = 1;
+					// 自盘？
+					let data = 0;
+					if(this.currTab == 0){
+						// data = await this.$api.coins({
+						// 	page: this.pageNum,
+						// 	pageSize: this.pageSize,
+						// });
+						data = [];
+					}
+					// 市值榜
+					if(this.currTab == 1 && this.currSubTab == 0) {
+						data = await this.$api.coins({
+							page: this.pageNum,
+							pageSize: this.pageSize,
+						});
+					}
+					// 涨幅榜
+					if(this.currTab == 1 && this.currSubTab == 1) {
+						data = await this.$api.coinsChg({
+							isup: 1
+						});
+					}
+					// 跌幅榜
+					if(this.currTab == 1 && this.currSubTab == 2) {
+						data = await this.$api.coinsChg({
+							isup: 0
+						});
+					}
+					console.log(data);
+						if (data && data.code === 200) {
+							const result = data.result.data || []
+							this.lastPage = data.result.maxpage
+							tabItem.newsList.push(...result);
+							this.$refs['mixPulldownRefresh'+currTab] && this.$refs['mixPulldownRefresh'+currTab].endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum * this.pageSize >= tabItem.newsList.length) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+							
+						} else {
+							this.$message(data.msg)
+						}
+					// })
+				}
 				//type add 加载更多 refresh下拉刷新
-				if(type === 'add'){
-					if(tabItem.loadMoreStatus === 2){
-						return;
-					}
-					tabItem.loadMoreStatus = 1;
-				}
-				// #ifdef APP-PLUS
-				else if(type === 'refresh'){
-					tabItem.refreshing = true;
-				}
-				// #endif
-				//setTimeout模拟异步请求数据
-				setTimeout(()=>{
-					let list = coins;
-					// TODO:删除
-					list.sort((a,b)=>{
-						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
-					})
-					// TODO:END
-					if(type === 'refresh'){
-						tabItem.newsList = []; //刷新前清空数组
-					}
-					list.forEach(item=>{
-						// TODO:删除
-						item.id = parseInt(Math.random() * 10000);
-						// TODO:END
-						tabItem.newsList.push(item);
-					})
-					//下拉刷新 关闭刷新动画
-					if(type === 'refresh'){
-						this.$refs['mixPulldownRefresh'+currTab] && this.$refs['mixPulldownRefresh'+currTab].endPulldownRefresh();
-						// #ifdef APP-PLUS
-						tabItem.refreshing = false;
-						// #endif
-						tabItem.loadMoreStatus = 0;
-						tabItem.page = 0;
-					}
-					//上滑加载 处理状态
-					if(type === 'add'){
-						tabItem.page++;
-						tabItem.loadMoreStatus = tabItem.newsList.length > 40 ? 2: 0;
-					}
-					console.log(this.swiperItems);
-				}, 600)
+				// if(type === 'add'){
+				// 	if(tabItem.loadMoreStatus === 2){
+				// 		return;
+				// 	}
+				// 	tabItem.loadMoreStatus = 1;
+				// }
+				// // #ifdef APP-PLUS
+				// else if(type === 'refresh'){
+				// 	tabItem.refreshing = true;
+				// }
+				// // #endif
+				// //setTimeout模拟异步请求数据
+				// setTimeout(()=>{
+				// 	let list = coins;
+				// 	// TODO:删除
+				// 	list.sort((a,b)=>{
+				// 		return Math.random() > .5 ? -1 : 1; // 静态数据打乱顺序
+				// 	})
+				// 	// TODO:END
+				// 	if(type === 'refresh'){
+				// 		tabItem.newsList = []; //刷新前清空数组
+				// 	}
+				// 	list.forEach(item=>{
+				// 		// TODO:删除
+				// 		item.id = parseInt(Math.random() * 10000);
+				// 		// TODO:END
+				// 		tabItem.newsList.push(item);
+				// 	})
+				// 	//下拉刷新 关闭刷新动画
+				// 	if(type === 'refresh'){
+				// 		this.$refs['mixPulldownRefresh'+currTab] && this.$refs['mixPulldownRefresh'+currTab].endPulldownRefresh();
+				// 		// #ifdef APP-PLUS
+				// 		tabItem.refreshing = false;
+				// 		// #endif
+				// 		tabItem.loadMoreStatus = 0;
+				// 		tabItem.page = 0;
+				// 	}
+				// 	//上滑加载 处理状态
+				// 	if(type === 'add'){
+				// 		tabItem.page++;
+				// 		tabItem.loadMoreStatus = tabItem.newsList.length > 40 ? 2: 0;
+				// 	}
+				// 	console.log(this.swiperItems);
+				// }, 600)
 			},
 			// 计算对应于swiperItem的currtTab
 			caclcurrTab(){
@@ -265,20 +315,11 @@
 					//点击切换时先切换再滚动tabbar，避免同时切换视觉错位
 					this[keyName] = index;
 				}
-				//延迟300ms,等待swiper动画结束再修改tabbar
-				scrollTimer = setTimeout(()=>{
-					if(typeof e === 'object'){
-						this[keyName] = index;
-					}
-					//第一次切换tab，动画结束后需要加载数据
-					let currtTab = this.caclcurrTab();
-					// let tabItem = this.swiperItems[currtTab];
-					// if(tabItem.newsList.length == 0 ){
-					// 	this.loadList('add');
-					// 	tabItem.loaded = true;
-					// }
-					this.loadList('refresh');
-				}, 300)
+				if(typeof e === 'object'){
+					this[keyName] = index;
+				}
+				let currtTab = this.caclcurrTab();
+				this.loadList('refresh');
 				
 			},
 			transition(e) {

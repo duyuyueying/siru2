@@ -16,7 +16,7 @@ minRequest.interceptors.request((request) => {
 
 // 响应拦截器
 minRequest.interceptors.response((response) => {
-    if (response.data.code == 401 || response.data.code == 402) {
+    if (response.data && (response.data.code == 401 || response.data.code == 402)) {
         store.commit("USER_INFO", null);
     }
     return response.data
@@ -260,23 +260,42 @@ export default {
          * @param data
          * @returns {Promise | Promise<unknown>}
          */
-        coins(data) {
-            // newRequest.setConfig((config) => {
-            //     config.header = {
-            //         'content-type': 'application/json',
-            //         'X-Requested-With': 'XMLHttpRequest',
-            //     }
-            //     return config
-            // })
-
-            // https://dncapi.bqiapp.com/api/coin/web-coinrank?page=1&type=-1&pagesize=100&webp=1
-
-            // data.pagesize
-            // data.page
-            data.type = -1
-            data.webp = 1
-            return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
+        coins2(data) {
+			console.log(data);
+			let options = {};
+			options.search = data.search || '';
+			options.ids = data.ids || '';
+			options.limit = data.pagesize ||20;
+			options.offset = data.pagesize * (data.page - 1);
+            return newRequest.get('https://api.coincap.io/v2/assets',options)
         },
+		/**
+		 * 行情/市值列表
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		coins(data) {
+		    // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
+			return minRequest.get('/api/coins/coinrank', data)
+		},
+		
+		/**
+		 * 涨跌榜单
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		coinsChg(data) {
+		    // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
+			return minRequest.get('/api/coins/maxchange', data)
+		},
+		/**
+		 * 添加自选
+		 * @param data
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		coins_add(code) {
+		    return minRequest.put('/api/users/' + id + '/coins')
+		},
         /**
          * 获取单个币种
          * @param coin

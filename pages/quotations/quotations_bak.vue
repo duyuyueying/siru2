@@ -40,7 +40,7 @@
 					<mix-pulldown-refresh ref="mixPulldownRefresh0" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 						<scroll-view
 							class="panel-scroll-box"
-							:scroll-y="enableScrollY"
+							:scroll-y="true"
 							@scrolltolower="loadMore"
 							:style="{height: (swiperHeight-30)+'px'}"
 							>
@@ -48,7 +48,7 @@
 								<uni-self-dish-table-cell v-for="(item, index) in swiperItems[0].newsList" :key="index" :item="item" @click="goPage(item.name, item.exChange)"></uni-self-dish-table-cell>
 							</view>
 							<!-- 上滑加载更多组件 -->
-							<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
+							<mix-load-more :status="swiperItems[0].loadMoreStatus"></mix-load-more>
 						</scroll-view>
 					</mix-pulldown-refresh>
 				</swiper-item>
@@ -76,17 +76,16 @@
 								<mix-pulldown-refresh ref="mixPulldownRefresh1" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 									<scroll-view
 										class="panel-scroll-box"
-										:scroll-y="enableScrollY"
-										@scrolltolower="loadMore"
+										:scroll-y="true"
+										@scrolltolower="loadMore('self')"
 										:style="{height: (swiperHeight-112)+'px'}"
 										>
 										<uni-big-dish-table-cell v-for="(item, index) in swiperItems[1].newsList" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-table-cell>
 										<!-- 上滑加载更多组件 -->
-										<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
+										<mix-load-more :status="swiperItems[1].loadMoreStatus"></mix-load-more>
 									</scroll-view>
 								</mix-pulldown-refresh>
 							</swiper-item>
-
 							<swiper-item>
 								<view class="relative_section">
 									<uni-big-dish-table-head></uni-big-dish-table-head>
@@ -94,12 +93,12 @@
 								<mix-pulldown-refresh ref="mixPulldownRefresh2" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 									<scroll-view
 										class="panel-scroll-box"
-										@scrolltolower="loadMore"
-										:style="{height: (swiperHeight-112)+'px'}"
+										:scroll-y="true"
+										@scrolltolower="loadMore('self')"
 										>
 										<uni-big-dish-table-cell v-for="(item, index) in swiperItems[2].newsList" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-table-cell>
 										<!-- 上滑加载更多组件 -->
-										<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
+										<mix-load-more :status="swiperItems[2].loadMoreStatus"></mix-load-more>
 									</scroll-view>
 								</mix-pulldown-refresh>
 							</swiper-item>
@@ -110,12 +109,12 @@
 								<mix-pulldown-refresh ref="mixPulldownRefresh3" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 									<scroll-view
 										class="panel-scroll-box"
-										:scroll-y="enableScrollY"
-										@scrolltolower="loadMore"
+										:scroll-y="true"
+										@scrolltolower="loadMore('self')"
 										>
 										<uni-big-dish-table-cell v-for="(item, index) in swiperItems[3].newsList" :key="index" :item="item" @click="goPage(item.name, '')"></uni-big-dish-table-cell>
 										<!-- 上滑加载更多组件 -->
-										<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
+										<mix-load-more :status="swiperItems[3].loadMoreStatus"></mix-load-more>
 									</scroll-view>
 								</mix-pulldown-refresh>
 							</swiper-item>
@@ -149,18 +148,9 @@
 				currTab: 0,// 默认tab
 				scrollLeft: 0, //顶部选项卡左滑距离
 				enableScroll: true,
+				loadMoreStatus: 0, //加载更多 0加载前，1加载中，2没有更多了
 				swiperItems: [], // 缓存所有swiper加载和刷新相关的数据
 				swiperHeight: 0,
-
-
-				dataList:[],
-				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
-				enableScrollY: true,
-				refreshing: false, // 刷新状态
-				pageNum: 1,
-				total: 0,
-				pageSize: 8,
-				lastPage: 1,
 			}
 		},
 		mixins:[loadMore],
@@ -176,10 +166,7 @@
 		},
 		created() {
 			this.swiperItems = this.initTab(swiperItem);
-			// this.loadList('add');
-		},
-		onShow(){
-			this.loadList('refresh');
+			this.loadList('add');
 		},
 		onReady() {
 			let _this = this;
@@ -272,12 +259,11 @@
 					}
 					//第一次切换tab，动画结束后需要加载数据
 					let currtTab = this.caclcurrTab();
-					// let tabItem = this.swiperItems[currtTab];
-					// if(tabItem.newsList.length == 0 ){
-					// 	this.loadList('add');
-					// 	tabItem.loaded = true;
-					// }
-					this.loadList('refresh');
+					let tabItem = this.swiperItems[currtTab];
+					if(tabItem.newsList.length == 0 ){
+						this.loadList('add');
+						tabItem.loaded = true;
+					}
 				}, 300)
 				
 			},

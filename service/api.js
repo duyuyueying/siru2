@@ -125,6 +125,20 @@ export default {
             return minRequest.put('/api/articles/' + id + '/zan')
         },
         /**
+         * 获取top页内容
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        articles_top(data) {
+            return minRequest.get('/api/articles/top', data)
+        },
+        articles_author(data) {
+            return minRequest.get('/api/articles/follow/author', data)
+        },
+        articles_tag(data) {
+            return minRequest.get('/api/articles/follow/tag', data)
+        },
+        /**
          * 获取文章评论
          * @param articleId
          * @param data

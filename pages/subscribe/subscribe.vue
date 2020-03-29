@@ -26,8 +26,8 @@
 							* class 和 style的绑定限制了一些语法，其他并没有不同
 						-->
 						<view v-for="(item, index) in dataList" :key="index" class="news-item">
-							<tag-list-item :items="item" v-if=" tabItemIndex == 1"></tag-list-item>
-							<person-list-item :item="item" v-else-if=" tabItemIndex == 0" showDetail></person-list-item>
+							<tag-list-item :items="item" v-if="currTab == 1"></tag-list-item>
+							<person-list-item :item="item" v-else-if=" currTab == 0" showDetail></person-list-item>
 						</view>
 						<!-- 上滑加载更多组件 -->
 						<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>

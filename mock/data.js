@@ -121,8 +121,7 @@ let searchTab = [{
     id: 5,
     name: '交易所',
     enCode: 'exChange'
-},
-    {
+}, {
         id: 5,
         name: '专栏',
         enCode: 'specialColumn'

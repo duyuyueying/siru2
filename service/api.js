@@ -27,7 +27,7 @@ minRequest.setConfig((config) => {
     let api_token = uni.getStorageSync('api_token', '')
     // 192.168.1.3 192.168.123.90 192.168.123.224
     // 192.168.50.29
-    config.baseURL = 'http://192.168.1.3:8182'
+    config.baseURL = 'http://192.168.50.29:8182'
     config.header = {
         'content-type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -132,9 +132,19 @@ export default {
         articles_top(data) {
             return minRequest.get('/api/articles/top', data)
         },
+        /**
+         * 获取关注作者文章
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
         articles_author(data) {
             return minRequest.get('/api/articles/follow/author', data)
         },
+        /**
+         * 获取关注标签文章
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
         articles_tag(data) {
             return minRequest.get('/api/articles/follow/tag', data)
         },
@@ -266,7 +276,32 @@ export default {
         tags(data) {
             return minRequest.get('/api/tags', data)
         },
+        /**
+         * 获取热词
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        hot_words(data) {
+            return minRequest.get('/api/hot_words', data)
+        },
 
+        //===============================搜索相关接口================================
+        /**
+         * 搜索文章/内容
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        search_articles(data) {
+            return minRequest.get('/api/search/search', data)
+        },
+        /**
+         * 搜索货币、平台
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        search_coins(data) {
+            return minRequest.get('/api/search/coins', data)
+        },
 
         //===============================行情相关接口================================
         /**

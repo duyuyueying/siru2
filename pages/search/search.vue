@@ -36,7 +36,7 @@
 					</uni-title>
 					<view class="u-wrap">
 						<view class="spacing-row-sm tag_item" v-for="(item, index) in hotList" :key="index">
-							<uni-tag :text="item" :type="index !=0 ?'default': 'selected'" @click="confirm({value: item}, 'changeKeyWord')"></uni-tag>
+							<uni-tag :text="item.name" :type="item.number > 49 ?'default': 'selected'" @click="confirm({value: item.name}, 'changeKeyWord')"></uni-tag>
 						</view>
 					</view>
 				</view>
@@ -181,12 +181,34 @@
 			return {
 				tabCurrentIndex: 0, //当前选项卡索引
 				historyList: [], // 历史搜索
-				hotList: ['BT','BTC','王晓宇','BT','BTC','王晓宇','BT','BTC','王晓宇'], // 热门
+				hotList: [], // 热门
 				keyWord: '', // 搜索关键字
 				showInit: true, // 展示默认页面
 				tabBars: [], // tab数据
 				enableScroll: true,
 				swiperHeight: 0, // scrollView的高度
+				searchTabType: [{
+					id: 2,
+					name: '文章',
+					enCode: 'article',
+					type: 'article'
+				}, {
+					id: 3,
+					name: '快讯',
+					enCode: 'fastNews',
+					type: 'news'
+				}, {
+					id: 4,
+					name: '币种',
+					enCode: 'coinType',
+					type: 'coin'
+				}, {
+					id: 5,
+					name: '交易所',
+					enCode: 'exchange'
+				}
+				],
+				searchType: 'article',
 			}
 		},
 		components:{
@@ -203,9 +225,13 @@
 		},
 		mixins:[loadMore,getElSize],
 		onLoad() {
-			this.tabBars = this.initTab(searchTab);
-			this.loadList('add');
+			this.tabBars = this.initTab(this.searchTabType);
+			// this.loadList('add');
 			this.loadHistoryListData();
+			this.loadHotWords()
+		},
+		onShow() {
+			this.loadList('add');
 		},
 		onReady() {
 			let _this = this;
@@ -220,6 +246,15 @@
 			this.getElSize('.statusBar');
 		},
 		methods: {
+			loadHotWords(){
+				this.$api.hot_words().then(data => {
+					if (data && data.code === 200) {
+						this.hotList = data.result;
+						// this.specialList = data.result;
+					} else {
+					}
+				})
+			},
 			// 获取存放在本地的历史数据
 			loadHistoryListData() {
 				let _this = this;
@@ -307,10 +342,13 @@
 					this.tabCurrentIndex = index; 
 					//第一次切换tab，动画结束后需要加载数据
 					let tabItem = this.tabBars[this.tabCurrentIndex];
+					this.searchType = tabItem.type
+
 					if(this.tabCurrentIndex !== 0 && tabItem.loaded !== true){
-						this.loadList('add');
+						this.loadList('refresh');
 						tabItem.loaded = true;
 					}
+
 				}, 300)
 			},
 			// 清除搜索历史

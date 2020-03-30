@@ -268,7 +268,10 @@
 		},
 		onLoad(event) {
 			this.id = event.id;
-			this.isVideo = event.type == 'vedio'
+			this.isVideo = false
+			if (event.type&&event.type=='video') {
+				this.isVideo = true
+			}
 			let _this = this;
 			this.getDetail();
 			this.read();
@@ -280,7 +283,6 @@
 		},
 		onLoad2(event) {
 			this.id = event.id;
-			this.isVideo = !!event.type 
 			// let _this = this;
 			this.getDetail();
 			this.getListData();

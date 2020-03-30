@@ -76,7 +76,6 @@
 								class="panel-scroll-box" 
 								:scroll-y="enableScroll" 
 								@scrolltolower="loadMore"
-								v-if="index != 0"
 								>
 								<view v-for="(item, index) in tabItem.newsList" :key="index" class="news-item" @click="navToDetails(item)">
 									<!-- 直播 -->
@@ -98,14 +97,14 @@
 									<news-item :newsItem="item" v-else></news-item>
 								</view> 
 								<!-- 上滑加载更多组件 -->
-								<mix-load-more :status="tabItem.loadMoreStatus"></mix-load-more>
+								<mix-load-more :status="loadMoreStatus"></mix-load-more>
 							</scroll-view>
 							<scroll-view
 								class="panel-scroll-box" 
 								:scroll-y="enableScroll" 
 								@scrolltolower="loadMore"
 								:style="{height: swiperHeight+'px'}"
-								v-else
+								v-if="false"
 								>
 								<view v-for="(item, index) in tabItem.newsList" :key="index">
 									<view class="u-item_wrap">
@@ -147,15 +146,13 @@
 									</view>
 								</view>
 								<!-- 上滑加载更多组件 -->
-								<mix-load-more :status="tabItem.loadMoreStatus"></mix-load-more>
+								<mix-load-more :status="loadMoreStatus"></mix-load-more>
 							</scroll-view>
 						</swiper-item>
 					</swiper>
 				</mix-pulldown-refresh>
 			</view>
-			
 		</view>
-		
 	</view>
 </template>
 
@@ -187,6 +184,7 @@
 				tabBars: [], // tab数据
 				enableScroll: true,
 				swiperHeight: 0, // scrollView的高度
+				pageSize: 15,
 				searchTabType: [{
 					id: 2,
 					name: '文章',
@@ -209,6 +207,7 @@
 				}
 				],
 				searchType: 'article',
+				loadMoreStatus: 0,
 			}
 		},
 		components:{
@@ -226,12 +225,8 @@
 		mixins:[loadMore,getElSize],
 		onLoad() {
 			this.tabBars = this.initTab(this.searchTabType);
-			// this.loadList('add');
 			this.loadHistoryListData();
-			this.loadHotWords()
-		},
-		onShow() {
-			this.loadList('add');
+			this.loadHotWords();
 		},
 		onReady() {
 			let _this = this;
@@ -246,6 +241,7 @@
 			this.getElSize('.statusBar');
 		},
 		methods: {
+			// 获得热词
 			loadHotWords(){
 				this.$api.hot_words().then(data => {
 					if (data && data.code === 200) {
@@ -265,58 +261,71 @@
 					}
 				});
 			},
-			//新闻列表
-			loadList(type){
+			//搜索列表
+			async loadList(action){
 				let tabItem = this.tabBars[this.tabCurrentIndex];
-				//type add 加载更多 refresh下拉刷新
-				if(type === 'add'){
-					if(tabItem.loadMoreStatus === 2){
-						return;
-					}
-					tabItem.loadMoreStatus = 1;
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					tabItem.newsList = [];
+					tabItem.pageNum = 1;
+					this.loadMoreStatus = 0;
 				}
-				// #ifdef APP-PLUS
-				else if(type === 'refresh'){
-					tabItem.refreshing = true;
-				}
-				// #endif
-				//setTimeout模拟异步请求数据
-				setTimeout(()=>{
-					let list = [];
-					if(tabItem.name == '专栏') {
-						list = focusAuthors;
-					} else if(tabItem.name == '最新'){
-						list = newsItems;
-					}else if(tabItem.name == '全部'){
-						list = searchList;
+				if (this.loadMoreStatus==0) {
+					this.loadMoreStatus = 1;
+					// 自盘
+					let data = [];
+					if(tabItem.name == '文章') {
+						data = await this.$api.search_articles({
+							type: [1,3],
+							keyword: this.keyWord,
+							pageNum: tabItem.pageNum,
+							pageSize: this.pageSize,
+						});
+					} else if(tabItem.name == '快讯'){
+						data = await this.$api.search_articles({
+							type: 2,
+							keyword: this.keyWord,
+							pageNum: tabItem.pageNum,
+							pageSize: this.pageSize,
+						});
 					} else if(tabItem.name == '币种' ||tabItem.name == '交易所'){
-						list = coins;
-					} else {
-						list = newsItems
+						data = await this.$api.search_coins({
+							keyword: this.keyWord,
+							pageNum: tabItem.pageNum,
+							exhangePage: tabItem.pageNum,
+							pageSize: this.pageSize,
+						});
 					}
-					list.sort((a,b)=>{
-						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
-					})
-					if(type === 'refresh'){
-						tabItem.newsList = []; //刷新前清空数组
-					}
-					list.forEach(item=>{
-						item.id = parseInt(Math.random() * 10000);
-						tabItem.newsList.push(item);
-					})
-					//下拉刷新 关闭刷新动画
-					if(type === 'refresh'){
+					
+					if (data && data.code == 200) {
+						let result = [];
+						if(tabItem.name == '币种') {
+							if(data.result.code == 200){
+								result = data.result.coinlist || [];
+								tabItem.lastPage = data.result.coin_maxpage
+							}
+						} else if(tabItem.name == '交易所'){
+							if(data.result.code == 200){
+								result = data.result.exchangelist || [];
+								tabItem.lastPage = data.result.exchange_maxpage
+							}
+						}else {
+							result = data.result.data || [];
+							tabItem.lastPage = data.result.last_page
+						}
+						tabItem.newsList.push(...result);
 						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-						// #ifdef APP-PLUS
 						tabItem.refreshing = false;
-						// #endif
-						tabItem.loadMoreStatus = 0;
+						if (tabItem.pageNum==tabItem.lastPage) {
+							this.loadMoreStatus = 2;
+						}else{
+							this.loadMoreStatus = 0;
+						}
+						tabItem.pageNum += 1;
+					} else {
+						this.$message(data.msg)
 					}
-					//上滑加载 处理状态
-					if(type === 'add'){
-						tabItem.loadMoreStatus = tabItem.newsList.length > 40 ? 2: 0;
-					}
-				}, 600)
+				}
 			},
 			//tab切换
 			async changeTab(e){
@@ -379,6 +388,7 @@
 				}
 				if(e.value != ''){
 					this.showInit = false;
+					this.loadList('refresh');
 					if(this.historyList.includes(this.keyWord)){
 						return;
 					} else {

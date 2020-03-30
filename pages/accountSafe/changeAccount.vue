@@ -9,7 +9,7 @@
 			<view class="flex1" v-else>
 				<input type="text" class="u-input" placeholder="输入新手机号码" @input="input" v-model="phoneNumber">
 			</view>
-			<view class="flex1" style="position: relative;">
+			<view class="flex1 relative_section">
 				<input type="text" class="u-input space_pad" placeholder="验证码" @input="input" v-model="verifyCode">
 				<view class="vitify_btn" @click="sendCode">
 					<view class="hr"></view>
@@ -31,7 +31,7 @@
 				<text class="desc_txt">为确保账号安全，需验证当前手机有效性</text>
 				<text class="list_item_black_title_sm">当前绑定手机号：13896308941</text>
 			</view>
-			<view class="flex1">
+			<view class="flex1 relative_section">
 				<input type="text" class="u-input space_pad" placeholder="验证码" v-model="verifyCode">
 				<view class="vitify_btn" @click="sendCode">
 					<view class="hr"></view>

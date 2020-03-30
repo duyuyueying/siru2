@@ -1,21 +1,26 @@
 <template>
 	<view class="list_container " @click="goPage">
 		<view class="icon_wrapper">
-			<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
+			<image class="image-list1" :src="item.coinlogo"></image>
 		</view>
 		<view class="content_wapper">
-			<text class="list_item_black_title_sm heavy">{{item.name}}</text>
-			<text class="title_txt">{{item.nikeName}}</text>
+			<text class="list_item_black_title_sm heavy">{{item.symbol}}</text>
+			<text class="title_txt">{{item.native_name}}</text>
 		</view>
 		<view class="content_wapper" style="align-items: flex-end;">
 			<text class="list_item_black_title_sm heavy">${{item.price}}</text>
-			<text class="title_txt" :style="{color: isUp > 0 ? upTheme.txt : downTheme.txt}">{{isUp > 0 ? '+' : '-'}} {{item.change}} %</text>
+			<text class="title_txt" :style="{color: item.change_percent > 0 ? upTheme.txt : downTheme.txt}">{{item.change_percent > 0 ? '+' : ''}} {{item.change_percent}} %</text>
+		</view>
+		<view @click.stop="collect" class="collect_btn_wrap center" v-if="hasCollect">
+			<icons type="collect" :color="item.isCollect ? '#ffb100' : '#a0a0a0'"></icons>
 		</view>
 	</view>
 </template>
 
 <script>
 	import {mapState} from 'vuex';
+	import icons from '@/components/icons/icons.vue';
+	
 	export default {
 		data() {
 			return {
@@ -23,17 +28,26 @@
 			};
 		},
 		props: {
-			item: Object
+			item: Object,
+			hasCollect:{
+				type: Boolean,
+				default: false,
+			}
+		},
+		components:{
+			icons
 		},
 		mounted() {
 			console.log(this)
 		},
 		methods:{
 			goPage() {
-				let symbol = this.item.name;
+				let symbol = this.item.symbol;
 				let exChangeName = this.item.exChangeName || '';
+				let code  = this.item.coincode
 				uni.navigateTo({
-					url: '/pages/quotations/coinDetail?symbol='+symbol+'&exChangeName='+exChangeName
+					url: '/pages/quotations/coinDetail?symbol='+symbol+'&exChangeName='+exChangeName+'&code='+code
+					
 				});
 			}
 		},
@@ -87,5 +101,11 @@
 	}
 	.redColor {
 		color: #e54d42
+	}
+	.collect_btn_wrap{
+		width: 80upx;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
 </style>

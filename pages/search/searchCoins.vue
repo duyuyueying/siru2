@@ -36,7 +36,7 @@
 					</uni-title>
 					<view class="u-wrap">
 						<view class="spacing-row-sm tag_item" v-for="(item, index) in hotList" :key="index">
-							<uni-tag :text="item" :type="index !=0 ?'default': 'selected'" @click="confirm({value: item}, 'changeKeyWord')"></uni-tag>
+							<uni-tag :text="item.name" :type="item.number > 49 ?'default': 'selected'" @click="confirm({value: item.name}, 'changeKeyWord')"></uni-tag>
 						</view>
 					</view>
 				</view>
@@ -52,6 +52,7 @@
 						@scrolltolower="loadMore"
 						>
 						<view class="list_wrap">
+							<uni-coins-item v-for="(item, index) in listData" :key="index" :item="item" type="search" hasCollect @collect="collect(id)"></uni-coins-item>
 							<uni-self-dish-table-cell v-for="(item, index) in listData" :key="index" :item="item" type="search" hasCollect @collect="collect(id)"></uni-self-dish-table-cell>
 						</view>
 						<!-- 上滑加载更多组件 -->
@@ -70,7 +71,7 @@
 	import uniTag from '@/components/uni-tag.vue';
 	import {newsList} from '../../service/getData.js';
 	import {loadMore} from '@/common/util.js';
-	import uniSelfDishTableCell from '@/components/list-item/uni-self-dish-table-cell.vue';
+	import uniCoinsItem from '@/components/list-item/uni-coins-item';
 	import icons from '@/components/icons/icons.vue';
 	import {coins} from '@/mock/data';
 	
@@ -80,7 +81,7 @@
 		data() {
 			return {
 				historyList: [],// 搜索历史
-				hotList: ['BT','BTC','王晓宇','BT','BTC','王晓宇','BT','BTC','王晓宇'], // 热词
+				hotList: [], // 热词
 				listData: [], // 搜索列表
 				keyWord: '', // 搜索关键字
 				showInit: true, // 展示默认页面
@@ -88,31 +89,44 @@
 				swiperHeight: 0, // scroll-view的高度
 				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
 				refreshing: false, // 刷新状态
+				pageNum: 1,
+				pageSize: 15,
+				total: 0,
+				lastPage: 1,
 			}
 		},
 		components:{
 			uniTitle,
 			uniStatusBar,
-			uniSelfDishTableCell,
+			uniCoinsItem,
 			uniIcons,
 			uniTag,
 			icons
 		},
 		mixins:[loadMore],
 		onLoad() {
-			this.loadList('add');
+			// this.loadList('add');
 			this.loadHistoryListData();
+			this.loadHotWords();
 		},
 		onReady() {
 			let _this = this;
 			uni.getSystemInfo({
 				success: function(e) {
-					console.log(e.windowTop,e.windowBottom,e.statusBarHeight);
 					_this.swiperHeight = e.windowHeight - 44;
 				}
 			})
 		},
 		methods: {
+			// 获得热词
+			loadHotWords(){
+				this.$api.hot_words().then(data => {
+					if (data && data.code === 200) {
+						this.hotList = data.result;
+					} else {
+					}
+				})
+			},
 			// 获取存放在本地的历史数据
 			loadHistoryListData() {
 				let _this = this;
@@ -123,51 +137,91 @@
 					}
 				});
 			},
-			//列表
-			loadList(type){
-				//type add 加载更多 refresh下拉刷新
-				if(type === 'add'){
-					if(this.loadMoreStatus === 2){
-						return;
-					}
+			
+			//搜索列表
+			async loadList(action){
+				// let tabItem = this.tabBars[this.tabCurrentIndex];
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					this.listData = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+				if (this.loadMoreStatus==0) {
 					this.loadMoreStatus = 1;
-				}
-				// #ifdef APP-PLUS
-				else if(type === 'refresh'){
-					this.refreshing = true;
-				}
-				// #endif
-				
-				//setTimeout模拟异步请求数据
-				setTimeout(()=>{
-					let list = coins
+					let data = await this.$api.search_coins({
+						keyword: this.keyWord,
+						pageNum: this.pageNum,
+						exhangePage: 0,
+						pageSize: this.pageSize,
+					});
 					
-					list.sort((a,b)=>{
-						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
-					})
-					if(type === 'refresh'){
-						this.listData = []; //刷新前清空数组
-					}
-					let tempArr = [];
-					list.forEach(item=>{
-						item.id = parseInt(Math.random() * 10000);
-						tempArr.push(item);
-					})
-					this.listData.push(...tempArr);
-					//下拉刷新 关闭刷新动画
-					if(type === 'refresh'){
+					if (data && data.code == 200) {
+						let result = [];
+						if(data.result.code == 200){
+							result = data.result.coinlist || [];
+							this.lastPage = data.result.coin_maxpage
+						}
+						this.listData.push(...result);
 						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-						// #ifdef APP-PLUS
 						this.refreshing = false;
-						// #endif
-						this.loadMoreStatus = 0;
+						if (this.pageNum==this.lastPage) {
+							this.loadMoreStatus = 2;
+						}else{
+							this.loadMoreStatus = 0;
+						}
+						this.pageNum += 1;
+					} else {
+						this.$message(data.msg)
 					}
-					//上滑加载 处理状态
-					if(type === 'add'){
-						this.loadMoreStatus = this.listData.length > 40 ? 2: 0;
-					}
-				}, 600)
+				}
 			},
+			//列表
+			// loadList(type){
+			// 	//type add 加载更多 refresh下拉刷新
+			// 	if(type === 'add'){
+			// 		if(this.loadMoreStatus === 2){
+			// 			return;
+			// 		}
+			// 		this.loadMoreStatus = 1;
+			// 	}
+			// 	// #ifdef APP-PLUS
+			// 	else if(type === 'refresh'){
+			// 		this.refreshing = true;
+			// 	}
+			// 	// #endif
+				
+			// 	//setTimeout模拟异步请求数据
+			// 	setTimeout(()=>{
+			// 		let list = coins
+					
+			// 		list.sort((a,b)=>{
+			// 			return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
+			// 		})
+			// 		if(type === 'refresh'){
+			// 			this.listData = []; //刷新前清空数组
+			// 		}
+			// 		let tempArr = [];
+			// 		list.forEach(item=>{
+			// 			item.id = parseInt(Math.random() * 10000);
+			// 			tempArr.push(item);
+			// 		})
+			// 		this.listData.push(...tempArr);
+			// 		//下拉刷新 关闭刷新动画
+			// 		if(type === 'refresh'){
+			// 			this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+			// 			// #ifdef APP-PLUS
+			// 			this.refreshing = false;
+			// 			// #endif
+			// 			this.loadMoreStatus = 0;
+			// 		}
+			// 		//上滑加载 处理状态
+			// 		if(type === 'add'){
+			// 			this.loadMoreStatus = this.listData.length > 40 ? 2: 0;
+			// 		}
+			// 	}, 600)
+			// },
+			
 			// 清除搜索历史
 			clearAllHistory() {
 				this.historyList = [];
@@ -189,6 +243,7 @@
 					this.keyWord = e.value;
 				}
 				if(e.value != ''){
+					this.loadList('refresh');
 					this.showInit = false;
 					if(this.historyList.includes(this.keyWord)){
 						return;

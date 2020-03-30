@@ -1,24 +1,25 @@
 <template>
 	<view class="list_item_wrap list_container" @click="goPage">
 		<view class="icon_wrapper">
-			<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
+			<image class="image-list1" :src="item.platform_logo"></image>
 		</view>
 		<view class="content_wapper">
-			<text class="list_item_black_title_sm heavy">{{item.name}}</text>
-			<text class="normal_txt">交易对{{item.eosAndEth}}</text>
+			<text class="list_item_black_title_sm heavy">{{item.platform_name}}</text>
+			<text class="normal_txt">交易对&nbsp;{{item.pairs}}</text>
 		</view>
 		<view class="content_wapper">
-			<text class="list_item_black_title_sm heavy">${{item.sale}}万元</text>
-			<text class="list_item_black_txt">&yen;{{item.totalPrice}}</text>
+			<text class="list_item_black_title_sm heavy">{{unitConvert(item.volum_24h)}}</text>
+			<text class="list_item_black_txt">24H交易额</text>
 		</view>
 		<view class="content_wapper u-progress_wrap">
-			<view style="flex:3" class="mr20"><progress stroke-width="8" activeColor="#ffb100" :percent="item.exRangk*10"></progress></view>
-			<view style="flex:1;"><text class="title_txt">{{item.exRangk}}</text></view>
+			<view style="flex:3" class="mr20"><progress stroke-width="8" activeColor="#ffb100" :percent="item.exrank*10"></progress></view>
+			<view style="flex:1;"><text class="title_txt">{{item.exrank}}</text></view>
 		</view>
 	</view>
 </template>
 
 <script>
+	import {unitConvert} from '@/common/util.js';
 	export default {
 		data() {
 			return {
@@ -28,6 +29,7 @@
 		props: {
 			item: Object
 		},
+		mixins:[unitConvert],
 		created() {
 			this.theme = uni.getStorageSync('markTheme') || 'greenUp';
 		},

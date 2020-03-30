@@ -48,7 +48,7 @@
 							
 							<mix-load-more :status="loadMoreStatus" @click.native="loadMore" :isShow=" loadMoreStatus == 1"></mix-load-more>
 							<view :style="{textAlign: 'center', marginTop: swiperItems[0].newsList.length > 0 ? '0upx': '<10></10>0upx'}">
-								<view class="btn_collect">
+								<view class="btn_collect" @click="goSearch">
 									<icons type="add" color="#333"></icons>添加自选
 								</view>
 							</view>
@@ -170,6 +170,7 @@
 				total: 0,
 				pageSize: 20,
 				lastPage: 1,
+				isTap: false,
 			}
 		},
 		mixins:[loadMore],
@@ -204,6 +205,7 @@
 				let currTab = this.caclcurrTab()
 				let tabItem = this.swiperItems[currTab];
 				//action= add上拉加载 refresh下拉刷新
+				console.log(action);
 				if (action=='refresh') {
 					tabItem.newsList = [];
 					this.pageNum = 1;
@@ -266,10 +268,10 @@
 							this.loadMoreStatus = 0;
 						}
 						this.pageNum += 1;
-						
 					} else {
 						this.$message(data.msg)
 					}
+					this.isTap = false;
 					// })
 				}
 				//type add 加载更多 refresh下拉刷新
@@ -328,6 +330,10 @@
 			},
 			//tab切换
 			async changeTab(e, keyName){
+				if(this.isTap){
+					return;
+				}
+				this.isTap = true;
 				if(scrollTimer){
 					//多次切换只执行最后一次
 					clearTimeout(scrollTimer);
@@ -354,20 +360,17 @@
 			},
 			transition(e) {
 				let dx = e.detail.dx;
-				console.log(e.detail.dx);
-				if(this.currTab != 0 && this.currSubTab == 0 && dx < 0){
-					
-					if(dx < -150 && dx > -300){
-						this.currTab = 0;
-					}
-				}
+				// if(this.currTab != 0 && this.currSubTab == 0 && dx < 0){
+				// 	if(dx < -150 && dx > -300){
+				// 		this.currTab = 0;
+				// 	}
+				// }
 			},
 			animationfinish(e) {
 				console.log('animationend==', e);
 			},
 			// 去详情页面
 			goPage(symbol, exChangeName, code) {
-				console.log(symbol, exChangeName, code);
 				uni.navigateTo({
 					url: '/pages/quotations/coinDetail?symbol='+symbol+'&exChangeName='+exChangeName+'&code='+code
 				});

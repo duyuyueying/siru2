@@ -3,7 +3,7 @@
 		<view class="content_wrapper">
 			<text class="media-title list_item_black_title_base">{{newsItem.name}}</text>
 			<view class="media-info flex-row space_between">
-				<text class="list_item_normal_txt focus_color">快讯</text>
+				<!-- <text class="list_item_normal_txt focus_color">快讯</text> -->
 				<text class="list_item_normal_txt right_space_base">{{friendlyDate(date2tamp(newsItem.create_time))}}</text>
 				<!-- 为了样式只取一条放在listitem -->
 				<view>

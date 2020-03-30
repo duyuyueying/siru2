@@ -233,7 +233,7 @@
 					this.dataList.forEach((item, index)=>{
 						let newObj = Object.assign({},item);
 						if( item.exchange_code == exchange_code) {
-							newObj.is_focus = !newObj.isCollect
+							newObj.is_follow = !newObj.is_follow
 						}
 						tempArr.push(newObj);
 					})

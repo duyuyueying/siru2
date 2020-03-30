@@ -20,7 +20,7 @@
 			</view>
 			<view style="width: 100upx;" v-else></view>
 			<view @click.stop="collect" class="collect_btn_wrap flex center" v-if="hasCollect">
-				<icons type="collect" :color="item.is_focus ? '#ffb100' : '#a0a0a0'"></icons>
+				<icons type="collect" :color="item.is_follow ? '#ffb100' : '#a0a0a0'"></icons>
 			</view>
 		</view>
 	</view>

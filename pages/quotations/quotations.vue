@@ -42,7 +42,13 @@
 								<uni-self-dish-table-cell v-for="(item, index) in swiperItems[0].newsList" :key="index" :item="item" @click="goPage(item.name, item.exChange, item.code)"></uni-self-dish-table-cell>
 							</view>
 							<!-- 上滑加载更多组件 -->
-							<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
+<!-- 							<mix-load-more :status="loadMoreStatus" @click.native="loadMore" v-if="apiToken"></mix-load-more>
+ -->							
+							<view :style="{textAlign: 'center', marginTop: swiperItems[0].newsList.length > 0 ? '0upx': '100upx'}">
+								<view class="btn_collect">
+									<icons type="add" color="#333"></icons>添加自选
+								</view>
+							</view>
 						</scroll-view>
 					</mix-pulldown-refresh>
 				</swiper-item>
@@ -77,6 +83,7 @@
 										<uni-big-dish-table-cell v-for="(item, index) in swiperItems[1].newsList" :key="index" :item="item" @click="goPage(item.name, '', item.code)"></uni-big-dish-table-cell>
 										<!-- 上滑加载更多组件 -->
 										<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
+										
 									</scroll-view>
 								</mix-pulldown-refresh>
 							</swiper-item>
@@ -186,7 +193,7 @@
 				}
 			})
 		},
-		computed: mapState(['upTheme', 'downTheme']),
+		computed: mapState(['upTheme', 'downTheme', 'apiToken']),
 		methods: {
 			async loadList(action){
 				let currTab = this.caclcurrTab()
@@ -202,11 +209,17 @@
 					// 自盘？
 					let data = 0;
 					if(this.currTab == 0){
-						data = await this.$api.coins_focus_list({
-							page: this.pageNum,
-							pageSize: this.pageSize,
-						});
-						// data = [];
+						if(this.apiToken != null ) {
+							data = await this.$api.coins_focus_list({
+								page: this.pageNum,
+								pageSize: this.pageSize,
+							});
+						} else {
+							data = await this.$api.coins({
+								page: 1,
+								pageSize: 8,
+							});
+						}
 					}
 					// 市值榜
 					if(this.currTab == 1 && this.currSubTab == 0) {
@@ -228,8 +241,13 @@
 						});
 					}
 					if (data && data.code === 200) {
-						const result = data.result.data || []
-						if(this.currTab == 1 && (this.currSubTab == 1 || this.currSubTab == 2 )) {
+						const result = data.result.data || [];
+						
+						if(this.currTab == 0 && this.apiToken == null) {
+							// 当没有登录时候，默认只显示8条市值榜数据，并没有下拉加载
+							this.lastPage = 1
+						} else if(this.currTab == 1 && (this.currSubTab == 1 || this.currSubTab == 2 )) {
+							// 涨幅榜和跌幅榜只有30条数据，故没有下拉
 							this.lastPage = 1
 						} else {
 							this.lastPage = data.result.maxpage
@@ -350,6 +368,10 @@
 			},
 			// 去编辑页面
 			goEditPage() {
+				if(this.apiToken == null) {
+					this.$message({icon: 'none', title:'请前去登录！'});
+					return;
+				}
 				uni.navigateTo({
 					url: '/pages/quotations/editCoins'
 				});
@@ -376,6 +398,7 @@
 	}
 	.panel-scroll-box{
 		height: 100%;
+		
 	}
 	.progress_box{
 		margin-top: 10px;
@@ -407,5 +430,15 @@
 		height: 32px;
 		width: 100%;
 	}
-	
+	.btn_collect{
+		display: inline-block;
+		padding: $space-sm $space-lg;
+		background-color: #fff;
+		color: #333;
+		font-size: 28upx;
+		border: 1upx solid #fafafa;
+		box-shadow: 0 0 10upx rgba(0,0,0,.3);
+		border-radius: 50upx;
+		margin: $space-lg auto;
+	}
 </style>

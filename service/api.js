@@ -18,6 +18,7 @@ minRequest.interceptors.request((request) => {
 minRequest.interceptors.response((response) => {
     if (response.data && (response.data.code == 401 || response.data.code == 402)) {
         store.commit("USER_INFO", null);
+		store.commit('API_TOKEN', null);
     }
     return response.data
 })

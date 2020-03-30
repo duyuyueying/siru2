@@ -39,15 +39,14 @@
 							:style="{height: (swiperHeight-30)+'px'}"
 							>
 							<view class="list_wrap" v-if="apiToken == null">
-								<uni-self-dish-table-cell v-for="(item, index) in swiperItems[0].newsList" :key="index" :item="item" @click="goPage(item.name, item.exChange, item.code)"></uni-self-dish-table-cell>
+								<uni-self-dish-table-cell v-for="(item, index) in swiperItems[0].newsList" :key="index" :item="item" @click="goPage(item.name, '', item.code)"></uni-self-dish-table-cell>
 							</view>
 							<view class="list_wrap" v-else>
-								<uni-follow-table-cell v-for="(item, index) in swiperItems[0].newsList" :key="index" :item="item" @click="goPage(item.name, item.exChange, item.code)"></uni-follow-table-cell>
+								<uni-follow-table-cell v-for="(item, index) in swiperItems[0].newsList" :key="index" :item="item" @click="goPage(item.name, '', item.id)"></uni-follow-table-cell>
 							</view>
 							<!-- 上滑加载更多组件 -->
 							
-							<mix-load-more :status="loadMoreStatus" @click.native="loadMore" :isShow="loadMoreStatus == 1"></mix-load-more>
-							
+							<mix-load-more :status="loadMoreStatus" @click.native="loadMore" :isShow=" loadMoreStatus == 1"></mix-load-more>
 							<view :style="{textAlign: 'center', marginTop: swiperItems[0].newsList.length > 0 ? '0upx': '<10></10>0upx'}">
 								<view class="btn_collect">
 									<icons type="add" color="#333"></icons>添加自选
@@ -368,6 +367,7 @@
 			},
 			// 去详情页面
 			goPage(symbol, exChangeName, code) {
+				console.log(symbol, exChangeName, code);
 				uni.navigateTo({
 					url: '/pages/quotations/coinDetail?symbol='+symbol+'&exChangeName='+exChangeName+'&code='+code
 				});

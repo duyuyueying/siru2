@@ -43,6 +43,7 @@
 						:style="{height: swiperHeight+'px'}"
 						>
 						<uni-coins-detail-table-cell v-for="(item, index) in dataList" :key="index" :isSelect="index == 0" :item="item" hasCollect @collect="collect"></uni-coins-detail-table-cell>
+						
 						<!-- 上滑加载更多组件 -->
 						<mix-load-more :status="loadMoreStatus"></mix-load-more>
 					</scroll-view>
@@ -147,13 +148,13 @@
 		methods:{
 			init() {
 				this.getDetail();
-				// this.getMarket();
 			},
 			async getDetail() {
 				let data = await this.$api.coins_detail(this.code);
 				if (data && data.code === 200) {
-					this.detail = data.result.data;
-					console.log(this.detail);
+					if(data.result.code == 200) {
+						this.detail = data.result.data;
+					}
 				}
 			},
 			// async getMarket() {
@@ -175,24 +176,27 @@
 						pageSize: this.pageSize,
 					});
 						if (data && data.code === 200) {
-							console.log(this.pageNum)
-				
-							const result = data.result.data.markets
-							this.total = data.result.total_count
-							this.lastPage = data.result.total_pages
-							this.dataList.push(...result);
-							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-							this.refreshing = false;
-							if (this.pageNum==this.lastPage) {
-								this.loadMoreStatus = 2;
-							}else{
-								this.loadMoreStatus = 0;
+							if(data.result.code == 200) {
+								console.log(this.pageNum)
+					
+								const result = data.result.data.markets
+								this.total = data.result.total_count
+								this.lastPage = data.result.total_pages
+								this.dataList.push(...result);
+								console.log(this.dataList);
+								this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+								this.refreshing = false;
+								if (this.pageNum>=this.lastPage) {
+									this.loadMoreStatus = 2;
+								}else{
+									this.loadMoreStatus = 0;
+								}
+								this.pageNum += 1;
 							}
-							this.pageNum += 1;
-						} else {
-							this.$message(data.msg)
-						}
 					// })
+					} else {
+								this.$message(data.msg)
+							}
 				}
 			},
 			changeTab(e){

@@ -53,12 +53,7 @@
 		},
 		methods:{
 			onClick(){
-				let symbol = this.item.symbol;
-				let exChangeName = this.item.exChangeName
-				uni.navigateTo({
-					url: '/pages/quotations/coinDetail?symbol='+symbol+'&exChangeName='+exChangeName
-				});
-				// this.$emit('click');
+				this.$emit('click');
 			},
 			// 自选
 			collect() {

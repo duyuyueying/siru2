@@ -3,7 +3,7 @@
 		<view class="flex3 center">
 			<text class="blod_black_txt">{{item.rank}}</text>
 		</view>
-		<view class="flex4 flex_column">
+		<view class="flex4 flex_column ">
 			<text class="blod_black_txt">{{item.name}}</text>
 			<text class="normal_txt">{{item.fullname}}</text>
 		</view>

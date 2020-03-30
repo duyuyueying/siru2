@@ -259,7 +259,8 @@ $space-padding: 25upx;
 	/* #ifndef APP-NVUE */
 	display: -webkit-flex;
 	display: flex;
-	border: 0 solid  #F9F9F9;
+	//border: 0 solid  #F9F9F9;
+	border-bottom: 1px solid #edf0f2;
 	border-bottom-width: 2upx;
 	/* #endif */
 	flex-direction: row;

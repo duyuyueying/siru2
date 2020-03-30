@@ -27,7 +27,7 @@ minRequest.setConfig((config) => {
     let api_token = uni.getStorageSync('api_token', '')
     // 192.168.1.3 192.168.123.90 192.168.123.224
     // 192.168.50.29
-    config.baseURL = 'http://192.168.123.224:8182'
+    config.baseURL = 'http://192.168.1.3:8182'
     config.header = {
         'content-type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',

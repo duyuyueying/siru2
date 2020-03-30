@@ -1,6 +1,6 @@
 <template>
 	<view class="detail_wrap">
-		<view class="head_wrap space_between flex_row">
+		<view class="head_wrap space_between flex_row" v-if="detail != null">
 			<view class="flex2 space_between flex_column">
 				<text class="bold_txt" :style="{color: detail.change_percent > 0 ? upTheme.txt : downTheme.txt}">&yen;{{detail.price_cny}}</text>
 				<text class="sm_txt" :style="{color: detail.change_percent > 0 ? upTheme.txt : downTheme.txt}">={{detail.price}}&nbsp;&nbsp;({{detail.change_percent}}%)</text>

@@ -3,7 +3,7 @@
 		<view class="list">
 			<uni-title title="手机号" :isBold="false" :height="120" @click="onClick('phone')">
 				<view class="flex_row item_wrap">
-					<text class="list_item_black_txt">1398308941</text>
+					<text class="list_item_black_txt">{{userInfo.phone}}</text>
 					<icons type="icon" color='#ddd'></icons>
 				</view>
 			</uni-title>
@@ -23,7 +23,7 @@
 		<view class="list">
 			<uni-title title="账号密码" :isBold="false" :height="120" @click="onClick('password')">
 				<view class="flex_row item_wrap">
-					<text class="list_item_black_txt">未设置</text>
+					<text class="list_item_black_txt">设置密码</text>
 					<icons type="right" color='#ddd'></icons>
 				</view>
 			</uni-title>
@@ -35,6 +35,8 @@
 <script>
 	import uniTitle from '@/components/uni-title.vue';
 	import icons from '@/components/icons/icons.vue';
+	import {mapState} from "vuex";
+
 	export default {
 		data() {
 			return {
@@ -49,6 +51,9 @@
 		components:{
 			uniTitle,
 			icons
+		},
+		computed: {
+			...mapState(['userInfo'])
 		},
 		methods: {
 			//用户点击列表项

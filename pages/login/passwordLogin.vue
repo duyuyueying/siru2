@@ -8,8 +8,8 @@
 				<view class="flex1">
 					<input type="text" class="u-input" placeholder="密码" v-model="password">
 				</view>
-				<view @click="gotoForget" style="text-align: right;">
-					<text class="normal_txt">忘记密码？</text>
+				<view @click="goBack" style="text-align: right;">
+					<text class="normal_txt">忘记密码？请使用验证码登录后设置密码</text>
 				</view>
 			</template>
 			<template v-slot:submit>
@@ -35,17 +35,24 @@
 			loginLayout
 		},
 		methods: {
-			...mapMutations(['USER_ID']),
+			...mapMutations(['API_TOKEN']),
 			submit() {
-				console.log()
-				this.USER_ID(1);
-				uni.setStorage({
-					key:'USER_ID',
-					data: 1
+				this.$api.login(this.phoneNumber, this.password).then(data => {
+					if (data && data.code === 200) {
+						this.API_TOKEN(data.result.api_token)
+						// 接口成功后跳转
+						uni.navigateBack({
+							delta: 3
+						});
+					} else {
+						this.$message(data.msg)
+					}
 				})
+			},
+			goBack() {
 				uni.navigateBack({
-					delta:3
-				});
+					delta:1
+				})
 			},
 			gotoForget() {
 				uni.navigateTo({

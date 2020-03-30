@@ -4,13 +4,13 @@
 		<view class="wrap" v-if="type == 'phone'">
 			<view v-if="steps == 'one'" class="space_mar flex_column">
 				<text class="desc_txt">为确保账号安全，需验证当前手机有效性</text>
-				<text class="list_item_black_title_sm">当前绑定手机号：13896308941</text>
+				<text class="list_item_black_title_sm">当前绑定手机号：{{userInfo.phone}}</text>
 			</view>
 			<view class="flex1" v-else>
-				<input type="text" class="u-input" placeholder="输入新手机号码" @input="input" v-model="phoneNumber">
+				<input type="text" class="u-input" placeholder="输入新手机号码" v-model="phoneNumber">
 			</view>
 			<view class="flex1 relative_section">
-				<input type="text" class="u-input space_pad" placeholder="验证码" @input="input" v-model="verifyCode">
+				<input type="text" class="u-input space_pad" placeholder="验证码" v-model="verifyCode">
 				<view class="vitify_btn" @click="sendCode">
 					<view class="hr"></view>
 					<text class="submit_btn_txt" :style="{color: !codeFlag ? '#ffb100' : '#5d6368'}">{{verifyCodeDesc}}</text>
@@ -29,7 +29,7 @@
 		<view class="wrap" v-if="type == 'password'">
 			<view class="space_mar">
 				<text class="desc_txt">为确保账号安全，需验证当前手机有效性</text>
-				<text class="list_item_black_title_sm">当前绑定手机号：13896308941</text>
+				<text class="list_item_black_title_sm">当前绑定手机号：{{userInfo.phone}}</text>
 			</view>
 			<view class="flex1 relative_section">
 				<input type="text" class="u-input space_pad" placeholder="验证码" v-model="verifyCode">
@@ -39,7 +39,7 @@
 				</view>
 			</view>
 			<view class="flex1">
-				<input type="password" class="u-input" placeholder="输入最少8位密码" v-model="password">
+				<input type="password" class="u-input" placeholder="输入最少6位密码" v-model="password">
 			</view>
 			<view class="flex1">
 				<input type="password" class="u-input" placeholder="确认密码" v-model="comfirePassword">
@@ -51,6 +51,8 @@
 </template>
 
 <script>
+	import {mapState, mapMutations} from "vuex";
+
 	export default {
 		data() {
 			return {
@@ -62,11 +64,16 @@
 				codeFlag: false, // 
 				password: '',
 				comfirePassword: '',
+				counter: 0,
 			};
+		},
+		computed: {
+			...mapState(['userInfo'])
 		},
 		onLoad(query) {	
 			this.type = query.type
 			if(query.type == 'phone') {
+				this.phoneNumber = this.userInfo.phone
 				uni.setNavigationBarTitle({
 					title: '更换手机号'
 				});
@@ -78,10 +85,12 @@
 				uni.setNavigationBarTitle({
 					title: '设置密码'
 				})
+				this.phoneNumber = this.userInfo.phone
 			}
 			// console.log(query);
 		},
 		methods:{
+			...mapMutations(['USER_INFO']),
 			// 修改密码提交逻辑
 			changePassword(){
 				if(this.verifyCode == ''){
@@ -108,10 +117,24 @@
 				if(this.password != this.comfirePassword){
 					uni.showToast({
 						icon: 'none',
-						title: '新密码和确认密码一致'
+						title: '新密码和确认密码不一致'
 					});
 					return;
 				}
+
+				this.$api.user_password(this.password, this.verifyCode).then(data => {
+					if (data && data.code === 200) {
+						// 接口成功后跳转
+						this.$message('设置成功',function () {
+							uni.navigateBack({
+								delta: 1
+							});
+						},900)
+					} else {
+						this.$message(data.msg)
+					}
+				})
+
 			},
 			// 更换手机号码提交逻辑
 			submit(){
@@ -129,18 +152,53 @@
 					});
 					return;
 				}
+
 				if(this.steps=="one") {
-					// reset数据
-					this.codeFlag = false;
-					clearInterval(this.timer);
-					this.verifyCodeDesc = '获取验证码';
-					this.verifyCode = '';
-					// 设置数据
-					this.steps = 'two';
-					uni.setNavigationBarTitle({
-						title: '更换新手机号码'
+					this.$api.check_sms(this.phoneNumber, this.verifyCode).then(data => {
+						if (data && data.code === 200) {
+							// 接口成功后跳转
+							// reset数据
+							this.codeFlag = false;
+							clearInterval(this.timer);
+							this.verifyCodeDesc = '获取验证码';
+							this.verifyCode = '';
+							// 设置数据
+							this.steps = 'two';
+							uni.setNavigationBarTitle({
+								title: '更换新手机号码'
+							})
+						} else {
+							this.$message(data.msg)
+						}
+					})
+				}else{
+					this.$api.user_phone(this.phoneNumber, this.verifyCode).then(data => {
+						if (data && data.code === 200) {
+							// 接口成功后跳转
+							let user = this.userInfo
+							user.phone = this.phoneNumber
+							this.USER_INFO(user);
+
+							this.$message('手机更改成功',function () {
+								uni.navigateBack({
+									delta: 2
+								});
+							},900)
+						} else {
+							this.$message(data.msg)
+						}
 					})
 				}
+			},
+			calcCounter(){
+				this.timer = setInterval(()=>{
+					if(this.counter == 0){
+						clearInterval(this.timer);
+					} else {
+						this.counter--
+						this.verifyCodeDesc = this.counter+'s';
+					}
+				},1000);
 			},
 			// 发送验证码倒计时
 			sendCode() {
@@ -154,9 +212,28 @@
 				if(this.codeFlag){
 					return;
 				}
+
+				if (this.counter != 0) {
+					return
+				}
 				this.codeFlag = true;
-				let counter = 60;
-				this.verifyCodeDesc = counter+'s';
+				this.counter = 60
+				this.verifyCodeDesc = this.counter+'s';
+				this.calcCounter()
+
+				// 发送验证码逻辑
+				this.$api.send_sms(this.phoneNumber).then(data => {
+					if (data && data.code === 200) {
+						// this.$message('发送短信成功', function (phone) {
+						// }(this.phoneNumber), 2000)
+					} else {
+						this.$message(data.msg)
+					}
+				}).catch(err => {
+					this.$message('网络错误')
+				})
+
+
 			}
 		}
 	}

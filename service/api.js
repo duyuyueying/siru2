@@ -46,6 +46,15 @@ export default {
             return minRequest.get('/web/captcha', data)
         },
         /**
+         * 验证短信验证码是否正确
+         * @param phone
+         * @param verify_code
+         * @returns {Promise | Promise<unknown>}
+         */
+        check_sms(phone, verify_code) {
+            return minRequest.post('/api/common/check_sms', {phone: phone, verify_code: verify_code})
+        },
+        /**
          * 发送短信验证码
          * @param phone
          * @returns {Promise<unknown>}
@@ -65,11 +74,11 @@ export default {
         /**
          * TODO:账号登录
          * @param phone
-         * @param verify_code
+         * @param password
          * @returns {Promise<unknown>}
          */
-        login(phone, verify_code) {
-            return minRequest.post('/api/login', {phone: phone, verify_code: verify_code})
+        login(phone, password) {
+            return minRequest.post('/api/login', {phone: phone, password: password})
         },
         /**
          * 获取登录用户信息
@@ -79,15 +88,33 @@ export default {
             return minRequest.get('/api/user')
         },
         /**
+         * 设置密码
+         * @param password
+         * @param verify_code
+         * @returns {Promise | Promise<unknown>}
+         */
+        user_password(password, verify_code){
+            return minRequest.put('/api/user/password',{password:password,verify_code:verify_code})
+        },
+        /**
+         * 更改手机
+         * @param phone
+         * @param verify_code
+         * @returns {Promise | Promise<unknown>}
+         */
+        user_phone(phone, verify_code) {
+            return minRequest.put('/api/user/phone',{phone:phone,verify_code:verify_code})
+        },
+        /**
          * 修改用户信息
          * @returns {Promise<unknown>}
          */
-        user_modify() {
-            return minRequest.put('/api/users')
+        user_modify(data) {
+            return minRequest.put('/api/user/modify', data)
         },
         /**
          * 获取文章列表
-         * @param articleId
+         * @param data
          * @returns {Promise<unknown>}
          */
         articles(data) {

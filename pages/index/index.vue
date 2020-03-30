@@ -292,6 +292,7 @@
 					this.loadMoreStatus = 1;
 					this.$api.articles({
 						category_id: this.category_id,
+						type: [1,3],
 						pageNum: this.pageNum,
 						pageSize: this.pageSize,
 					}).then(data => {

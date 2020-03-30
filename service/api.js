@@ -285,6 +285,15 @@ export default {
         hot_words(data) {
             return minRequest.get('/api/hot_words', data)
         },
+        /**
+         * 获取单页内容/隐私政策,服务协议等
+         * @param type
+         * @returns {Promise | Promise<unknown>}
+         */
+        get_pages(type) {
+            return minRequest.get('/api/pages/' + type)
+        },
+
 
         //===============================搜索相关接口================================
         /**
@@ -311,74 +320,74 @@ export default {
          * @returns {Promise | Promise<unknown>}
          */
         coins2(data) {
-			console.log(data);
-			let options = {};
-			options.search = data.search || '';
-			options.ids = data.ids || '';
-			options.limit = data.pagesize ||20;
-			options.offset = data.pagesize * (data.page - 1);
-            return newRequest.get('https://api.coincap.io/v2/assets',options)
+            console.log(data);
+            let options = {};
+            options.search = data.search || '';
+            options.ids = data.ids || '';
+            options.limit = data.pagesize || 20;
+            options.offset = data.pagesize * (data.page - 1);
+            return newRequest.get('https://api.coincap.io/v2/assets', options)
         },
-		/**
-		 * 行情/市值列表
-		 * @param data
-		 * @returns {Promise | Promise<unknown>}
-		 */
-		coins(data) {
-		    // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
-			return minRequest.get('/api/coins/coinrank', data)
-		},
-		
-		/**
-		 * 涨跌榜单
-		 * @param data
-		 * @returns {Promise | Promise<unknown>}
-		 */
-		coinsChg(data) {
-		    // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
-			return minRequest.get('/api/coins/maxchange', data)
-		},
-		/**
-		 * 自选列表
-		 * @param data
-		 * @returns {Promise | Promise<unknown>}
-		 */
-		coins_focus_list(data) {
-		    // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
-			return minRequest.get('/api/users/coinfocus',data)
-		},
-		/**
-		 * 添加自选
-		 * @param data
-		 * @returns {Promise | Promise<unknown>}
-		 */
-		coins_add(code, data) {
-		    return minRequest.put('/api/users/' + code + '/coins', data)
-		},
-		/**
-		 * 交易对
-		 * @param data
-		 * @returns {Promise | Promise<unknown>}
-		 */
-		coins_markets(code,data) {
-		    return minRequest.get('/api/coins/' + code + '/markets',data)
-		},
-		/**
-		 * kLines
-		 * @param data
-		 * @returns {Promise | Promise<unknown>}
-		 */
-		coins_kLines(code) {
-		    return minRequest.get('/api/coins/' + code + '/kline')
-		},
-		/**
-		 * 详情
-		 * @param data
-		 * @returns {Promise | Promise<unknown>}
-		 */
-		coins_detail(code) {
-		    return minRequest.get('/api/coins/' + code )
-		},
+        /**
+         * 行情/市值列表
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        coins(data) {
+            // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
+            return minRequest.get('/api/coins/coinrank', data)
+        },
+
+        /**
+         * 涨跌榜单
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        coinsChg(data) {
+            // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
+            return minRequest.get('/api/coins/maxchange', data)
+        },
+        /**
+         * 自选列表
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        coins_focus_list(data) {
+            // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
+            return minRequest.get('/api/users/coinfocus', data)
+        },
+        /**
+         * 添加自选
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        coins_add(code, data) {
+            return minRequest.put('/api/users/' + code + '/coins', data)
+        },
+        /**
+         * 交易对
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        coins_markets(code, data) {
+            return minRequest.get('/api/coins/' + code + '/markets', data)
+        },
+        /**
+         * kLines
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        coins_kLines(code) {
+            return minRequest.get('/api/coins/' + code + '/kline')
+        },
+        /**
+         * 详情
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        coins_detail(code) {
+            return minRequest.get('/api/coins/' + code)
+        },
         /**
          * 获取单个币种
          * @param coin

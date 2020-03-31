@@ -430,6 +430,43 @@ export default {
         coins_detail(code) {
             return minRequest.get('/api/coins/' + code)
         },
-
+        }
+        /**
+         * 获取单个币种
+         * @param coin
+         * @param currency
+         * @returns {Promise | Promise<unknown>}
+         */
+        coin(coin, currency) {
+            // https://www.361shipin.com/shipin/others/rate/get?coin=BTC&currency=USD
+            return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', {coin: coin, currency: currency})
+        },
+		/**
+		 * 获取交易所详情
+		 * @param coin
+		 * @param currency
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		coins_exhange_detail(code) {
+		    return minRequest.get('/api/coins/exchange/' + code)
+		},
+		/**
+		 * 获取交易所公告
+		 * @param coin
+		 * @param currency
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		coins_exhange_news(code, data) {
+		    return minRequest.get('/api/coins/exchange/' + code+'/news',data)
+		},
+		/**
+		 * 获取交易所行情
+		 * @param coin
+		 * @param currency
+		 * @returns {Promise | Promise<unknown>}
+		 */
+		coins_exhange_markets(code, data) {
+		    return minRequest.get('/api/coins/exchange/' + code+'/markets',data)
+		},
     }
 }

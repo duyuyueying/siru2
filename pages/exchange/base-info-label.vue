@@ -2,7 +2,10 @@
 	<view class="base_info_box">
 		<view class="flex_row">
 			<view class="label_key"><text class="lable_key_txt">{{name}}</text></view>
-			<view class="flex1" v-if="typeof value == 'string'">
+			<view class="flex1 list_item_black_title_sm" v-if="isHtml" v-html="value">
+				<!-- <text class="list_item_black_title_sm">{{value}}</text> -->
+			</view>
+			<view class="flex1" v-else-if="typeof value == 'string'">
 				<text class="list_item_black_title_sm">{{value}}</text>
 			</view>
 			<view class="flex1" v-else>
@@ -23,7 +26,11 @@
 			value: {
 				type: [String, Array]
 			},
-			link_url: String
+			link_url: String,
+			isHtml: {
+				type: Boolean,
+				default: false,
+			}
 		},
 		methods:{
 			openUrl(url) {
@@ -38,7 +45,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 	.base_info_box{
 		padding: $space-lg;
 		background-color: #fff;
@@ -53,5 +60,8 @@
 	.link_txt{
 		@include txt(30upx, #489aff);
 		margin-right: 8upx;
+	}
+	/deep/ .list_item_black_title_sm p{
+		margin: 10upx auto;
 	}
 </style>

@@ -205,7 +205,6 @@
 				let currTab = this.caclcurrTab()
 				let tabItem = this.swiperItems[currTab];
 				//action= add上拉加载 refresh下拉刷新
-				console.log(action);
 				if (action=='refresh') {
 					tabItem.newsList = [];
 					this.pageNum = 1;
@@ -274,51 +273,6 @@
 					this.isTap = false;
 					// })
 				}
-				//type add 加载更多 refresh下拉刷新
-				// if(type === 'add'){
-				// 	if(tabItem.loadMoreStatus === 2){
-				// 		return;
-				// 	}
-				// 	tabItem.loadMoreStatus = 1;
-				// }
-				// // #ifdef APP-PLUS
-				// else if(type === 'refresh'){
-				// 	tabItem.refreshing = true;
-				// }
-				// // #endif
-				// //setTimeout模拟异步请求数据
-				// setTimeout(()=>{
-				// 	let list = coins;
-				// 	// TODO:删除
-				// 	list.sort((a,b)=>{
-				// 		return Math.random() > .5 ? -1 : 1; // 静态数据打乱顺序
-				// 	})
-				// 	// TODO:END
-				// 	if(type === 'refresh'){
-				// 		tabItem.newsList = []; //刷新前清空数组
-				// 	}
-				// 	list.forEach(item=>{
-				// 		// TODO:删除
-				// 		item.id = parseInt(Math.random() * 10000);
-				// 		// TODO:END
-				// 		tabItem.newsList.push(item);
-				// 	})
-				// 	//下拉刷新 关闭刷新动画
-				// 	if(type === 'refresh'){
-				// 		this.$refs['mixPulldownRefresh'+currTab] && this.$refs['mixPulldownRefresh'+currTab].endPulldownRefresh();
-				// 		// #ifdef APP-PLUS
-				// 		tabItem.refreshing = false;
-				// 		// #endif
-				// 		tabItem.loadMoreStatus = 0;
-				// 		tabItem.page = 0;
-				// 	}
-				// 	//上滑加载 处理状态
-				// 	if(type === 'add'){
-				// 		tabItem.page++;
-				// 		tabItem.loadMoreStatus = tabItem.newsList.length > 40 ? 2: 0;
-				// 	}
-				// 	console.log(this.swiperItems);
-				// }, 600)
 			},
 			// 计算对应于swiperItem的currtTab
 			caclcurrTab(){

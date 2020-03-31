@@ -2,46 +2,47 @@
 	<view class="container">
 		<view class="flex_column bg_wrapper">
 			<view class="img_wrapper">
-				<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
-				<view class="mask" @click="goCrop"><icons type="picture" color="#fff" size="24"></icons></view>
+				<image class="image-list1" :src="userForm.avatar_src!=''?userForm.avatar_src:'../../static/temp/avatar.jpeg'"></image>
+				<view class="mask" @click="goCrop">
+					<icons type="picture" color="#fff" size="14"></icons></view>
 			</view>
 		</view>
 		<view class="input_wrap flex_row">
 			<view class="label_wrap"><text class="list_item_black_title_sm">昵称</text></view>
-			<input type="text" class="u-input" placeholder="手机号" v-model="nikeName">
+			<input type="text" class="u-input" placeholder="昵称" v-model="userForm.nickname">
 		</view>
 		<view class="input_wrap flex_row mb20" style="position: relative;">
 			<view class="label_wrap"><text class="list_item_black_title_sm">性别</text></view>
-			<input type="text" class="u-input" placeholder="手机号" v-model="sex">
-			<picker :range="['男','女','保密']" class="picker" @change="modifySex"></picker>
+			<input type="text" class="u-input" placeholder="性别" v-model="userForm.data.sex">
+			<picker :range="['保密','男','女']" class="picker" @change="modifySex"></picker>
 		</view>
 		<view class="input_wrap flex_row">
 			<view class="label_wrap"><text class="list_item_black_title_sm">Title</text></view>
-			<input type="text" class="u-input" placeholder="请填写您的职位" v-model="position">
+			<input type="text" class="u-input" placeholder="请填写您的职位" v-model="userForm.data.job">
 		</view>
 		<view class="input_wrap flex_row">
 			<view class="label_wrap"><text class="list_item_black_title_sm">介绍</text></view>
-			<input type="text" class="u-input" placeholder="请填写您的个人介绍" v-model="profile">
+			<input type="text" class="u-input" placeholder="请填写您的个人介绍" v-model="userForm.data.profile">
 		</view>
 		<view class="input_wrap flex_row">
 			<view class="label_wrap"><text class="list_item_black_title_sm">手机号</text></view>
-			<input type="text" class="u-input" placeholder="请填写您的手机号" v-model="phoneNumber">
+			<input type="text" class="u-input" placeholder="请填写您的手机号" v-model="userForm.data.phone">
 		</view>
 		<view class="input_wrap flex_row">
 			<view class="label_wrap"><text class="list_item_black_title_sm">微信号</text></view>
-			<input type="text" class="u-input" placeholder="请填写您的微信号" v-model="wechat">
+			<input type="text" class="u-input" placeholder="请填写您的微信号" v-model="userForm.data.wechat">
 		</view>
 		<view class="input_wrap flex_row">
 			<view class="label_wrap"><text class="list_item_black_title_sm">公众号</text></view>
-			<input type="text" class="u-input" placeholder="请填写您的公众号" v-model="wechat_official">
+			<input type="text" class="u-input" placeholder="请填写您的公众号" v-model="userForm.data.wechat_official">
 		</view>
 		<view class="input_wrap flex_row">
 			<view class="label_wrap"><text class="list_item_black_title_sm">Twitter</text></view>
-			<input type="text" class="u-input" placeholder="请填写您的Twitter" v-model="twitter">
+			<input type="text" class="u-input" placeholder="请填写您的Twitter" v-model="userForm.data.twitter">
 		</view>
 		<view class="input_wrap flex_row mb20">
 			<view class="label_wrap"><text class="list_item_black_title_sm">邮箱</text></view>
-			<input type="text" class="u-input" placeholder="请填写您的邮箱" v-model="email">
+			<input type="text" class="u-input" placeholder="请填写您的邮箱" v-model="userForm.data.email">
 		</view>
 		
 		<view class="submit_btn" @click="submit" :style="{backgroundColor:'#FFB100'}">
@@ -51,7 +52,7 @@
 </template>
 
 <script>
-	import {mapState} from 'vuex';
+	import {mapMutations, mapState} from 'vuex';
 	import {focusAuthor, newsItems} from '@/mock/data.js';
 	import icons from '@/components/icons/icons.vue';
 	import {uniPopup} from '@dcloudio/uni-ui';
@@ -60,16 +61,23 @@
 	export default {
 		data() {
 			return {
+				userForm: {
+					nickname: '',
+					avatar: '',
+					avatar_src: '',
+					data: {
+						sex: '保密',
+						job: '',
+						phone: '',
+						wechat: '',
+						wechat_official: '',
+						email: '',
+						twitter: '',
+						profile: '',
+					},
+				},
+
 				data: focusAuthor,
-				nikeName: '',
-				sex: '',
-				position: '',
-				phoneNumber: '',
-				wechat: '',
-				wechat_official: '',
-				email: '',
-				twitter: '',
-				profile: '',
 			}
 		},
 		components:{
@@ -81,18 +89,25 @@
 		},
 		computed:mapState(['userInfo']),
 		methods: {
+			...mapMutations(['USER_INFO']),
 			// 初始化
 			init() {
 				let userInfo = this.userInfo;
-				this.nikeName = userInfo.nickname || '';
-				this.sex = userInfo.sex || '保密';
-				this.position = userInfo.job || ''
-				this.profile = userInfo.introduce || '';
-				this.phoneNumber = userInfo.phone || '';
-				this.wechat = userInfo.wx_no || '';
-				this.wechat_official = this.wx_no || '';
-				this.twitter = this.twitter_no || '';
-				this.email = this.email || '';
+
+				this.userForm.nickname = userInfo.nickname || ''
+				this.userForm.avatar = userInfo.avatar
+				this.userForm.avatar_src = userInfo.avatar_src
+
+				this.userForm.data = {
+					sex: userInfo.data && userInfo.data.sex || '保密',
+					job: userInfo.data && userInfo.data.job || '',
+					phone: userInfo.data && userInfo.data.phone || '',
+					wechat: userInfo.data && userInfo.data.wechat || '',
+					wechat_official: userInfo.data && userInfo.data.wechat_official || '',
+					email: userInfo.data && userInfo.data.email || '',
+					twitter: userInfo.data && userInfo.data.twitter || '',
+					profile: userInfo.data && userInfo.data.profile || '',
+				}
 			},
 			// 去裁剪头像
 			goCrop() {
@@ -110,31 +125,13 @@
 			},
 			modifySex(e) {
 				let value = e.detail.value;
-				this.sex = ['男','女'][value];
+				this.userForm.data.sex = ['男','女','保密'][value];
 			},
 			async submit() {
-				if(this.phoneNumber != '' && !isPhone(this.phoneNumber)){
-					this.$message({title: '请输入正确的手机号码！'});
-					return;
-				}
-				if(this.email != '' && !isEmail(this.email)){
-					this.$message({title: '请输入正确的邮箱地址！'});
-					return;
-				}
-				let options = {
-					nickname: this.nikeName,
-					sex: this.sex,
-					job: this.position,
-					introduce: this.profile,
-					phone: this.phoneNumber,
-					wx_no: this.wechat,
-					wx_official: this.wechat_official,
-					twitter_no: this.twitter,
-					email: this.email
-				}
-				let data = await this.$api.user_modify(options)
+				let data = await this.$api.user_modify(this.userForm)
 				if (data && data.code === 200){
-					this.$message(data.msg, function(){
+					this.USER_INFO(data.result);
+					this.$message("保存成功", function(){
 						uni.navigateBack({
 							delta:1
 						})

@@ -96,6 +96,50 @@ class MinRequest {
         options.method = 'DELETE'
         return this.request(options)
     }
+
+    uploadFile(url, file, options) {
+        let data = null || options.data
+        let name = 'file' || options.name
+        const uploadTask = uni.uploadFile({
+            url: url, //仅为示例，非真实的接口地址
+            filePath: file,
+            name: name,
+            formData: data,
+        });
+
+        // 上传进度事件
+        // uploadTask.onProgressUpdate((res) => {
+        //     console.log('上传进度' + res.progress);
+        //     console.log('已经上传的数据长度' + res.totalBytesSent);
+        //     console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
+        //
+        //     // 测试条件，取消上传任务。
+        //     if (res.progress > 50) {
+        //         uploadTask.abort();
+        //     }
+        // });
+
+        return uploadTask
+    }
+
+    downloadFile(url) {
+        const downloadTask = uni.downloadFile({
+            url: url,
+        });
+
+        // 下载进度事件
+        // downloadTask.onProgressUpdate((res) => {
+        //     console.log('下载进度' + res.progress);
+        //     console.log('已经下载的数据长度' + res.totalBytesWritten);
+        //     console.log('预期需要下载的数据总长度' + res.totalBytesExpectedToWrite);
+        //
+        //     // 测试条件，取消下载任务。
+        //     if (res.progress > 50) {
+        //         downloadTask.abort();
+        //     }
+        // });
+        return downloadTask
+    }
 }
 
 MinRequest.install = function (Vue) {

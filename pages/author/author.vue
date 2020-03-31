@@ -4,20 +4,30 @@
 			<view :style="{ height: (iStatusBarHeight+44)+ 'px'}">
 			  <!-- 这里是状态栏 /44的navbar-->
 				<view :style="{marginTop: (iStatusBarHeight+10)+ 'px'}"></view>
-				<text style="fontSize:18px;color:#fff">{{data.name}}</text>
+				<text style="fontSize:18px;color:#fff">{{user.nickname}}</text>
 			</view>
 			<view class="img_wrapper">
-				<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
-				<view class="icon_v" :style="{backgroundColor: identification != null ? identification.color: '#ccc'}"><text style="color:#fff;font-size: 20upx;">v</text></view>
+				<image class="image-list1" :src="user.avatar_src!=''?user.avatar_src:'../../static/temp/avatar.jpeg'"></image>
+				<view class="icon_v" :style="{backgroundColor: user.verify_status != 0 ? identification.color: '#ccc'}"><text style="color:#fff;font-size: 20upx;">v</text></view>
 			</view>
 			<view class="flex_row">
-				<text class="txt right_space_base" v-if="identification != null">{{identification.name}}</text>
-				<view class="qrCode_wrap" @tap="showQrCode"><icons type="qrCode" color="#ffb100"></icons></view>
+
 			</view>
 			<view class="flex_row">
-				<view><text class="txt white right_space_base">粉丝 {{data.fans}}</text></view>
-				<view><text class="txt white">关注 {{data.focus}}</text></view>
+				<view><text class="list_item_black_txt white right_space_base">{{user.data.sex}} </text></view>
+				<view><text class="list_item_black_txt white right_space_base">{{user.data.job}} </text></view>
+
+				<text class="txt right_space_base" :style="{color: user.verify_status!=0 ? '#f39700': '#ccc'}">{{user.verify_name}}</text>
 			</view>
+			<view class="flex_row">
+				<view><text class="txt white right_space_base">{{user.fans_count}} 粉丝</text></view>
+				<view><text class="txt white right_space_base">{{user.follows_count}} 关注</text></view>
+				<view class="qrCode_wrap" @tap="showQrCode"><icons type="qrCode" color="black"></icons></view>
+			</view>
+			<view class="flex_row" v-if="type != 'self'">
+				<view><text class="txt white">{{user.is_follow ? '已关注': '关注'}}</text></view>
+			</view>
+
 		</view>
 		<view class="relative_section">
 			<tabs :tabs="['主页','专栏']" @changeTab="changeTab" :defaultTab="currTab"></tabs>
@@ -27,27 +37,56 @@
 				<view class="content_wrapper">
 					<uni-title title="个人介绍"></uni-title>
 					<view class="pad30">
-						<view class="brBot"><text class="desc_txt">{{data.description}}</text></view>
-						<!-- TODO:此处可循环，暂时写死 -->
+						<view class="brBot"><text class="desc_txt">{{user.data.profile!=''?user.data.profile:'该用户很忙什么都没留下。'}}</text></view>
+
+						<view class="list_container flex_row" v-if="user.data.phone!=''">
+							<view class="icon_wrapper1">
+								<image class="image-list2" src="../../static/social/phone.png"></image>
+							</view>
+							<view class="flex_column border_bottom">
+								<text class="list_item_black_txt">手机号码</text>
+								<text class="list_item_black_title_sm">{{user.data.phone}}</text>
+							</view>
+						</view>
+
+						<view class="list_container flex_row" v-if="user.data.email!=''">
+							<view class="icon_wrapper1">
+								<image class="image-list2" src="../../static/social/message.png"></image>
+							</view>
+							<view class="flex_column border_bottom">
+								<text class="list_item_black_txt">电子邮件</text>
+								<text class="list_item_black_title_sm">{{user.data.email}}</text>
+							</view>
+						</view>
+
 						<view class="list_container flex_row">
 							<view class="icon_wrapper1">
-								<image class="image-list2" src="../../static/temp/avatar.jpeg"></image>
+								<image class="image-list2" src="../../static/social/wechat2.png"></image>
 							</view>
 							<view class="flex_column border_bottom">
 								<text class="list_item_black_txt">公众号</text>
-								<text class="list_item_black_title_sm">{{data.gongzhonghaoName}}</text>
+								<text class="list_item_black_title_sm">{{user.data.wechat_official}}</text>
 							</view>
 						</view>
 						<view class="list_container flex_row">
 							<view class="icon_wrapper1 ">
-								<image class="image-list2" src="../../static/temp/avatar.jpeg"></image>
+								<image class="image-list2" src="../../static/social/wechat.png"></image>
 							</view>
 							<view class="flex_column border_bottom">
 								<text class="list_item_black_txt">微信号</text>
-								<text class="list_item_black_title_sm">{{data.wechatAccount}}</text>
+								<text class="list_item_black_title_sm">{{user.data.wechat}}</text>
 							</view>
 						</view>
-						<!-- TODO:END -->
+
+						<view class="list_container flex_row">
+							<view class="icon_wrapper1 ">
+								<image class="image-list2" src="../../static/social/twitter.png"></image>
+							</view>
+							<view class="flex_column border_bottom">
+								<text class="list_item_black_txt">Twitter</text>
+								<text class="list_item_black_title_sm">{{user.data.twitter}}</text>
+							</view>
+						</view>
 					</view>
 				</view>
 			</swiper-item>
@@ -67,10 +106,8 @@
 		</swiper>
 		<uni-popup ref="sign">
 			<view class="sign_box">
-				<view><text class="list_item_black_title_sm heavy">{{data.name}}</text></view>
+				<view><text class="list_item_black_title_sm heavy">{{user.nickname}}</text></view>
 				<image src="/static/temp/avatar.jpeg" mode="aspectFill" class="qr_img"></image>
-				<!-- <view><text class="blod_black_txt" style="color:#ffb100">恭喜您获得&nbsp;1&nbsp;金币</text></view>
-				<view><text class="normal_txt">连续签到奖励更丰富</text></view> -->
 				<view @click="download">
 					<text class="list_item_black_title_sm">点击下载二维码</text>
 				</view>
@@ -95,7 +132,7 @@
 	export default {
 		data() {
 			return {
-				data: focusAuthor,
+				user: {},
 				identification: null,
 				iStatusBarHeight: 0,
 				currTab: 0,
@@ -117,18 +154,17 @@
 		},
 		onLoad(query) {
 			this.iStatusBarHeight  = uni.getSystemInfoSync().statusBarHeight;
-			this.identification = identification[this.data.identification];
+			this.identification = identification[this.user.identification];
 			this.type = query.type;
 			this.loadList('add');
 			this.modifyStatusBarButtonStyle();
 			if(this.type == 'self') {
-				this.data = this.userInfo;
-				console.log(this.userInfo);
+				this.user = this.userInfo;
 			} else {
 				console.log('请求接口去');
 			}
 			uni.setNavigationBarTitle({
-				title: this.data.nickname
+				title: this.user.nickname
 			});
 		},
 		onShareAppMessage() {

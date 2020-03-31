@@ -320,7 +320,14 @@ export default {
         get_pages(type) {
             return minRequest.get('/api/pages/' + type)
         },
-
+        /**
+         * 意见反馈
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        feedback_add(data) {
+            return minRequest.post('/api/feedbacks', data);
+        },
 
         //===============================搜索相关接口================================
         /**

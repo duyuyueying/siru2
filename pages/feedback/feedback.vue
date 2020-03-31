@@ -3,7 +3,7 @@
 		<uni-title title="反馈类型" color="#999" :isBold="false"></uni-title>
 		<view class="u-wrap">
 			<view class="spacing-row-sm tag_item" v-for="(item, index) in types" :key="index">
-				<uni-tag :text="item.name" :type="currTag != index ?'default': 'selected'" @click="choiceTag(item, index)" isCircle></uni-tag>
+				<uni-tag :text="item.name" :type="currType != item.type ?'default': 'selected'" @click="choiceTag(item, item.type)" isCircle></uni-tag>
 			</view>
 		</view>
 		<uni-title title="反馈内容(必填)" color="#999" :isBold="false"></uni-title>
@@ -22,11 +22,13 @@
 <script>
 	import uniTitle from '@/components/uni-title.vue';
 	import uniTag from '@/components/uni-tag.vue';
+
+	//默认1功能,2体验,3内容,4其他
 	const TYPE=[
-		{name:'功能建议'},
-		{name:'体验建议'},
-		{name:'内容建议'},
-		{name:'其他'}
+		{name:'功能建议', type:1},
+		{name:'体验建议', type:2},
+		{name:'内容建议', type:3},
+		{name:'其他', type:4}
 	];
 	export default {
 		data() {
@@ -35,7 +37,7 @@
 				content: '',
 				contact: '',
 				contactStyle: '',
-				currTag: 0,
+				currType: 1,
 				tag: '',
 			}
 		},
@@ -44,8 +46,8 @@
 			uniTag
 		},
 		methods: {
-			choiceTag(item, index) {
-				this.currTag = index;
+			choiceTag(item, type) {
+				this.currType = type;
 				this.tag = item.name;
 			},
 			// 修改密码提交逻辑
@@ -71,6 +73,23 @@
 					});
 					return;
 				}
+
+				this.$api.feedback_add({
+					type: this.currType,
+					content: this.content,
+					nick_name: this.contact,
+					contact: this.contactStyle,
+				}).then(data => {
+					if (data && data.code === 200) {
+						this.$message('提交成功',function () {
+							uni.navigateBack({
+								delta: 1
+							});
+						},900)
+					} else {
+						this.$message(data.msg)
+					}
+				})
 			},
 		}
 	}

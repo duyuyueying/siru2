@@ -138,15 +138,9 @@
 		methods: {
 			...mapMutations(['USER_INFO']),
 			init() {
-				// this.apiToken
-				// const api_token = uni.getStorageSync('api_token');
 				if (this.apiToken) {
 					this.$api.user().then(data => {
 						if (data && data.code === 200) {
-							uni.setStorage({
-								key:'USER_ID',
-								data: data.result.id
-							})
 							this.USER_INFO(data.result);
 							this.userinfo = data.result
 							this.orderTypeLise=[
@@ -156,30 +150,11 @@
 								{name:'粉丝',count:data.result.fans_count, nikeName: 'fans'},
 								{name:'消息',count:0, nikeName: 'message'},
 							];
-
-							// this.checkInList = [
-							// 	{count: 1, sign: true},
-							// 	{count: 2},
-							// 	{count: 2},
-							// 	{count: 1},
-							// 	{count: 1},
-							// 	{count: 2},
-							// 	{count: 3},
-							// ];
 						} else {
 							this.$message(data.msg)
-							// uni.removeStorageSync('USER_ID')
-							// uni.setStorageSync('user_info', null);
 						}
 					})
 				}
-				//用户信息
-				// this.userinfo={
-				// 	face:'/static/temp/avatar.jpeg',
-				// 	username:"VIP会员10240",
-				// 	integral:"1435"
-				// };
-
 			},
 			//用户点击签到
 			toSign(index, item){
@@ -189,7 +164,6 @@
 				}
 
 				if (this.checkInList[index].sign) {
-
 					//response 服务端签到请求结果
 					let response = true
 					if (response) {
@@ -214,6 +188,7 @@
 				}
 
 			},
+			// 关闭签到弹框
 			close() {
 				this.$refs.sign.close()
 			},
@@ -225,7 +200,9 @@
 			//用户点击列表项
 			toPage(type){
 				let url = '';
-				if(this.apiToken == null){
+				// 不需要登录的栏目名称
+				let column = ['policy', 'services', 'mySetting','feedback','about'];
+				if(this.apiToken == null && !column.includes(type)){
 					this.toLogin();
 					return
 				}

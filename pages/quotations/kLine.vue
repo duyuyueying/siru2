@@ -2,20 +2,20 @@
 	<view class="content">
 		<!-- #ifdef APP-PLUS || H5 -->
 		<view class="flex_row operation_wrapper">
-			<view class="operation_btn" @click="changeOption">
-				<text>15分</text>
+			<view class="operation_btn" :class="{isSelect: currTab == 0}" @click="init({type: 'd'}, 0)">
+				<text>24H</text>
 			</view>
-			<view class="operation_btn" @click="changeOption">
-				<text>1小时</text>
+			<view class="operation_btn" :class="{isSelect: currTab == 1}" @click="init({type: 'w'}, 1)">
+				<text>1周</text>
 			</view>
-			<view class="operation_btn" @click="changeOption">
-				<text>4小时</text>
+			<view class="operation_btn" :class="{isSelect: currTab == 2}" @click="init({type: '3m'}, 2)">
+				<text>3月</text>
 			</view>
-			<view class="operation_btn" @click="changeOption">
-				<text>日k</text>
+			<view class="operation_btn" :class="{isSelect: currTab == 3}" @click="init({type: 'y'}, 3)">
+				<text>1年</text>
 			</view>
-			<view class="operation_btn" @click="changeOption">
-				<text>周k</text>
+			<view class="operation_btn" :class="{isSelect: currTab == 4}" @click="init({type: 'all'}, 4)">
+				<text>所有</text>
 			</view>
 		</view>
 		<view @click="echarts.onClick" :prop="option" :change:prop="echarts.updateEcharts" id="echarts" class="echarts"></view>
@@ -67,245 +67,109 @@ volumes = splitData(data, volumes);
 var dataMA5 = calculateMA(5, data);
 var dataMA10 = calculateMA(10, data);
 var dataMA20 = calculateMA(20, data);
+
+function randomData() {
+    now = new Date(+now + oneDay);
+    value = value + Math.random() * 21 - 10;
+    return {
+        name: now.toString(),
+        value: [
+            [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('/'),
+            Math.round(value)
+        ]
+    };
+}
+
+var data = [];
+var now = +new Date(1997, 9, 3);
+var oneDay = 24 * 3600 * 1000;
+var value = Math.random() * 1000;
+for (var i = 0; i < 1000; i++) {
+    data.push(randomData());
+}
+import moment from 'moment';
 	export default {
 		data() {
 			return {
+				currTab: 0,
 				option:  {
-					animation: false,
-					color: colorList,
 					tooltip: {
 						trigger: 'axis',
-						triggerOn: 'click',
+						formatter: function (params) {
+							params = params[0];
+							var date = new Date(params.name);
+							return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' : ' + params.value[1];
+						},
 						axisPointer: {
-							type: 'cross'
-						},
-						transitionDuration: 0,
-						confine: true,
-						bordeRadius: 4,
-						borderWidth: 1,
-						borderColor: '#333',
-						backgroundColor: 'rgba(255,255,255,0.8)',
-						textStyle: {
-							fontSize: 12,
-							color: '#333'
-						},
-						position: function (pos, params, el, elRect, size) {
-							var obj = {
-								top: 60
-							};
-							obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 5;
-							return obj;
-						},
-						formatter: function (param) {
-							param = param[0];
-							return [
-								'日期: ' + param.name + '<hr size=1 style="margin: 3px 0">',
-								'开盘价: ' + param.data[0] + '<br/>',
-								'收盘价: ' + param.data[1] + '<br/>',
-								'当日最高: ' + param.data[2] + '<br/>',
-								'当日最低: ' + param.data[3] + '<br/>'
-							].join('');
+							animation: false
 						}
 					},
-					axisPointer: {
-						link: [{
-							xAxisIndex: [0, 1]
-						}]
-					},
-					dataZoom: [{
-						type: 'inside',
-						xAxisIndex: [0, 1],
-						start: 50,
-						end: 100,
-						top: 30,
-						height: 20
-					}],
-					xAxis: [{
+					xAxis: {
 						type: 'category',
-						data: dates,
+						data:[1,2,3],
 						boundaryGap : false,
 						splitNumber: 2,
+						minInterval: 100,
 						splitLine: {
-							show: true,
-							lineStyle: {
-								color: ['#182334']
-							}
+							show: false
 						},
-						axisLine: { show:false, lineStyle: { color: '#777' } },
-						axisLabel: {
-							show:false,
-							color: '#6d737c',
-							fontSize: 8,
-							lineHeight: 20,
-							formatter: function (value) {
-								return echarts.format.formatTime('MM-dd', value);
-							}
-						},
-						axisTick: {
-						  show: false,  
-						},
+						splitLine: {
+								show: false,
+								lineStyle: {
+									color: ['#182334']
+								}},
+							axisLabel: {
+								color: '#6d737c',
+								fontSize: 6,
+								formatter: function (value) {
+									return echarts.format.formatTime('MM-dd', value);
+								}
+							},
+						axisTick: {show: false},
+						axisLine: { lineStyle: { color: '#182334' } },
 						min: 'dataMin',
 						max: 'dataMax',
-						axisPointer: {
-							show: true
-						}
-					}, {
-						type: 'category',
-						gridIndex: 1,
-						splitNumber: 2,
-						data: dates,
+					},
+					yAxis: {
+						type: 'value',
 						scale: true,
-						boundaryGap : false,
+						splitNumber: 2,
+						// boundaryGap: [0, '100%'],
+						axisLine: { lineStyle: { color: '#182334' } },
 						splitLine: {
 							show: true,
 							lineStyle: {
 								color: ['#182334']
-							}},
+							}
+						},
+						axisTick: { show: false },
 						axisLabel: {
 							color: '#6d737c',
 							fontSize: 6,
-							formatter: function (value) {
-								return echarts.format.formatTime('MM-dd', value);
-							}
+							inside: true,
+							formatter: '{value}\n'
 						},
-					axisTick: {show: false},
-					axisLine: { lineStyle: { color: '#182334' } },
-					splitNumber: 20,
-					min: 'dataMin',
-					max: 'dataMax',
-					
-			}],
-				yAxis: [{
-					scale: true,
-					splitNumber: 2,
-					axisLine: { lineStyle: { color: '#182334' } },
-					splitLine: { 
-						show: true,
-						lineStyle: {
-							color: ['#182334']
-						}
+						// max: 'dataMax',
+						// min: 'dataMin'
 					},
-					axisTick: { show: false },
-					axisLabel: {
-						color: '#6d737c',
-						fontSize: 6,
-						inside: true,
-						formatter: '{value}\n'
-					}
-				}, {
-					scale: true,
-					gridIndex: 1,
-					splitNumber: 2,
-					axisLabel: {show: false},
-					axisLine: {show: false},
-					axisTick: {show: false},
-					splitLine: {show: false}
-				}],
-				grid: [{
-					left: 0,
-					right: 0,
-					top: 30,
-					height: 200
-				}, {
-					left: 0,
-					right: 0,
-					height: 60,
-					top: 230
-				}],
-				graphic: [{
-					type: 'group',
-					left: 'center',
-					top: 70,
-					width: 300,
-					bounding: 'raw',
-					children: [{
-						id: 'MA5',
-						type: 'text',
-						style: {fill: colorList[1], font: labelFont},
-						left: 0
-					}, {
-						id: 'MA10',
-						type: 'text',
-						style: {fill: colorList[2], font: labelFont},
-						left: 'center'
-					}, {
-						id: 'MA20',
-						type: 'text',
-						style: {fill: colorList[3], font: labelFont},
-						right: 0
-					}]
-				}],
-				visualMap: {
-					show:false,
-				   seriesIndex: 0,
-				   pieces: [{
-						value: 1,
-						color: '#00b07c'
-					}, {
-						value: -1,
-						color: '#ff5353'
-					}]
-				},
-				series: [
-					{
-						name: 'Volume',
-						type: 'bar',
-						xAxisIndex: 1,
-						yAxisIndex: 1,
-						itemStyle: {
-							color: '#ff5353',
-							color0: '#00b07c',
-						},
-						emphasis: {
-							itemStyle: {
-								color: '#140'
-							}
-						},
-						data: volumes,
-					}, {
-						type: 'candlestick',
-						name: '日K',
+					grid: [{
+						left: 0,
+						right: 10,
+						top: 30,
+						height: 260
+					}],
+					series: [{
+						type: 'line',
+						showSymbol: false,
+						hoverAnimation: false,
 						data: data,
-						itemStyle: {
-							color: '#ff5353',
-							color0: '#00b07c',
-							borderColor: '#ff5353',
-							borderColor0:'#00b07c'
+						lineStyle: {
+							width: 1,
+							color: '#2782d2'
 						},
-						emphasis: {
-							itemStyle: {
-								color: 'black',
-								color0: '#444',
-								borderColor: 'black',
-								borderColor0: '#444'
-							}
-						}
-					}, {
-						name: 'MA5',
-						type: 'line',
-						data: dataMA5,
-						smooth: true,
-						showSymbol: false,
-						lineStyle: {
-							width: 1
-						}
-					}, {
-						name: 'MA10',
-						type: 'line',
-						data: dataMA10,
-						smooth: true,
-						showSymbol: false,
-						lineStyle: {
-							width: 1
-						}
-					}, {
-						name: 'MA20',
-						type: 'line',
-						data: dataMA20,
-						smooth: true,
-						showSymbol: false,
-						lineStyle: {
-							width: 1
+						areaStyle: {
+							color: '#2782d2',
+							opacity: 0.3
 						}
 					}]
 				}
@@ -315,12 +179,42 @@ var dataMA20 = calculateMA(20, data);
 			code:String,
 		},
 		created() {
-			this.init();
+			this.init({type: 'd'}, 0);
 			console.log(this.splitData(data, volumes));
 		},
 		methods: {
-			async init() {
-				let data = await this.$api.coins_kLines(this.code, {type: 'd'});
+			async init(option, index) {
+				this.currTab = index;
+			
+				let data = await this.$api.coins_kLines(this.code, option);
+				if(data && data.code == 200) {
+					if(data.result.code == 200) {
+						let echartData = [];
+						let echartDate = [];
+						let dataSource = JSON.parse("["+data.result.value+"]");
+						for(let i = 0, leng = dataSource.length; i < leng; i++){
+							echartData.push(dataSource[i][1]);
+							let format = '';
+							switch(option.type){
+								case 'd':
+									format = 'hh:mm';
+									break;
+								case 'w':
+								case '3m':
+									format = 'MM-DD';
+									break;
+								default:
+									format = 'YYYY-MM-DD';
+							}
+							// let format = option.type == 'd' ? 'hh:mm'
+							echartDate.push(moment(dataSource[i][0]).format(format))
+						}
+						this.option.series[0].data = echartData;
+						this.option.xAxis.data = echartDate;
+						console.log(echartData);
+					}
+				}
+				
 			},
 			changeOption() {
 				const data = this.option.series[1].data;
@@ -369,10 +263,20 @@ var dataMA20 = calculateMA(20, data);
 			initEcharts() {
 				myChart = echarts.init(document.getElementById('echarts'))
 				// 观测更新的数据在 view 层可以直接访问到
+				let colors = new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                    offset: 0,
+                    color: 'rgba(39, 130, 215,1)'
+                }, {
+                    offset: 1,
+                    color: 'rgba(39, 130, 215,0.1)'
+                }]);
+				// this.option.series[0].areaStyle = {};
+				this.option.series[0].areaStyle.color = colors;
 				myChart.setOption(this.option)
 			},
 			updateEcharts(newValue, oldValue, ownerInstance, instance) {
 				// 监听 service 层数据变更
+				console.log('updata');
 				myChart.setOption(newValue)
 			},
 			onClick(event, ownerInstance) {
@@ -410,6 +314,9 @@ var dataMA20 = calculateMA(20, data);
 	.echarts {
 		width: 100%;
 		height: 320px;
+		background-color: #101928;
+	}
+	.isSelect {
 		background-color: #101928;
 	}
 </style>

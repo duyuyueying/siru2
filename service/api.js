@@ -411,8 +411,8 @@ export default {
          * @param data
          * @returns {Promise | Promise<unknown>}
          */
-        coins_kLines(code) {
-            return minRequest.get('/api/coins/' + code + '/kline')
+        coins_kLines(code, data) {
+            return minRequest.get('/api/coins/' + code + '/kline', data)
         },
         /**
          * 获取单个币种详情

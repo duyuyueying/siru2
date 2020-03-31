@@ -430,17 +430,6 @@ export default {
         coins_detail(code) {
             return minRequest.get('/api/coins/' + code)
         },
-        }
-        /**
-         * 获取单个币种
-         * @param coin
-         * @param currency
-         * @returns {Promise | Promise<unknown>}
-         */
-        coin(coin, currency) {
-            // https://www.361shipin.com/shipin/others/rate/get?coin=BTC&currency=USD
-            return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', {coin: coin, currency: currency})
-        },
 		/**
 		 * 获取交易所详情
 		 * @param coin

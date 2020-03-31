@@ -4,7 +4,7 @@
 			<text class="blod_black_txt">{{rank}}</text>
 		</view>
 		<view class="flex1 flex_column ">
-			<image class="logo_img" style="width: 25px;height: 25px;margin-right: 3upx" :src="item.logo"></image>
+			<image class="logo_img" style="width: 50upx;height: 50upx;margin-right: 8upx" :src="item.logo"></image>
 		</view>
 		<view class="flex3 flex_column">
 			<text class="blod_black_txt">{{item.name}}</text>

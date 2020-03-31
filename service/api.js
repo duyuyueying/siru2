@@ -2,7 +2,11 @@ import MinRequest from './MinRequest';
 import store from '@/store/index';
 
 const minRequest = new MinRequest()
-const newRequest = new MinRequest()
+
+// 192.168.1.3 192.168.123.90 192.168.123.224
+// 192.168.50.29
+const apiUrl = 'http://192.168.50.29:8182'
+const resUrl = 'http://192.168.50.29:8181'
 
 // 请求拦截器
 minRequest.interceptors.request((request) => {
@@ -26,9 +30,7 @@ minRequest.interceptors.response((response) => {
 // 设置默认配置
 minRequest.setConfig((config) => {
     let api_token = uni.getStorageSync('api_token', '')
-    // 192.168.1.3 192.168.123.90 192.168.123.224
-    // 192.168.50.29
-    config.baseURL = 'http://192.168.1.3:8182'
+    config.baseURL = apiUrl
     config.header = {
         'content-type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -43,7 +45,22 @@ export default {
     minRequest,
     apis: {
         uniapp(data) {
-            return minRequest.get('/web/captcha', data)
+            return new MinRequest().get(resUrl+'/web/captcha', data)
+        },
+        /**
+         * 上传文件
+         * @param file
+         * @param success
+         */
+        upfile(file) {
+            return new MinRequest().uploadFile(resUrl+'/web/captcha', file)
+        },
+        /**
+         * 下载文件
+         * @param fileUrl
+         */
+        downfile(fileUrl) {
+            return new MinRequest().downloadFile(fileUrl)
         },
         /**
          * 验证短信验证码是否正确
@@ -353,22 +370,7 @@ export default {
          * @param data
          * @returns {Promise | Promise<unknown>}
          */
-        coins2(data) {
-            console.log(data);
-            let options = {};
-            options.search = data.search || '';
-            options.ids = data.ids || '';
-            options.limit = data.pagesize || 20;
-            options.offset = data.pagesize * (data.page - 1);
-            return newRequest.get('https://api.coincap.io/v2/assets', options)
-        },
-        /**
-         * 行情/市值列表
-         * @param data
-         * @returns {Promise | Promise<unknown>}
-         */
         coins(data) {
-            // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
             return minRequest.get('/api/coins/coinrank', data)
         },
 
@@ -378,7 +380,6 @@ export default {
          * @returns {Promise | Promise<unknown>}
          */
         coinsChg(data) {
-            // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
             return minRequest.get('/api/coins/maxchange', data)
         },
         /**
@@ -387,7 +388,6 @@ export default {
          * @returns {Promise | Promise<unknown>}
          */
         coins_focus_list(data) {
-            // return newRequest.get('https://dncapi.bqiapp.com/api/coin/web-coinrank', data)
             return minRequest.get('/api/users/coinfocus', data)
         },
         /**
@@ -415,13 +415,14 @@ export default {
             return minRequest.get('/api/coins/' + code + '/kline', data)
         },
         /**
-         * 详情
+         * 获取单个币种详情
          * @param data
          * @returns {Promise | Promise<unknown>}
          */
         coins_detail(code) {
             return minRequest.get('/api/coins/' + code)
         },
+        }
         /**
          * 获取单个币种
          * @param coin

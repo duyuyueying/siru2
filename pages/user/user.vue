@@ -4,7 +4,7 @@
 			<view style="width: 100%;height: 100%;background-color: #fff;"></view>
 		</uni-status-bar>
 		<view class="header">
-			<view class="userinfo" v-if="userinfo.id" @click="goPerson">
+			<view class="userinfo" v-if="userinfo.id" @click="goPerson(userinfo.id)">
 				<view class="face">
 					<image :src="userinfo.avatar_src!=''?userinfo.avatar_src:'/static/temp/avatar.jpeg'" class="face_img" mode="aspectFill"></image>
 				</view>

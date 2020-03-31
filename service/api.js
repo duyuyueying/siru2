@@ -345,6 +345,14 @@ export default {
         feedback_add(data) {
             return minRequest.post('/api/feedbacks', data);
         },
+        /**
+         * 获取用户信息
+         * @param id
+         * @returns {Promise | Promise<unknown>}
+         */
+        getUser(id) {
+            return minRequest.get('/api/users/' + id)
+        },
 
         //===============================搜索相关接口================================
         /**

@@ -155,7 +155,7 @@
 			return {
 				currSubTab: 0, // 大盘页面swiper的tabIndex
 				coins: [],
-				currTab: 0,// 默认tab
+				currTab: 1,// 默认tab
 				scrollLeft: 0, //顶部选项卡左滑距离
 				enableScroll: true,
 				swiperItems: [], // 缓存所有swiper加载和刷新相关的数据
@@ -224,7 +224,7 @@
 						} else {
 							data = await this.$api.coins({
 								page: 1,
-								pageSize: 8,
+								pageSize: 15,
 							});
 						}
 					}

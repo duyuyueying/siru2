@@ -22,7 +22,7 @@
 			<view class="flex_row">
 				<view><text class="txt white right_space_base">{{user.fans_count}} 粉丝</text></view>
 				<view><text class="txt white right_space_base">{{user.follows_count}} 关注</text></view>
-				<view class="qrCode_wrap" @tap="showQrCode"><icons type="qrCode" color="black"></icons></view>
+				<view v-if="user.data.qrCode" class="qrCode_wrap" @tap="showQrCode"><icons type="qrCode" color="black"></icons></view>
 			</view>
 			<view class="flex_row" v-if="type != 'self'">
 				<view><text class="txt white">{{user.is_follow ? '已关注': '关注'}}</text></view>
@@ -59,7 +59,7 @@
 							</view>
 						</view>
 
-						<view class="list_container flex_row">
+						<view class="list_container flex_row" v-if="user.data.wechat_official!=''">
 							<view class="icon_wrapper1">
 								<image class="image-list2" src="../../static/social/wechat2.png"></image>
 							</view>
@@ -68,7 +68,7 @@
 								<text class="list_item_black_title_sm">{{user.data.wechat_official}}</text>
 							</view>
 						</view>
-						<view class="list_container flex_row">
+						<view class="list_container flex_row" v-if="user.data.wechat!=''">
 							<view class="icon_wrapper1 ">
 								<image class="image-list2" src="../../static/social/wechat.png"></image>
 							</view>
@@ -78,7 +78,7 @@
 							</view>
 						</view>
 
-						<view class="list_container flex_row">
+						<view class="list_container flex_row" v-if="user.data.twitter!=''">
 							<view class="icon_wrapper1 ">
 								<image class="image-list2" src="../../static/social/twitter.png"></image>
 							</view>
@@ -132,6 +132,17 @@
 	export default {
 		data() {
 			return {
+				id: 0,
+				userData: {
+					sex: '保密',
+					job: '',
+					phone: '',
+					wechat: '',
+					wechat_official: '',
+					email: '',
+					twitter: '',
+					profile: '',
+				},
 				user: {},
 				identification: null,
 				iStatusBarHeight: 0,
@@ -156,12 +167,14 @@
 			this.iStatusBarHeight  = uni.getSystemInfoSync().statusBarHeight;
 			this.identification = identification[this.user.identification];
 			this.type = query.type;
+			this.id =  query.id;
 			this.loadList('add');
 			this.modifyStatusBarButtonStyle();
 			if(this.type == 'self') {
-				this.user = this.userInfo;
+				this.user = this.userInfo
+				this.user.data = Object.assign({}, this.userData, this.userInfo.data)
 			} else {
-				console.log('请求接口去');
+				this.getUser(this.id);
 			}
 			uni.setNavigationBarTitle({
 				title: this.user.nickname
@@ -174,6 +187,15 @@
 			if(this.type == 'self' && e.index == 1) {
 				uni.navigateTo({
 					url: '/pages/user/userEdit'
+				})
+			}else{
+				this.$api.follows_user(this.id).then(data => {
+					if (data && data.code === 200) {
+						this.user.is_follow = data.result
+						if (!data.result) {
+							this.$message('取消关注', null,800)
+						}
+					}
 				})
 			}
 		},
@@ -189,6 +211,20 @@
 		},
 		computed: mapState(['userInfo']),
 		methods: {
+			getUser(id) {
+				this.$api.getUser(id).then(data => {
+					if (data && data.code === 200) {
+						this.user = data.result
+						this.user.data = Object.assign({}, this.userData, data.result.data)
+					} else {
+						this.$message('获取用户信息失败',function () {
+							uni.navigateBack({
+								delta: 1
+							});
+						})
+					}
+				})
+			},
 			//列表
 			loadList(type){
 				// let tabItem = this.tabBars[this.currTab];
@@ -288,11 +324,11 @@
 			// 修改状态栏上的buton的文字样式
 			modifyStatusBarButtonStyle() {
 				if(this.type == 'self') {
-					// #ifdef APP-PLUS  
-					var webView = this.$mp.page.$getAppWebview();  
-					// 修改buttons  
-					// index: 按钮索引, style {WebviewTitleNViewButtonStyles }  
-					webView.setTitleNViewButtonStyle(1, {  
+					// #ifdef APP-PLUS
+					var webView = this.$mp.page.$getAppWebview();
+					// 修改buttons
+					// index: 按钮索引, style {WebviewTitleNViewButtonStyles }
+					webView.setTitleNViewButtonStyle(1, {
 					    text: '编辑',  
 					}); 
 					 // #endif

@@ -2,7 +2,7 @@
     <view class="media-item view">
 		<view class="flex_row main_comment">
 			<view class="img_wrapper">
-				<navigator url="../author/author" class="link_wrapper" hover-class="navigator-hover">
+				<navigator :url="'/pages/author/author?id=' + item.user.id" class="link_wrapper" hover-class="navigator-hover">
 					<image class="image-list1" :src="item.user.avatar_src!=''?item.user.avatar_src:'../../static/temp/avatar.jpeg'"></image>
 				</navigator>
 			</view>
@@ -23,7 +23,7 @@
 		<view class="sub_reply" v-if="item.replys&&item.replys.length > 0">
 			<view v-for="(subItem, index) in item.replys" :key="index" class="flex_row main_comment">
 				<view class="img_wrapper">
-					<navigator url="../author/author" class="link_wrapper" hover-class="navigator-hover">
+					<navigator :url="'/pages/author/author?id=' + subItem.user.id" class="link_wrapper" hover-class="navigator-hover">
 						<image class="image-list1" :src="subItem.user.avatar_src!=''?subItem.user.avatar_src:'../../static/temp/avatar.jpeg'"></image>
 					</navigator>
 				</view>

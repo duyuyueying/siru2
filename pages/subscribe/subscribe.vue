@@ -58,7 +58,7 @@
 				refreshing: false, // 刷新状态
 				pageNum: 1,
 				total: 0,
-				pageSize: 8,
+				pageSize: 15,
 				lastPage: 1,
 			}
 		},

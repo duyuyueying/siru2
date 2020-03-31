@@ -1,7 +1,10 @@
 <template>
 	<view class="flex flex_row list_item" @click="onClick">
-		<view class="flex3 center">
+		<view class="flex2 center">
 			<text class="blod_black_txt">{{item.rank}}</text>
+		</view>
+		<view class="flex1 flex_column ">
+			<image class="logo_img" style="width: 50upx;height: 50upx;margin-right: 8upx" :src="item.logo"></image>
 		</view>
 		<view class="flex4 flex_column ">
 			<text class="blod_black_txt">{{item.name}}</text>

@@ -31,7 +31,7 @@
 						</view>
 					</message-item>
 					<!-- 赞过我的 -->
-					<message-item :item="item" v-else-if="type == 'focusMe'" :showContent="false" @goPage="goPerson">
+					<message-item :item="item" v-else-if="type == 'focusMe'" :showContent="false" @goPage="goPerson(item.id)">
 						<text style="fontSize: 26upx;color: #ccc;margin-top:10upx;margin-bottom: 10upx;">成为了你的粉丝</text>
 					</message-item>
 					<!-- 系统消息 -->

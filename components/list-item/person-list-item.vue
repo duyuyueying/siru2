@@ -1,6 +1,6 @@
 <template>
     <view class="list_item_wrap" hover-class="hover">
-		<navigator url="/pages/author/author" class="link_wrapper flex1" hover-class="none">
+		<navigator :url="'/pages/author/author?id=' + item.id" class="link_wrapper flex1" hover-class="none">
 			<view class="img_wrapper">
 				<image class="image-list1" :src="item.avatar_src!=''?item.avatar_src:'../../static/temp/avatar.jpeg'"></image>
 				<view class="icon_v" :style="{backgroundColor: identification != null ? identification.color: '#ccc'}"><text style="color:#fff;font-size: 20upx;">v</text></view>

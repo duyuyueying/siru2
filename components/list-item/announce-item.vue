@@ -3,7 +3,7 @@
 		<view class="content_wrapper">
 			<text class="media-title list_item_black_title_base">{{newsItem.title}}</text>
 			<view class="media-info flex-row space_between">
-				<text class="list_item_normal_txt right_space_base">{{friendlyDate(newsItem.time || newsItem.datetime)}}</text>
+				<text class="list_item_normal_txt right_space_base">{{friendlyDate(newsItem.issuetime || newsItem.datetime)}}</text>
 			</view>
 		</view>
     </view>

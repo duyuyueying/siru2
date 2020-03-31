@@ -1,22 +1,27 @@
 <template>
 	<view class="flex flex_row list_item" @click="onClick" :class="{isSelect: isSelect}">
 		<view class="flex5 flex_column">
-			<view class="flex_row"><text class="list_item_black_title_sm heavy right_space_base">{{item.name}}</text></view>
+			<view class="flex_row" style="align-items: center;">
+				<view class="img_wrapper">
+					<image class="image-list1" :src="item.logo"></image>
+				</view>
+				<text class="list_item_black_title_sm heavy right_space_base">{{item.name}}</text></view>
 			<text class="normal_txt">{{item.pair1}}/{{item.pair2}}</text>
 		</view>
+		
 		<view class="flex6 vertical_center">
 			<view class="flex_column">
-				<text class="list_item_black_title_sm heavy">&yen;{{item.price}}</text>
+				<text class="list_item_black_title_sm">{{item.price}}</text>
 			</view>
 		</view>
 		<view class="flex6 vertical_center">
 			<view class="flex_column">
-				<text class="list_item_black_title_sm heavy">{{unitConvert(item.volume)}}</text>
+				<text class="list_item_black_title_sm">{{unitConvert(item.volume)}}</text>
 			</view>
 		</view>
 		<view class="flex4 flex_row vertical_center">
 			<view v-if="type !='search'">
-				<text class="list_item_black_title_sm heavy btn_txt">{{item.accounting}}%</text>
+				<text class="list_item_black_title_sm btn_txt">{{item.accounting}}%</text>
 			</view>
 			<view style="width: 100upx;" v-else></view>
 			<view @click.stop="collect" class="collect_btn_wrap flex center" v-if="hasCollect">
@@ -109,5 +114,14 @@
 	},
 	.isSelect{
 		background-color: #f5f5f5;
+	}
+	.img_wrapper {
+		width: 20upx;
+		height: 20upx;
+		margin-right: 5upx;
+		display: flex;
+	}
+	.image-list1 {
+	    @include circle(20upx);
 	}
 </style>

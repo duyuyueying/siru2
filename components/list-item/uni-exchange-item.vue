@@ -35,7 +35,7 @@
 		},
 		methods:{
 			goPage() {
-				let exChangeName = this.item.exChangeName || 'HitBTC';
+				let exChangeName = this.item.platform || '';
 				uni.navigateTo({
 					url: '/pages/exchange/exchange?exChangeName='+exChangeName
 				});

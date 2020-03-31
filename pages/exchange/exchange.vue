@@ -1,17 +1,17 @@
 <template>
 	<view class="container">
-		<view class="flex_row bg_wrapper">
+		<view class="flex_row bg_wrapper" v-if="data != null">
 			<view class="img_wrapper mr20">
-				<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
+				<image class="image-list1" :src="data.logo"></image>
 			</view>
 			<view class="flex_column flex3 space_between">
-				<view class="flex_row mt20">
-					<text class="list_item_black_title_sm heavy mr20 white_color">{{data.name}}</text>
-					<text class="list_item_black_title_sm heavy mr20 focus_color" >ER{{data.ERange}}</text>
+				<view class="flex_row mt20" style="align-items: center;">
+					<text class="list_item_black_title_sm heavy mr20 white_color">{{data.platform_name}}</text>
+					<text class="list_item_black_title_sm heavy mr20 focus_color" >ER{{data.exrank}}</text>
 					<view @click="showTips"><icons type="question" color="#ffb100"></icons></view>
 				</view>
 				<view class="flex_column">
-					<text class="list_item_black_title_base white_color">{{data.oneDayDeal}}亿</text>
+					<text class="list_item_black_title_base white_color">{{unitConvert(data.volume_day_usd)}}</text>
 					<text class="normal_txt">24H成交额</text>
 				</view>
 			</view>
@@ -19,27 +19,42 @@
 				<view class="flex_row mt20 range_box">
 					<text class="range_focus_txt">全球排名</text>
 					<view class="range_txt_box">
-						<text class="range_txt">第{{data.globalRange}}名</text>
+						<text class="range_txt">第{{data.rank}}名</text>
 					</view>
 				</view>
 				<view class="flex_column">
-					<text class="list_item_black_title_base white_color">{{data.changeDouble}}亿</text>
+					<text class="list_item_black_title_base white_color">{{data.pairnum}}亿</text>
 					<text class="normal_txt">交易对</text>
 				</view>
 			</view>
 		</view>
-		<tabs :tabs="['主页','行情','资讯','公告']" @changeTab="changeTab" :defaultTab="currTab"></tabs>
+		<tabs :tabs="['主页','行情','公告']" @changeTab="changeTab" :defaultTab="currTab"></tabs>
 		<swiper :current="currTab" @change="changeTab" class="swiper">
 			<swiper-item>
 				<scroll-view :scroll-y="enableScrollY" :style="{height: swiperHeight+'px'}">
 					<view>
-						<view class="flex_row_center main_coins_wrap">
-							<view class="flex1 flex_column">
-								<text class="blod_black_txt">BTC/TUSD</text>
-								<text class="list_item_black_title_base" :style="{color:downTheme != null ? downTheme.txt : '#999'}">5230.02</text>
-								<text class="normal_txt" :style="{color:downTheme != null ? downTheme.txt : '#999'}">-3.61%</text>
+						<view class="">
+							<uni-title title="平台币"></uni-title>
+							<view class="flex1 flex_row" style="padding: 0upx 30upx;margin-bottom: 20upx;">
+								<view class="flex3 flex_row">
+									<view class="img_wrapper mr20">
+										<image class="image-list1" :src="data.logo"></image>
+									</view>
+									<view>
+										<view><text class="blod_black_txt">{{data.exchange_coinsymbol}}</text><text class="normal_txt">全球指数</text></view>
+										<text class="normal_txt">24H额 ${{unitConvert(data.exchange_coinvolume)}}</text>
+									</view>
+								</view>
+								<view class="flex2 flex_column">
+									<text class="list_item_black_title_base">&yen;{{data.curprice_cny}}</text>
+									<text class="normal_txt">${{data.curprice_usd}}</text>
+									
+								</view>
+								<view class="flex1 flex_row_center">
+									<text class="normal_txt heavy" :style="{color:data.changerate>0 ? upTheme.txt : downTheme.txt}">{{data.changerate>0?'+':''}}{{data.changerate}}%</text>
+								</view>
 							</view>
-							<view class="flex1 flex_column">
+							<!-- <view class="flex1 flex_column">
 								<text class="blod_black_txt">BTC/TUSD</text>
 								<text class="list_item_black_title_base" :style="{color:downTheme != null ? downTheme.txt : '#999'}">5230.02</text>
 								<text class="normal_txt" :style="{color:downTheme != null ? downTheme.txt : '#999'}">-3.61%</text>
@@ -48,45 +63,43 @@
 								<text class="blod_black_txt">BTC/TUSD</text>
 								<text class="list_item_black_title_base" :style="{color:upTheme != null ? upTheme.txt : '#999'}">5230.02</text>
 								<text class="normal_txt" :style="{color:upTheme != null ? upTheme.txt : '#999'}">+3.61%</text>
-							</view>
+							</view> -->
 						</view>
-						<view class="mt10">
+						<!--<view class="mt10">
 							<uni-title title="24H成交额" :height="65" :isBold="false" @click="gotoMore('24h')">
 								<text class="normal_txt">更多</text>
 							</uni-title>
 						</view>
-						<divide-table-cell-head :items="['名称','最新价(CNY)','24H成交额']"></divide-table-cell-head>
+ 						<divide-table-cell-head :items="['名称','最新价(CNY)','24H成交额']"></divide-table-cell-head>
 						<divide-table-cell v-for="(item, index) in coins" :item="item" :key="index" type="24h"></divide-table-cell>
-						<view class="mt10">
+ -->						<!-- <view class="mt10">
 							<uni-title title="涨幅榜" :height="65" :isBold="false" @click="gotoMore('rise')">
 								<text class="normal_txt">更多</text>
 							</uni-title>
-						</view>
-						<divide-table-cell-head :items="['名称','最新价','24H涨幅']"></divide-table-cell-head>
-<!-- 						<divide-table-cell v-for="(item, index) in coins" :item="item" :key="index" type="riseAndFall"></divide-table-cell>
- -->						<view class="mt10">
-							<uni-title title="跌幅榜" :height="65" :isBold="false" @click="gotoMore('fall')">
+						</view> -->
+						<!-- <divide-table-cell-head :items="['名称','最新价','24H涨幅']"></divide-table-cell-head>
+							<view class="mt10">
+								<uni-title title="跌幅榜" :height="65" :isBold="false" @click="gotoMore('fall')">
 								<text class="normal_txt">更多</text>
 							</uni-title>
-						</view>
-						<divide-table-cell-head :items="['名称','最新价','24H跌幅']"></divide-table-cell-head>
-<!-- 						<divide-table-cell v-for="(item, index) in coins" :item="item" :key="index" type="riseAndFall"></divide-table-cell>
- -->						<view class="mt10">
-							<uni-title title="基本信息" :height="65" :isBold="false">
+						</view> -->
+						<!-- <divide-table-cell-head :items="['名称','最新价','24H跌幅']"></divide-table-cell-head>
+							<view class="mt10">
+								<uni-title title="基本信息" :height="65" :isBold="false">
 							</uni-title>
-						</view>
-						<base-info-label name="官网" isLink :value="[{name:'百度', url: 'https://www.baidu.com'}]"></base-info-label>
-						<base-info-label name="国家"  value="英国"></base-info-label>
-						<base-info-label name="成立时间"  value="2019-2"></base-info-label>
-						<base-info-label name="交易模式"  value="现货交易 场外交易"></base-info-label>
-						<base-info-label name="社交帐号" isLink  :value="[{name:'微博', url:'https://www.baidu.com'},{name:'微信',url:'https://www.iqiyi.com/'}]"></base-info-label>
-						<base-info-label name="简介" value="我是简介啦啦啦啦, 我是简介啦啦啦啦,我是简介啦啦啦啦 ,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦,我是简介啦啦啦啦"></base-info-label>
+						</view> -->
+						<base-info-label name="官网" isLink :value="[{name:data.platform_name, url: data.official_url}]"></base-info-label>
+						<base-info-label name="国家"  :value="data.country"></base-info-label>
+						<base-info-label name="成立时间"  :value="data.launchedtime"></base-info-label>
+						<base-info-label name="交易模式"  :value="data.labels"></base-info-label>
+						<base-info-label name="社交帐号" isLink  :value="[{name:'Facebook', url:data.facebook_url},{name:'微搏',url:data.weibo_url},{name:'twitter',url:data.twitter_url}]"></base-info-label>
+						<base-info-label name="简介" :value="data.desc" isHtml></base-info-label>
 					</view>
 				</scroll-view>
 			</swiper-item>
 			<swiper-item>
 				<mix-pulldown-refresh ref="mixPulldownRefresh1" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
-					<scroll-view id="tab-bar" class="tab-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft" :show-scrollbar="false">
+					<!-- <scroll-view id="tab-bar" class="tab-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft" :show-scrollbar="false">
 						<view 
 							v-for="(item,index) in tradeTabBar" :key="index"
 							class="tab-bar-item 'tab'"
@@ -94,22 +107,29 @@
 							:id="'tab'+index"
 							@click="changeTabBar(index)"
 						><text>{{item.name}}</text></view>
-					</scroll-view>
+					</scroll-view> -->
 					<scroll-view
 						class="panel-scroll-box" 
 						:scroll-y="enableScrollY" 
 						@scrolltolower="loadMore"
 						:style="{height: (swiperHeight-22)+'px'}"
 						>
-						<uni-self-dish-table-head>
-							<view class="edit_cell"><text class="normal_txt">名称/成交量</text></view>
-						</uni-self-dish-table-head>
-						<uni-self-dish-table-cell v-for="(item, index) in tabBars[1].newsList" :key="index" :item="item" type="exchange"></uni-self-dish-table-cell>
-						<mix-load-more :status="tabBars[1].loadMoreStatus"></mix-load-more>
+						<view class="table_head">
+							<view class="flex flex_row">
+								<view class="flex5"><text class="normal_txt">交易对</text></view>
+								<view class="flex6"><text class="normal_txt">最新价($)</text></view>
+								<view class="flex6"><text class="normal_txt">24额</text></view>
+								<view class="flex4"><text class="normal_txt">成交额占比</text></view>
+							</view>
+						</view>
+						<uni-coins-detail-table-cell v-for="(item, index) in tabBars[1].newsList" :key="index" :item="item"></uni-coins-detail-table-cell>
+						
+						<!-- <uni-self-dish-table-cell :key="index" :item="item" type="exchange"></uni-self-dish-table-cell> -->
+						<mix-load-more :status="loadMoreStatus"></mix-load-more>
 					</scroll-view>
 				</mix-pulldown-refresh>
 			</swiper-item>
-			<swiper-item>
+			<!-- <swiper-item>
 				<mix-pulldown-refresh ref="mixPulldownRefresh2" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<scroll-view
 						class="panel-scroll-box" 
@@ -118,23 +138,23 @@
 						:style="{height: swiperHeight+'px'}"
 						>
 						<news-item :newsItem="item" v-for="(item, index) in tabBars[2].newsList" :key="index"></news-item>
-						<!-- 上滑加载更多组件 -->
+					
 						<mix-load-more :status="tabBars[2].loadMoreStatus"></mix-load-more>
 					</scroll-view>
 				</mix-pulldown-refresh>
-			</swiper-item>
+			</swiper-item> -->
 			<swiper-item>
-				<mix-pulldown-refresh ref="mixPulldownRefresh3" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+				<mix-pulldown-refresh ref="mixPulldownRefresh2" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<scroll-view
 						class="panel-scroll-box" 
 						:scroll-y="enableScrollY" 
 						@scrolltolower="loadMore"
 						:style="{height: swiperHeight+'px'}"
 						>
-						<announce-item :newsItem="item" v-for="(item, index) in tabBars[3].newsList" :key="index"></announce-item>
+						<announce-item :newsItem="item" v-for="(item, index) in tabBars[2].newsList" :key="index"></announce-item>
 						<!-- <news-item :newsItem="item" v-for="(item, index) in tabBars[2].newsList" :key="index"></news-item> -->
 						<!-- 上滑加载更多组件 -->
-						<mix-load-more :status="tabBars[3].loadMoreStatus"></mix-load-more>
+						<mix-load-more :status="loadMoreStatus"></mix-load-more>
 					</scroll-view>
 				</mix-pulldown-refresh>
 			</swiper-item>
@@ -160,7 +180,7 @@
 	import uniTitle from '@/components/uni-title.vue';
 	import newsItem from '@/components/list-item/news-item.vue';
 	import icons from '@/components/icons/icons.vue';
-	import {loadMore} from '@/common/util.js';
+	import {loadMore, unitConvert} from '@/common/util.js';
 	import divideTableCellHead from '@/pages/exchange/divide_table_cell_head.vue';
 	import divideTableCell from '@/pages/exchange/divide_talbe_cell.vue';
 	import uniSelfDishTableHead from '@/components/list-item/uni-self-dish-table-head.vue';
@@ -169,24 +189,20 @@
 	import announceItem from '@/components/list-item/announce-item.vue';
 	import {mapState} from 'vuex';
 	import {uniPopup} from '@dcloudio/uni-ui';
+	import uniCoinsDetailTableCell from '@/components/list-item/uni-coins-detail-table-cell.vue';
+	
 	let windowWidth = 0, scrollTimer = false, tabBar, scrollTimer1 = false;
 	export default {
 		data() {
 			return {
-				data: {
-					name: 'HitBTC',
-					ERange: 6,
-					oneDayDeal: 2.93,
-					changeDouble: 619,
-					globalRange: 25,
-				},
+				data: null,
 				identification: null,
 				currTab: 0,
 				dataList: [],
 				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
 				refreshing: false, // 刷新状态
 				isFocus: false, // 是否被关注
-				tabBars: [{name:'主页'},{name: '行情'},{name: '资讯'},{name:'公告'}],
+				tabBars: [{name:'主页'},{name: '行情'},{name:'公告'}],
 				coins: coins,
 				tradeTabBar: [{name:'全部'},{name:'BTC'},{name:'ETH'},{name: 'EOS'},{name:'BCH'},{name:'EURS'},{name:'USDT'},{name:'ETH'},{name: 'EOS'},{name:'BCH'},{name:'EURS'},{name:'USDT'}],
 				tradeTabCurrentIndex: 0, // 行情标签下tab的索引
@@ -194,9 +210,12 @@
 				enableScrollY: false, // scrollview是否可以华东
 				headScrollTop: 0,
 				swiperHeight: 0,
+				exChangeName: '',
+				pageNum: 1,
+				pageSize: 15,
 			}
 		},
-		mixins:[loadMore],
+		mixins:[loadMore, unitConvert],
 		components:{
 			tabs,
 			uniTitle,
@@ -208,7 +227,8 @@
 			uniSelfDishTableHead,
 			uniSelfDishTableCell,
 			uniPopup,
-			announceItem
+			announceItem,
+			uniCoinsDetailTableCell
 		},
 		onReady() {
 			let _this = this;
@@ -223,12 +243,14 @@
 			// 获取屏幕宽度
 			windowWidth = uni.getSystemInfoSync().windowWidth;
 			this.tabBars = this.initTab(this.tabBars);
+			this.exChangeName = e.exChangeName;
+			this.init();
 			uni.setNavigationBarTitle({
 				title: e.exChangeName
 			});
 		},
 		mounted() {
-			this.getElSize('.swiper');
+			// this.getElSize('.swiper');
 		},
 		onPageScroll(e) {
 			if(Math.ceil(e.scrollTop) + 20 > this.headScrollTop ) {
@@ -245,59 +267,123 @@
 		},
 		computed:mapState(['upTheme', 'downTheme', 'userInfo']),
 		methods: {
-			//列表
-			loadList(type){
-				let tabItem = this.tabBars[this.currTab];
-				//type add 加载更多 refresh下拉刷新
-				if(type === 'add'){
-					if(tabItem.loadMoreStatus === 2){
-						return;
+			// 获得详情
+			async init() {
+				let data = await this.$api.coins_exhange_detail(this.exChangeName);
+				if (data && data.code === 200) {
+					if(data.result.code == 200) {
+						this.data = data.result.data;
 					}
-					tabItem.loadMoreStatus = 1;
+				} else {
+					this.$message({icon: 'none', title: data.msg})
 				}
+				console.log(this.data);
+			},
+			//列表
+			async loadList(action){
+				let tabItem = this.tabBars[this.currTab];
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					tabItem.newsList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+				if (this.loadMoreStatus==0) {
+					this.loadMoreStatus = 1;
+					let data = 0;
+					// 行情
+					if(this.currTab == 1){
+						data = await this.$api.coins_exhange_markets(this.exChangeName, {
+							pageNum: this.pageNum,
+							pageSize: this.pageSize,
+						});
+					}
+					// 公告
+					if(this.currTab == 2) {
+						data = await this.$api.coins_exhange_news(this.exChangeName, {
+							page: this.pageNum,
+							pageSize: this.pageSize,
+						});
+					}
+					
+					if (data && data.code === 200) {
+						if(data.result.code == 200) {
+							let result = [];
+							if(this.currTab == 2){
+								result = data.result.data.list || [];
+								this.lastPage = data.result.total_pages
+							} else{
+								result = data.result.data || [];
+								this.lastPage = data.result.maxpage
+							}
+							tabItem.newsList.push(...result);
+							this.$refs['mixPulldownRefresh'+this.currTab] && this.$refs['mixPulldownRefresh'+this.currTab].endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						}
+						console.log(tabItem);
+					} else {
+						this.$message(data.msg)
+					}
+					this.isTap = false;
+					// })
+				}
+				// let tabItem = this.tabBars[this.currTab];
+				//type add 加载更多 refresh下拉刷新
+				// if(type === 'add'){
+				// 	if(tabItem.loadMoreStatus === 2){
+				// 		return;
+				// 	}
+				// 	tabItem.loadMoreStatus = 1;
+				// }
 				// #ifdef APP-PLUS
-				else if(type === 'refresh'){
-					tabItem.refreshing = true;
-				}
+				// else if(type === 'refresh'){
+				// 	tabItem.refreshing = true;
+				// }
 				// #endif
 				
 				//setTimeout模拟异步请求数据
-				setTimeout(()=>{
-					let list= [];
-					if(tabItem.name == '行情') {
-						list = coins;
-					} else {
-						list = newsItems;
-					}
-					list.sort((a,b)=>{
-						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
-					})
-					if(type === 'refresh'){
-						// 刷新前清空数组
-						tabItem.newsList = [];
-					}
-					let tempArr = [];
-					list.forEach(item=>{
-						item.id = parseInt(Math.random() * 10000);
-						tempArr.push(item);
-					});
-					tabItem.newsList = [...tabItem.newsList, ...tempArr];
-					//下拉刷新 关闭刷新动画
-					if(type === 'refresh'){
-						let keyName = 'mixPulldownRefresh'+this.currTab
-						this.$refs[keyName] && this.$refs[keyName].endPulldownRefresh();
-						// #ifdef APP-PLUS
-						tabItem.refreshing = false;
-						// #endif
-						tabItem.loadMoreStatus = 0;
-					}
-					//上滑加载 处理状态
-					if(type === 'add'){
-						// 这里解决深拷贝问题，
-						this.tabBars = Object.assign({}, this.tabBars);
-						tabItem.loadMoreStatus = tabItem.newsList.length > 40 ? 2: 0;
-					}
-				}, 600)
+				// setTimeout(()=>{
+				// 	let list= [];
+				// 	if(tabItem.name == '行情') {
+				// 		list = coins;
+				// 	} else {
+				// 		list = newsItems;
+				// 	}
+				// 	list.sort((a,b)=>{
+				// 		return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
+				// 	})
+				// 	if(type === 'refresh'){
+				// 		// 刷新前清空数组
+				// 		tabItem.newsList = [];
+				// 	}
+				// 	let tempArr = [];
+				// 	list.forEach(item=>{
+				// 		item.id = parseInt(Math.random() * 10000);
+				// 		tempArr.push(item);
+				// 	});
+				// 	tabItem.newsList = [...tabItem.newsList, ...tempArr];
+				// 	//下拉刷新 关闭刷新动画
+				// 	if(type === 'refresh'){
+				// 		let keyName = 'mixPulldownRefresh'+this.currTab
+				// 		this.$refs[keyName] && this.$refs[keyName].endPulldownRefresh();
+				// 		// #ifdef APP-PLUS
+				// 		tabItem.refreshing = false;
+				// 		// #endif
+				// 		tabItem.loadMoreStatus = 0;
+				// 	}
+				// 	//上滑加载 处理状态
+				// 	if(type === 'add'){
+				// 		// 这里解决深拷贝问题，
+				// 		this.tabBars = Object.assign({}, this.tabBars);
+				// 		tabItem.loadMoreStatus = tabItem.newsList.length > 40 ? 2: 0;
+				// 	}
+				// }, 600)
 			},
 			changeTab(e) {
 				if(scrollTimer1){
@@ -326,7 +412,7 @@
 					// 重置
 					let tabItem = this.tabBars[this.currTab];
 					if(tabItem.loaded !== true){
-						this.loadList('add');
+						this.loadList('refresh');
 						tabItem.loaded = true;
 					}
 				}, 300)
@@ -391,7 +477,7 @@
 					this.tabBars[this.currTab].refreshing = 0;
 					let tabItem = this.tabBars[this.currTab];
 					// if(tabItem.loaded !== true){
-						this.loadList('add');
+						this.loadList('refresh');
 					// 	tabItem.loaded = true;
 					// }
 				}, 300)
@@ -423,6 +509,7 @@
 </script>
 
 <style lang="scss">
+	@import '@/common/quotations.scss';
 	page,.container,{
 		height: 100%;
 		background-color: $bgColor;
@@ -581,5 +668,11 @@
 		.close_btn_txt{
 			@include txt(30upx, #489aff)
 		}
+	}
+	.table_head{
+		height: 32px;
+		background-color: $bgColor;
+		justify-content: center;
+		padding: 0 $space-lg;
 	}
 </style>

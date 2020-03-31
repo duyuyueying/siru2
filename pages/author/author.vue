@@ -8,7 +8,7 @@
 			</view>
 			<view class="img_wrapper">
 				<image class="image-list1" :src="user.avatar_src!=''?user.avatar_src:'../../static/temp/avatar.jpeg'"></image>
-				<view class="icon_v" :style="{backgroundColor: user.verify_status != 0 ? identification.color: '#ccc'}"><text style="color:#fff;font-size: 20upx;">v</text></view>
+				<view class="icon_v" :style="{backgroundColor: user.verify_status != 0 ? '#ffb100': '#ccc'}"><text style="color:#fff;font-size: 20upx;">v</text></view>
 			</view>
 			<view class="flex_row">
 
@@ -23,9 +23,6 @@
 				<view><text class="txt white right_space_base">{{user.fans_count}} 粉丝</text></view>
 				<view><text class="txt white right_space_base">{{user.follows_count}} 关注</text></view>
 				<view v-if="user.data.qrCode" class="qrCode_wrap" @tap="showQrCode"><icons type="qrCode" color="black"></icons></view>
-			</view>
-			<view class="flex_row" v-if="type != 'self'">
-				<view><text class="txt white">{{user.is_follow ? '已关注': '关注'}}</text></view>
 			</view>
 
 		</view>
@@ -93,8 +90,8 @@
 			<swiper-item>
 				<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<scroll-view
-						class="panel-scroll-box" 
-						:scroll-y="enableScrollY" 
+						class="panel-scroll-box"
+						:scroll-y="enableScrollY"
 						@scrolltolower="loadMore"
 						>
 						<news-item :newsItem="item" v-for="(item, index) in dataList" :key="index"></news-item>
@@ -131,19 +128,22 @@
 	import {uniPopup} from '@dcloudio/uni-ui';
 	export default {
 		data() {
+			const userData = {
+				sex: '保密',
+				job: '',
+				phone: '',
+				wechat: '',
+				wechat_official: '',
+				email: '',
+				twitter: '',
+				profile: '',
+			}
 			return {
 				id: 0,
-				userData: {
-					sex: '保密',
-					job: '',
-					phone: '',
-					wechat: '',
-					wechat_official: '',
-					email: '',
-					twitter: '',
-					profile: '',
+				userData: userData,
+				user: {
+					data: userData
 				},
-				user: {},
 				identification: null,
 				iStatusBarHeight: 0,
 				currTab: 0,
@@ -163,22 +163,23 @@
 			icons,
 			uniPopup
 		},
-		onLoad(query) {
+		async onLoad(query) {
 			this.iStatusBarHeight  = uni.getSystemInfoSync().statusBarHeight;
-			this.identification = identification[this.user.identification];
+			// this.identification = identification[this.user.identification];
 			this.type = query.type;
 			this.id =  query.id;
 			this.loadList('add');
-			this.modifyStatusBarButtonStyle();
 			if(this.type == 'self') {
 				this.user = this.userInfo
 				this.user.data = Object.assign({}, this.userData, this.userInfo.data)
 			} else {
-				this.getUser(this.id);
+				await this.getUser(this.id);
 			}
+			console.log(this.user)
 			uni.setNavigationBarTitle({
 				title: this.user.nickname
 			});
+			this.modifyStatusBarButtonStyle();
 		},
 		onShareAppMessage() {
 			console.log('分享...');
@@ -211,25 +212,28 @@
 		},
 		computed: mapState(['userInfo']),
 		methods: {
-			getUser(id) {
-				this.$api.getUser(id).then(data => {
-					if (data && data.code === 200) {
-						this.user = data.result
-						this.user.data = Object.assign({}, this.userData, data.result.data)
-					} else {
-						this.$message('获取用户信息失败',function () {
-							uni.navigateBack({
-								delta: 1
-							});
-						})
-					}
+			async getUser(id) {
+				return new Promise((resolve)=>{
+					this.$api.getUser(id).then(data => {
+						if (data && data.code === 200) {
+							this.user = data.result
+							this.user.data = Object.assign({}, this.userData, data.result.data)
+							resolve(data.result.data);
+						} else {
+							this.$message('获取用户信息失败',function () {
+								uni.navigateBack({
+									delta: 1
+								});
+							})
+						}
+					})
 				})
 			},
 			//列表
 			loadList(type){
 				// let tabItem = this.tabBars[this.currTab];
 				//type add 加载更多 refresh下拉刷新
-				
+
 				if(type === 'add'){
 					console.log(this.loadMoreStatus)
 					if(this.loadMoreStatus === 2){
@@ -242,7 +246,7 @@
 					this.refreshing = true;
 				}
 				// #endif
-				
+
 				//setTimeout模拟异步请求数据
 				setTimeout(()=>{
 					let list = newsItems;
@@ -290,7 +294,7 @@
 				uni.downloadFile({
 					url: 'https://img.36krcdn.com/20200307/v2_945dcd5d78514102a1e83a016bfbb2a6_img_000',
 					success(e) {
-						
+
 						uni.saveImageToPhotosAlbum({
 							filePath: e.tempFilePath,
 							success(path) {
@@ -305,10 +309,10 @@
 						console.log("fail",e)
 					}
 				});
-				this.close();	
+				this.close();
 			},
 			//获得元素的size
-			getElSize() { 
+			getElSize() {
 				let el = uni.createSelectorQuery().select('.relative_section');
 				el.fields({
 					size: true,
@@ -323,16 +327,21 @@
 			},
 			// 修改状态栏上的buton的文字样式
 			modifyStatusBarButtonStyle() {
+				// #ifdef APP-PLUS
+				var webView = this.$mp.page.$getAppWebview();
+				// 修改buttons
+				// index: 按钮索引, style {WebviewTitleNViewButtonStyles }
 				if(this.type == 'self') {
-					// #ifdef APP-PLUS
-					var webView = this.$mp.page.$getAppWebview();
-					// 修改buttons
-					// index: 按钮索引, style {WebviewTitleNViewButtonStyles }
 					webView.setTitleNViewButtonStyle(1, {
-					    text: '编辑',  
-					}); 
-					 // #endif
+					    text: '编辑',
+					});
+				}else{
+					webView.setTitleNViewButtonStyle(1, {
+						text: this.user.is_follow ? '已关注':'关注',
+					});
 				}
+				// #endif
+
 			}
 		}
 	}

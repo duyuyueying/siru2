@@ -1,17 +1,17 @@
 <template>
 	<view class="container">
-		<view class="flex_row bg_wrapper" v-if="data != null">
+		<view class="flex_row bg_wrapper" v-if="exchange != null">
 			<view class="img_wrapper mr20">
-				<image class="image-list1" :src="data.logo"></image>
+				<image class="image-list1" :src="exchange.logo"></image>
 			</view>
 			<view class="flex_column flex3 space_between">
 				<view class="flex_row mt20" style="align-items: center;">
-					<text class="list_item_black_title_sm heavy mr20 white_color">{{data.platform_name}}</text>
-					<text class="list_item_black_title_sm heavy mr20 focus_color" >ER{{data.exrank}}</text>
+					<text class="list_item_black_title_sm heavy mr20 white_color">{{exchange.platform_name}}</text>
+					<text class="list_item_black_title_sm heavy mr20 focus_color" >ER{{exchange.exrank}}</text>
 					<view @click="showTips"><icons type="question" color="#ffb100"></icons></view>
 				</view>
 				<view class="flex_column">
-					<text class="list_item_black_title_base white_color">{{unitConvert(data.volume_day_usd)}}</text>
+					<text class="list_item_black_title_base white_color">{{unitConvert(exchange.volume_day_usd)}}</text>
 					<text class="normal_txt">24H成交额</text>
 				</view>
 			</view>
@@ -19,11 +19,11 @@
 				<view class="flex_row mt20 range_box">
 					<text class="range_focus_txt">全球排名</text>
 					<view class="range_txt_box">
-						<text class="range_txt">第{{data.rank}}名</text>
+						<text class="range_txt">第{{exchange.rank}}名</text>
 					</view>
 				</view>
 				<view class="flex_column">
-					<text class="list_item_black_title_base white_color">{{data.pairnum}}亿</text>
+					<text class="list_item_black_title_base white_color">{{exchange.pairnum}}亿</text>
 					<text class="normal_txt">交易对</text>
 				</view>
 			</view>
@@ -35,23 +35,23 @@
 					<view>
 						<view class="">
 							<uni-title title="平台币"></uni-title>
-							<view class="flex1 flex_row" style="padding: 0upx 30upx;margin-bottom: 20upx;">
+							<view class="flex1 flex_row" @click="toDetail" style="padding: 0upx 30upx;margin-bottom: 20upx;">
 								<view class="flex3 flex_row">
 									<view class="img_wrapper mr20">
-										<image class="image-list1" :src="data.logo"></image>
+										<image class="image-list1" :src="exchange.logo"></image>
 									</view>
 									<view>
-										<view><text class="blod_black_txt">{{data.exchange_coinsymbol}}</text><text class="normal_txt">全球指数</text></view>
-										<text class="normal_txt">24H额 ${{unitConvert(data.exchange_coinvolume)}}</text>
+										<view><text class="blod_black_txt">{{exchange.exchange_coinsymbol}}</text><text class="normal_txt">全球指数</text></view>
+										<text class="normal_txt">24H额 ${{unitConvert(exchange.exchange_coinvolume)}}</text>
 									</view>
 								</view>
 								<view class="flex2 flex_column">
-									<text class="list_item_black_title_base">&yen;{{data.curprice_cny}}</text>
-									<text class="normal_txt">${{data.curprice_usd}}</text>
-									
+									<text class="list_item_black_title_base">&yen;{{exchange.curprice_cny}}</text>
+									<text class="normal_txt">${{exchange.curprice_usd}}</text>
+
 								</view>
 								<view class="flex1 flex_row_center">
-									<text class="normal_txt heavy" :style="{color:data.changerate>0 ? upTheme.txt : downTheme.txt}">{{data.changerate>0?'+':''}}{{data.changerate}}%</text>
+									<text class="normal_txt heavy" :style="{color:exchange.changerate>0 ? upTheme.txt : downTheme.txt}">{{exchange.changerate>0?'+':''}}{{exchange.changerate}}%</text>
 								</view>
 							</view>
 							<!-- <view class="flex1 flex_column">
@@ -88,19 +88,19 @@
 								<uni-title title="基本信息" :height="65" :isBold="false">
 							</uni-title>
 						</view> -->
-						<base-info-label name="官网" isLink :value="[{name:data.platform_name, url: data.official_url}]"></base-info-label>
-						<base-info-label name="国家"  :value="data.country"></base-info-label>
-						<base-info-label name="成立时间"  :value="data.launchedtime"></base-info-label>
-						<base-info-label name="交易模式"  :value="data.labels"></base-info-label>
-						<base-info-label name="社交帐号" isLink  :value="[{name:'Facebook', url:data.facebook_url},{name:'微搏',url:data.weibo_url},{name:'twitter',url:data.twitter_url}]"></base-info-label>
-						<base-info-label name="简介" :value="data.desc" isHtml></base-info-label>
+						<base-info-label name="官网" isLink :value="[{name:exchange.platform_name, url: exchange.official_url}]"></base-info-label>
+						<base-info-label name="国家"  :value="exchange.country"></base-info-label>
+						<base-info-label name="成立时间"  :value="exchange.launchedtime"></base-info-label>
+						<base-info-label name="交易模式"  :value="exchange.labels"></base-info-label>
+						<base-info-label name="社交帐号" isLink  :value="[{name:'Facebook', url:exchange.facebook_url},{name:'微搏',url:exchange.weibo_url},{name:'twitter',url:exchange.twitter_url}]"></base-info-label>
+						<base-info-label name="简介" :value="exchange.desc" isHtml></base-info-label>
 					</view>
 				</scroll-view>
 			</swiper-item>
 			<swiper-item>
 				<mix-pulldown-refresh ref="mixPulldownRefresh1" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<!-- <scroll-view id="tab-bar" class="tab-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft" :show-scrollbar="false">
-						<view 
+						<view
 							v-for="(item,index) in tradeTabBar" :key="index"
 							class="tab-bar-item 'tab'"
 							:class="{current: index === tradeTabCurrentIndex}"
@@ -109,21 +109,21 @@
 						><text>{{item.name}}</text></view>
 					</scroll-view> -->
 					<scroll-view
-						class="panel-scroll-box" 
-						:scroll-y="enableScrollY" 
+						class="panel-scroll-box"
+						:scroll-y="enableScrollY"
 						@scrolltolower="loadMore"
 						:style="{height: (swiperHeight-22)+'px'}"
 						>
 						<view class="table_head">
 							<view class="flex flex_row">
-								<view class="flex5"><text class="normal_txt">交易对</text></view>
-								<view class="flex6"><text class="normal_txt">最新价($)</text></view>
-								<view class="flex6"><text class="normal_txt">24额</text></view>
+								<view class="flex7"><text class="normal_txt">交易对</text></view>
+								<view class="flex4"><text class="normal_txt">最新价($)</text></view>
+								<view class="flex4"><text class="normal_txt">24额</text></view>
 								<view class="flex4"><text class="normal_txt">成交额占比</text></view>
 							</view>
 						</view>
-						<uni-coins-detail-table-cell v-for="(item, index) in tabBars[1].newsList" :key="index" :item="item"></uni-coins-detail-table-cell>
-						
+						<uni-coins-detail-table-cell @click="toCoinsDetail" v-for="(item, index) in tabBars[1].newsList" :key="index" :exchange_code="exchange.platform" :item="item"></uni-coins-detail-table-cell>
+
 						<!-- <uni-self-dish-table-cell :key="index" :item="item" type="exchange"></uni-self-dish-table-cell> -->
 						<mix-load-more :status="loadMoreStatus"></mix-load-more>
 					</scroll-view>
@@ -132,13 +132,13 @@
 			<!-- <swiper-item>
 				<mix-pulldown-refresh ref="mixPulldownRefresh2" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<scroll-view
-						class="panel-scroll-box" 
-						:scroll-y="enableScrollY" 
+						class="panel-scroll-box"
+						:scroll-y="enableScrollY"
 						@scrolltolower="loadMore"
 						:style="{height: swiperHeight+'px'}"
 						>
 						<news-item :newsItem="item" v-for="(item, index) in tabBars[2].newsList" :key="index"></news-item>
-					
+
 						<mix-load-more :status="tabBars[2].loadMoreStatus"></mix-load-more>
 					</scroll-view>
 				</mix-pulldown-refresh>
@@ -146,8 +146,8 @@
 			<swiper-item>
 				<mix-pulldown-refresh ref="mixPulldownRefresh2" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
 					<scroll-view
-						class="panel-scroll-box" 
-						:scroll-y="enableScrollY" 
+						class="panel-scroll-box"
+						:scroll-y="enableScrollY"
 						@scrolltolower="loadMore"
 						:style="{height: swiperHeight+'px'}"
 						>
@@ -162,7 +162,7 @@
 		<uni-popup ref="tips">
 			<view class="tips_box">
 				<view><text class="list_item_black_title_base">ExRank说明</text></view>
-				
+
 				<view class="tips_content_box">
 					<text class="list_item_black_title_sm">全球交易所综合排行榜(exChange Rank)，检测ExRank，是衡量数字货币交易所综合性的指标，对交易所不同维度的数据进行分析得出的综合分数。</text>
 				</view>
@@ -190,11 +190,12 @@
 	import {mapState} from 'vuex';
 	import {uniPopup} from '@dcloudio/uni-ui';
 	import uniCoinsDetailTableCell from '@/components/list-item/uni-coins-detail-table-cell.vue';
-	
+
 	let windowWidth = 0, scrollTimer = false, tabBar, scrollTimer1 = false;
 	export default {
 		data() {
 			return {
+				exchange:{},
 				data: null,
 				identification: null,
 				currTab: 0,
@@ -267,17 +268,33 @@
 		},
 		computed:mapState(['upTheme', 'downTheme', 'userInfo']),
 		methods: {
+			toDetail(){
+				let symbol = this.exchange.exchange_coinsymbol;
+				let code = this.exchange.exchange_coincode;
+				uni.navigateTo({
+					url: '/pages/quotations/coinDetail?code='+code+'&symbol='+symbol+'&exChangeName='+this.exchange.platform
+				});
+				// this.$emit('click');
+			},
+			//
+			toCoinsDetail(item) {
+				let symbol = item.symbol;
+				let code = item.coincode;
+				uni.navigateTo({
+					url: '/pages/quotations/coinDetail?code='+code+'&symbol='+symbol+'&exChangeName='+this.exchange.platform
+				});
+			},
+
 			// 获得详情
 			async init() {
 				let data = await this.$api.coins_exhange_detail(this.exChangeName);
 				if (data && data.code === 200) {
 					if(data.result.code == 200) {
-						this.data = data.result.data;
+						this.exchange = data.result.data;
 					}
 				} else {
 					this.$message({icon: 'none', title: data.msg})
 				}
-				console.log(this.data);
 			},
 			//列表
 			async loadList(action){
@@ -305,7 +322,7 @@
 							pageSize: this.pageSize,
 						});
 					}
-					
+
 					if (data && data.code === 200) {
 						if(data.result.code == 200) {
 							let result = [];
@@ -326,64 +343,12 @@
 							}
 							this.pageNum += 1;
 						}
-						console.log(tabItem);
 					} else {
 						this.$message(data.msg)
 					}
 					this.isTap = false;
 					// })
 				}
-				// let tabItem = this.tabBars[this.currTab];
-				//type add 加载更多 refresh下拉刷新
-				// if(type === 'add'){
-				// 	if(tabItem.loadMoreStatus === 2){
-				// 		return;
-				// 	}
-				// 	tabItem.loadMoreStatus = 1;
-				// }
-				// #ifdef APP-PLUS
-				// else if(type === 'refresh'){
-				// 	tabItem.refreshing = true;
-				// }
-				// #endif
-				
-				//setTimeout模拟异步请求数据
-				// setTimeout(()=>{
-				// 	let list= [];
-				// 	if(tabItem.name == '行情') {
-				// 		list = coins;
-				// 	} else {
-				// 		list = newsItems;
-				// 	}
-				// 	list.sort((a,b)=>{
-				// 		return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
-				// 	})
-				// 	if(type === 'refresh'){
-				// 		// 刷新前清空数组
-				// 		tabItem.newsList = [];
-				// 	}
-				// 	let tempArr = [];
-				// 	list.forEach(item=>{
-				// 		item.id = parseInt(Math.random() * 10000);
-				// 		tempArr.push(item);
-				// 	});
-				// 	tabItem.newsList = [...tabItem.newsList, ...tempArr];
-				// 	//下拉刷新 关闭刷新动画
-				// 	if(type === 'refresh'){
-				// 		let keyName = 'mixPulldownRefresh'+this.currTab
-				// 		this.$refs[keyName] && this.$refs[keyName].endPulldownRefresh();
-				// 		// #ifdef APP-PLUS
-				// 		tabItem.refreshing = false;
-				// 		// #endif
-				// 		tabItem.loadMoreStatus = 0;
-				// 	}
-				// 	//上滑加载 处理状态
-				// 	if(type === 'add'){
-				// 		// 这里解决深拷贝问题，
-				// 		this.tabBars = Object.assign({}, this.tabBars);
-				// 		tabItem.loadMoreStatus = tabItem.newsList.length > 40 ? 2: 0;
-				// 	}
-				// }, 600)
 			},
 			changeTab(e) {
 				if(scrollTimer1){
@@ -396,23 +361,25 @@
 				if(typeof e === 'object'){
 					index = e.detail.current
 				}
-			
+
 				if(typeof e === 'number'){
 					//点击切换时先切换再滚动tabbar，避免同时切换视觉错位
-					this.currTab = index; 
+					this.currTab = index;
 				}
 				//延迟300ms,等待swiper动画结束再修改tabbar
 				scrollTimer1 = setTimeout(()=>{
 					if(typeof e === 'object'){
-						this.currTab = index; 
+						this.currTab = index;
 					}
-					this.currTab = index; 
-					
+					this.currTab = index;
+
 					//第一次切换tab，动画结束后需要加载数据
 					// 重置
 					let tabItem = this.tabBars[this.currTab];
 					if(tabItem.loaded !== true){
-						this.loadList('refresh');
+						if(this.currTab != 0){
+							this.loadList('refresh');
+						}
 						tabItem.loaded = true;
 					}
 				}, 300)
@@ -443,7 +410,7 @@
 				}
 				//计算宽度相关
 				let tabBarScrollLeft = tabBar.scrollLeft;
-				let width = 0; 
+				let width = 0;
 				let nowWidth = 0;
 				//获取可滑动总宽度
 				for (let i = 0; i <= index; i++) {
@@ -455,7 +422,7 @@
 				}
 				if(typeof e === 'number'){
 					//点击切换时先切换再滚动tabbar，避免同时切换视觉错位
-					this.tradeTabCurrentIndex = index; 
+					this.tradeTabCurrentIndex = index;
 				}
 				//延迟300ms,等待swiper动画结束再修改tabbar
 				scrollTimer = setTimeout(()=>{
@@ -466,10 +433,10 @@
 						this.scrollLeft = 0;
 					}
 					if(typeof e === 'object'){
-						this.tradeTabCurrentIndex = index; 
+						this.tradeTabCurrentIndex = index;
 					}
-					this.tradeTabCurrentIndex = index; 
-					
+					this.tradeTabCurrentIndex = index;
+
 					//第一次切换tab，动画结束后需要加载数据
 					// 重置
 					this.tabBars[this.currTab].newsList = [];
@@ -482,7 +449,7 @@
 					// }
 				}, 300)
 			},
-			
+
 			getElSize(selector, type) {
 				return new Promise((res, rej) => {
 					let el = uni.createSelectorQuery().select(selector);
@@ -496,7 +463,7 @@
 							res(data);
 						}
 					}).exec();
-				}); 
+				});
 			},
 			showTips() {
 				this.$refs.tips.open();

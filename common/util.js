@@ -156,7 +156,7 @@ const getElSize = {
 		}
 	},
 	methods: {
-		getElSize(selector) { 
+		getElSize(selector) {
 			let el = uni.createSelectorQuery().select(selector);
 			el.fields({
 				size: true,
@@ -174,32 +174,34 @@ const getElSize = {
 const unitConvert = {
 	methods: {
 		unitConvert(num) {
-		    var moneyUnits = ["元", "万", "亿", "万亿"] 
+		    var moneyUnits = ["元", "万", "亿", "万亿"]
 		    var dividend = 10000;
 		    var curentNum = num;
-		    //转换数字 
+		    //转换数字
 		    var curentUnit = moneyUnits[0];
-		    //转换单位 
-		    for (var i = 0; i <4; i++) { 
-		        curentUnit = moneyUnits[i] 
-		        if(this.strNumSize(curentNum)<5){ 
+		    //转换单位
+		    for (var i = 0; i <4; i++) {
+		        curentUnit = moneyUnits[i]
+		        if(this.strNumSize(curentNum)<5){
 		            break;
 		        }
-		        curentNum = curentNum / dividend 
-		    } 
-		    var m = {num: 0, unit: ""} 
+		        curentNum = curentNum / dividend
+		    }
+		    var m = {num: 0, unit: ""}
 		    m.num = curentNum.toFixed(2)
 		    m.unit = curentUnit;
 		    return `${m.num}${m.unit}`;
 		},
-		strNumSize(tempNum){ 
-		    var stringNum = tempNum.toString() 
-		    var index = stringNum.indexOf(".") 
-		    var newNum = stringNum;
-		    if(index!=-1){
-		        newNum = stringNum.substring(0,index) 
-		    } 
-		    return newNum.length
+		strNumSize(tempNum){
+		    if (tempNum!=undefined) {
+                var stringNum = tempNum.toString()
+                var index = stringNum.indexOf(".")
+                var newNum = stringNum;
+                if(index!=-1){
+                    newNum = stringNum.substring(0,index)
+                }
+                return newNum.length
+            }
 		}
 	}
 }

@@ -1,20 +1,21 @@
 <template>
 	<view class="flex flex_row list_item" @click="onClick" :class="{isSelect: isSelect}">
-		<view class="flex5 flex_column">
-			<view class="flex_row" style="align-items: center;">
-				<view class="img_wrapper">
-					<image class="image-list1" :src="item.logo"></image>
+		<view class="flex7 flex_column">
+			<view class="flex_row">
+				<view class="img_wrapper" style="width: 50upx;">
+					<image class="image-list1" style="width: 50upx;height: 50upx" :src="item.logo"></image>
 				</view>
-				<text class="list_item_black_title_sm heavy right_space_base">{{item.name}}</text></view>
-			<text class="normal_txt">{{item.pair1}}/{{item.pair2}}</text>
+				<text class="list_item_black_title_sm heavy right_space_base">{{item.pair1}}/{{item.pair2}}</text>
+			</view>
+			<text class="normal_txt" style="margin-left: 54upx;">{{item.name}}</text>
 		</view>
-		
-		<view class="flex6 vertical_center">
+
+		<view class="flex4 vertical_center">
 			<view class="flex_column">
 				<text class="list_item_black_title_sm">{{item.price}}</text>
 			</view>
 		</view>
-		<view class="flex6 vertical_center">
+		<view class="flex4 vertical_center">
 			<view class="flex_column">
 				<text class="list_item_black_title_sm">{{unitConvert(item.volume)}}</text>
 			</view>
@@ -54,28 +55,29 @@
 			type: {
 				type: String,
 				default: 'quotations'
-			}
+			},
+			exchange_code:'',
 		},
 		mixins:[unitConvert],
 		components:{
 			icons
-		},	
+		},
 		created() {
 			// this.isCollect = this.item.isCollect || false;
-			console.log(this.isSelect,this.item);
+			// console.log(this.isSelect,this.item);
 		},
 		methods:{
 			onClick(){
-				let symbol = this.item.symbol;
-				let exChangeName = this.item.exChangeName
-				uni.navigateTo({
-					url: '/pages/quotations/coinDetail?symbol='+symbol+'&exChangeName='+exChangeName
-				});
-				// this.$emit('click');
+				// let symbol = this.item.symbol;
+				// let code = this.item.coincode;
+				// uni.navigateTo({
+				// 	url: '/pages/quotations/coinDetail?code='+code+'&symbol='+symbol+'&exChangeName='+this.exchange_code
+				// });
+				this.$emit('click',this.item);
 			},
 			// 自选
 			collect() {
-				this.$emit('collect', this.item.exchange_code);
+				this.$emit('collect', this.exchange_code);
 			}
 		},
 		computed:{

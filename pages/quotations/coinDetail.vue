@@ -18,8 +18,8 @@
 		<tabs :tabs="['报价','简介']" @changeTab="changeTab" :defaultTab="currTab"></tabs>
 		<swiper
 			id="swiper"
-			class="swiper" 
-			:duration="300" 
+			class="swiper"
+			:duration="300"
 			:current="currTab"
 			@change="changeTab"
 			ref="test"
@@ -28,9 +28,9 @@
 				<view class="relative_section">
 					<view class="table_head">
 						<view class="flex flex_row">
-							<view class="flex5"><text class="normal_txt">交易对</text></view>
-							<view class="flex6"><text class="normal_txt">最新价($)</text></view>
-							<view class="flex6"><text class="normal_txt">24额</text></view>
+							<view class="flex7"><text class="normal_txt">交易对</text></view>
+							<view class="flex4"><text class="normal_txt">最新价($)</text></view>
+							<view class="flex4"><text class="normal_txt">24额</text></view>
 							<view class="flex4"><text class="normal_txt">成交额占比</text></view>
 						</view>
 					</view>
@@ -42,8 +42,8 @@
 						@scrolltolower="loadMore"
 						:style="{height: swiperHeight+'px'}"
 						>
-						<uni-coins-detail-table-cell v-for="(item, index) in dataList" :key="index" :isSelect="index == 0" :item="item" hasCollect @collect="collect"></uni-coins-detail-table-cell>
-						
+						<uni-coins-detail-table-cell @click="toExchange" v-for="(item, index) in dataList" :key="index" :item="item" hasCollect @collect="collect"></uni-coins-detail-table-cell>
+
 						<!-- 上滑加载更多组件 -->
 						<mix-load-more :status="loadMoreStatus"></mix-load-more>
 					</scroll-view>
@@ -149,6 +149,11 @@
 			init() {
 				this.getDetail();
 			},
+			toExchange(item){
+				uni.navigateTo({
+					url: '/pages/exchange/exchange?exChangeName='+item.exchange_code
+				});
+			},
 			async getDetail() {
 				let data = await this.$api.coins_detail(this.code);
 				if (data && data.code === 200) {
@@ -167,7 +172,7 @@
 					this.pageNum = 1;
 					this.loadMoreStatus = 0;
 				}
-				
+
 				console.log("status:"+this.loadMoreStatus)
 				if (this.loadMoreStatus==0) {
 					this.loadMoreStatus = 1;
@@ -178,7 +183,7 @@
 						if (data && data.code === 200) {
 							if(data.result.code == 200) {
 								console.log(this.pageNum)
-					
+
 								const result = data.result.data.markets
 								this.total = data.result.total_count
 								this.lastPage = data.result.total_pages
@@ -210,7 +215,7 @@
 				this.currTab = index;
 			},
 			//获得元素的size
-			getElSize(id) { 
+			getElSize(id) {
 				let el = uni.createSelectorQuery().select('.relative_section');
 				el.fields({
 					size: true,
@@ -231,7 +236,7 @@
 				if(exchange_code == this.exchange_code) {
 					this.isSelect = !this.isSelect;
 				}
-				let data = await this.$api.coins_add(this.code, {exchange_code: exchange_code}); 
+				let data = await this.$api.coins_add(this.code, {exchange_code: exchange_code});
 				if (data && data.code === 200) {
 					let tempArr = []
 					this.dataList.forEach((item, index)=>{

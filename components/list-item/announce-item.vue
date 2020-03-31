@@ -30,6 +30,8 @@
         methods: {
             gotoDetail(id, url) {
 				// 如果是链接就打开外链
+				//TODO:暂时不支持打开公告(原为跳转到fxh静态页面)
+				return
 				if(this.isLink) {
 					// #ifdef  APP-PLUS
 					plus.runtime.openURL(url);

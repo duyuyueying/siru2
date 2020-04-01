@@ -1,11 +1,9 @@
 <template>
 	<view class="" @click="goPage">
-		<view class="timer_wrap"><text class='normal_txt'>2019-12.14 14:00</text></view>
+		<view class="timer_wrap"><text class='normal_txt'>{{item.update_time}}</text></view>
 		<view class="card_wrap">
 			<view class="content_wrap">
-				<text class="list_item_black_title_sm">
-					跟欧盟其他兄弟相比，面条家算是靠谱了，民众虽然不太给力，但总比隔壁高卢好吧？现在为止，真正比较靠谱的政府，除了我国以外。
-					韩国 新加坡 越南 然后就算意大利了。从某种程度来说，肯奋起一战的面条，真比一群躺平的兄弟姐妹强多了。
+				<text class="list_item_black_title_sm" v-html="item.content">
 				</text>
 			</view>
 			<uni-title title="查看详情" :isBold="false">
@@ -23,8 +21,12 @@
 			uniTitle,
 			icons
 		},
+		props: {
+			item: Object,
+		},
 		methods:{
 			goPage() {
+				return
 				uni.showToast({
 					icon: 'none',
 					title:'想跳转到哪儿就跳转到哪儿'

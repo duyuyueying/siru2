@@ -25,7 +25,7 @@
 				<text class="list_item_black_title_sm btn_txt">{{item.accounting}}%</text>
 			</view>
 			<view style="width: 100upx;" v-else></view>
-			<view @click.stop="collect" class="collect_btn_wrap flex center" v-if="hasCollect">
+			<view @click.stop="collect" class="collect_btn_wrap flex center" v-if="hasCollect" style="justify-content: flex-end;flex: 1;">
 				<icons type="collect" :color="item.is_follow ? '#ffb100' : '#a0a0a0'"></icons>
 			</view>
 		</view>

@@ -353,6 +353,28 @@ export default {
         getUser(id) {
             return minRequest.get('/api/users/' + id)
         },
+        /**
+         * 回复我的
+         * @returns {Promise | Promise<unknown>}
+         */
+        comments_reply_msg(data) {
+            return minRequest.get('/api/comments/reply_msg', data)
+        },
+        /**
+         * 赞过我的
+         * @returns {Promise | Promise<unknown>}
+         */
+        comments_zan_msg(data) {
+            return minRequest.get('/api/comments/zan_msg', data)
+        },
+        /**
+         * 系统消息
+         * @param data
+         * @returns {Promise | Promise<unknown>}
+         */
+        notices(data){
+            return minRequest.get('/api/notices', data)
+        },
 
         //===============================搜索相关接口================================
         /**

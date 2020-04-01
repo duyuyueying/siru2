@@ -42,7 +42,7 @@
 						@scrolltolower="loadMore"
 						:style="{height: swiperHeight+'px'}"
 						>
-						<uni-coins-detail-table-cell @click="toExchange" v-for="(item, index) in dataList" :key="index" :item="item" hasCollect @collect="collect"></uni-coins-detail-table-cell>
+						<uni-coins-detail-table-cell @click="toExchange" v-for="(item, index) in dataList" :key="index" :item="item" hasCollect @collect="collect(item.exchange_code)"></uni-coins-detail-table-cell>
 
 						<!-- 上滑加载更多组件 -->
 						<mix-load-more :status="loadMoreStatus"></mix-load-more>

@@ -3,7 +3,7 @@
 		<navigator :url="'/pages/author/author?id=' + item.id" class="link_wrapper flex1" hover-class="none">
 			<view class="img_wrapper">
 				<image class="image-list1" :src="item.avatar_src!=''?item.avatar_src:'../../static/temp/avatar.jpeg'"></image>
-				<view class="icon_v" :style="{backgroundColor: identification != null ? identification.color: '#ccc'}"><text style="color:#fff;font-size: 20upx;">v</text></view>
+				<view class="icon_v" :style="{backgroundColor: item.verify_status != 0 ? '#ffb100': '#ccc'}"><text style="color:#fff;font-size: 20upx;">v</text></view>
 			</view>
 			
 			<view class="space_between flex_row flex1">
@@ -11,8 +11,8 @@
 					<view class="flex_row" style="align-items: center;">
 						<text class="list_item_black_title_sm mr20">{{item.nickname}}</text>
 						<text class="list_item_normal_txt"
-							  v-if="showIdentification && identification != null"
-							  :style="{color:identification != null ? identification.color: '#ccc'}">
+							  v-if="showIdentification && item.verify_status != 0"
+							  :style="{color:item.verify_status != 0 ? '#ffb100': '#ccc'}">
 							{{item.verify_name}}
 						</text>
 					</view>

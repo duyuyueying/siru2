@@ -26,7 +26,6 @@
             }
         },
 		created() {
-			console.log("tag_list_item",this.items);
 			// 这里需要根据接口返回来的关注人的列表判断当前这个人是否被关注过
 			// this.isFocus = [this.items[0].focus || false, this.items[1].focus || false];
 		},

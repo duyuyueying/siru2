@@ -2,21 +2,20 @@
     <view class="list_item_wrap" @click="onClick">
 		<view class="link_wrapper flex1" >
 			<view class="img_wrapper">
-				<image class="image-list1" src="../../static/temp/avatar.jpeg"></image>
-				<view class="icon_v" :style="{backgroundColor: identification != null ? identification.color: '#ccc'}"><text style="color:#fff;font-size: 20upx;">v</text></view>
+				<image class="image-list1" :src="dataItem.user.avatar_src!=''?dataItem.user.avatar_src:'../../static/temp/avatar.jpeg'"></image>
+				<view class="icon_v" :style="{backgroundColor: dataItem.user.verify_status != 0 ? '#ffb100': '#ccc'}"><text style="color:#fff;font-size: 20upx;">v</text></view>
 			</view>
 			
 			<view class="space_between flex_row flex1">
 				<view class="flex_column flex1 space_between">
 					<view class="flex_row" style="align-items: center;">
-						<text class="list_item_black_title_sm mr20">{{item&&item.name}}</text>
+						<text class="list_item_black_title_sm mr20">{{item&&dataItem.user.nickname}}</text>
 					</view>
 					<slot></slot>
-					<text class="list_item_normal_txt">2018.14.13</text>
+					<text class="list_item_normal_txt">{{dataItem.user.create_time}}</text>
 				</view>
 				<view class="btn_wrapper" v-if="showContent">
-					<text class="normal_txt">跟欧盟其他兄弟相比，面条家算是靠谱了，民众虽然不太给力，但总比隔壁高卢好吧？现在为止，真正比较靠谱的政府，除了我国以外。
-					韩国 新加坡 越南 然后就算意大利了。从某种程度来说，肯奋起一战的面条，真比一群躺平的兄弟姐妹强多了。</text>
+					<text class="normal_txt"></text>
 				</view>
 			</view>
 		</view>
@@ -30,6 +29,9 @@
 			return {
 				identification: null,
 				isFocus: false,
+				dataItem:{
+					user:{},
+				},
 			}
 		},
         props: {
@@ -53,7 +55,17 @@
 			// 这里需要根据接口返回来的关注人的列表判断当前这个人是否被关注过
 
 			this.isFocus = this.item.isFocus || false;
-			this.identification = identification[this.item.identification];	
+			this.identification = identification[this.item.identification];
+		},
+		created(){
+			if (this.showContent) {
+				//评论
+				this.dataItem = this.item
+			}else{
+				//用户
+				this.dataItem.user = this.item
+			}
+
 		},
         methods: {
             focus() {

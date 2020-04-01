@@ -33,7 +33,7 @@
 			<swiper-item>
 				<scroll-view :scroll-y="enableScrollY" :style="{height: swiperHeight+'px'}">
 					<view>
-						<view class="">
+						<view class="" v-if="exchange.exchange_coincode!=''">
 							<uni-title title="平台币"></uni-title>
 							<view class="flex1 flex_row" @click="toDetail" style="padding: 0upx 30upx;margin-bottom: 20upx;">
 								<view class="flex3 flex_row">
@@ -88,6 +88,7 @@
 								<uni-title title="基本信息" :height="65" :isBold="false">
 							</uni-title>
 						</view> -->
+						<uni-title title="基本信息"></uni-title>
 						<base-info-label name="官网" isLink :value="[{name:exchange.platform_name, url: exchange.official_url}]"></base-info-label>
 						<base-info-label name="国家"  :value="exchange.country"></base-info-label>
 						<base-info-label name="成立时间"  :value="exchange.launchedtime"></base-info-label>

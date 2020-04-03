@@ -5,8 +5,8 @@
 			  <!-- 这里是状态栏 /44的navbar-->
 			</view>
 			<view class="section">
-				<text class="txt">#{{data.name}}#</text>
-				<view class="btn" @click="focus"><text class="desc_txt" :style="{color: isFocus ? '#a0a0a0' : '#000'}">{{isFocus ? '已关注' : '+ 关注'}}</text></view>
+				<text class="txt">#{{tagInfo.name}}#</text>
+				<view class="btn" @click="focus"><text class="desc_txt" :style="{color: tagInfo.is_follow ? '#a0a0a0' : '#000'}">{{tagInfo.is_follow ? '已关注' : '+ 关注'}}</text></view>
 			</view>
 		</view>
 		<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="0" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
@@ -17,7 +17,7 @@
 				>
 				<news-item :newsItem="item" v-for="(item, index) in dataList" :key="index"></news-item>
 				<!-- 上滑加载更多组件 -->
-				<mix-load-more :status="loadMoreStatus"></mix-load-more>
+				<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
 			</scroll-view>
 		</mix-pulldown-refresh>
 	</view>
@@ -30,26 +30,34 @@
 	export default {
 		data() {
 			return {
-				data: focusAuthor,
 				iStatusBarHeight: 0,
-				dataList: [],
-				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
-				refreshing: false, // 刷新状态
-				isFocus: false, // 是否被关注
-				enableScrollY: false,
 				scrollViewOffset: 0,
+
+				tagID: 0,
+				tagInfo: {},
+				dataList:[],
+				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
+				enableScrollY: true,
+				refreshing: false, // 刷新状态
+				pageNum: 1,
+				total: 0,
+				pageSize: 15,
+				lastPage: 1,
 			}
 		},
 		mixins:[loadMore],
 		components:{
 			newsItem
 		},
-		onLoad() {
+		onLoad(e) {
 			this.iStatusBarHeight  = uni.getSystemInfoSync().statusBarHeight;
-			this.loadList('add');
-			uni.setNavigationBarTitle({
-				title: `#${this.data.name}#`
-			})
+			this.tagID = e.id
+			if (this.tagID=='0') {
+				this.errorBack()
+			}
+			this.loadTag()
+
+			this.loadList('refresh');
 		},
 		onPageScroll(e) {
 			if(Math.ceil(e.scrollTop) + 20 > this.scrollViewOffset ) {
@@ -62,52 +70,60 @@
 			this.getElSize();
 		},
 		methods:{
-			//列表
-			loadList(type){
-				// let tabItem = this.tabBars[this.currTab];
-				//type add 加载更多 refresh下拉刷新
-				if(type === 'add'){
-					if(this.loadMoreStatus === 2){
-						return;
+			loadTag() {
+				this.$api.tag_info(this.tagID).then(data => {
+					if (data && data.code === 200) {
+						this.tagInfo = data.result
+						uni.setNavigationBarTitle({
+							title: `#${data.result.name}#`
+						})
+					}else{
+						this.errorBack()
 					}
-					
-					this.loadMoreStatus = 1;
-				}
-				// #ifdef APP-PLUS
-				else if(type === 'refresh'){
-					this.refreshing = true;
-				}
-				// #endif
-				
-				//setTimeout模拟异步请求数据
-				setTimeout(()=>{
-					let list = newsItems;
-					list.sort((a,b)=>{
-						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
+				})
+			},
+			errorBack(){
+				this.$message('操作错误',function () {
+					uni.navigateBack({
+						delta:1
 					})
-					if(type === 'refresh'){
-						// 刷新前清空数组
-						this.dataList = [];
-					}
-					let tempArr = [];
-					list.forEach(item=>{
-						item.id = parseInt(Math.random() * 10000);
-						tempArr.push(item);
-					});
-					this.dataList.push(...tempArr);
-					//下拉刷新 关闭刷新动画
-					if(type === 'refresh'){
-						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-						// #ifdef APP-PLUS
-						this.refreshing = false;
-						// #endif
-						this.loadMoreStatus = 0;
-					}
-					//上滑加载 处理状态
-					if(type === 'add'){
-						this.loadMoreStatus = this.dataList.length > 40 ? 2: 0;
-					}
-				}, 600)
+				})
+			},
+			//列表
+			loadList(action){
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					this.dataList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+
+				if (this.loadMoreStatus==0) {
+					this.loadMoreStatus = 1;
+					this.$api.search_articles({
+						type: [1,3],
+						keyword: this.tagInfo.name,
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+					}).then(data => {
+						if (data && data.code === 200) {
+							this.info = data.result.info
+							const result = data.result.data
+							this.total = data.result.total
+							this.lastPage = data.result.last_page
+							this.dataList.push(...result);
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						}
+					})
+				}
 			},
 			//获得元素的size
 			getElSize() { 
@@ -122,8 +138,11 @@
 			},
 			
 			focus() {
-				let id = this.data.id;
-				this.isFocus = !this.isFocus
+				this.$api.follows_tag(this.tagInfo.id).then(data => {
+					if (data && data.code === 200) {
+						this.tagInfo.is_follow = data.result
+					}
+				})
 			}
 		}
 	}

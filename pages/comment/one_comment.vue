@@ -115,7 +115,6 @@
 					this.loadMoreStatus = 0;
 				}
 
-				console.log("status:"+this.loadMoreStatus)
 				if (this.loadMoreStatus==0) {
 					this.loadMoreStatus = 1;
 					this.$api.comments_info(this.commentId,{
@@ -123,8 +122,6 @@
 						pageSize: this.pageSize,
 					}).then(data => {
 						if (data && data.code === 200) {
-							console.log(this.pageNum)
-
 							this.info = data.result.info
 							const result = data.result.data
 							this.total = data.result.total

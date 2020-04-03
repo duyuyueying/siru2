@@ -96,7 +96,7 @@
 						>
 						<news-item :newsItem="item" v-for="(item, index) in dataList" :key="index"></news-item>
 						<!-- 上滑加载更多组件 -->
-						<mix-load-more :status="loadMoreStatus"></mix-load-more>
+						<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
 					</scroll-view>
 				</mix-pulldown-refresh>
 			</swiper-item>
@@ -147,12 +147,16 @@
 				identification: null,
 				iStatusBarHeight: 0,
 				currTab: 0,
-				dataList: [],
-				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
-				refreshing: false, // 刷新状态
-				isFocus: false, // 是否被关注
 				scrollViewOffset: 0,
-				enableScrollY: false,
+
+				dataList:[],
+				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
+				enableScrollY: true,
+				refreshing: false, // 刷新状态
+				pageNum: 1,
+				total: 0,
+				pageSize: 15,
+				lastPage: 1,
 			}
 		},
 		mixins:[loadMore],
@@ -168,18 +172,20 @@
 			// this.identification = identification[this.user.identification];
 			this.type = query.type;
 			this.id =  query.id;
-			this.loadList('add');
+
 			if(this.type == 'self') {
 				this.user = this.userInfo
 				this.user.data = Object.assign({}, this.userData, this.userInfo.data)
 			} else {
 				await this.getUser(this.id);
 			}
-			console.log(this.user)
+
 			uni.setNavigationBarTitle({
 				title: this.user.nickname
 			});
 			this.modifyStatusBarButtonStyle();
+
+			this.loadList('refresh');
 		},
 		onShareAppMessage() {
 			console.log('分享...');
@@ -230,52 +236,40 @@
 				})
 			},
 			//列表
-			loadList(type){
-				// let tabItem = this.tabBars[this.currTab];
-				//type add 加载更多 refresh下拉刷新
+			loadList(action){
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					this.dataList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
 
-				if(type === 'add'){
-					console.log(this.loadMoreStatus)
-					if(this.loadMoreStatus === 2){
-						return;
-					}
+				if (this.loadMoreStatus==0) {
 					this.loadMoreStatus = 1;
-				}
-				// #ifdef APP-PLUS
-				else if(type === 'refresh'){
-					this.refreshing = true;
-				}
-				// #endif
-
-				//setTimeout模拟异步请求数据
-				setTimeout(()=>{
-					let list = newsItems;
-					list.sort((a,b)=>{
-						return Math.random() > .5 ? -1 : 1; //静态数据打乱顺序
+					this.$api.search_articles({
+						user_id: this.id,
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+					}).then(data => {
+						if (data && data.code === 200) {
+							this.info = data.result.info
+							const result = data.result.data
+							this.total = data.result.total
+							this.lastPage = data.result.last_page
+							this.dataList.push(...result);
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						} else {
+							this.errorBack()
+						}
 					})
-					if(type === 'refresh'){
-						// 刷新前清空数组
-						this.dataList = [];
-					}
-					let tempArr = [];
-					list.forEach(item=>{
-						item.id = parseInt(Math.random() * 10000);
-						tempArr.push(item);
-					});
-					this.dataList.push(...tempArr);
-					//下拉刷新 关闭刷新动画
-					if(type === 'refresh'){
-						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-						// #ifdef APP-PLUS
-						this.refreshing = false;
-						// #endif
-						this.loadMoreStatus = 0;
-					}
-					//上滑加载 处理状态
-					if(type === 'add'){
-						this.loadMoreStatus = this.dataList.length > 40 ? 2: 0;
-					}
-				}, 600)
+				}
 			},
 			changeTab(e) {
 				let index = e.detail.current

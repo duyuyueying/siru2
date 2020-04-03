@@ -22,7 +22,7 @@ minRequest.interceptors.request((request) => {
 minRequest.interceptors.response((response) => {
     if (response.data && (response.data.code == 401 || response.data.code == 402)) {
         store.commit("USER_INFO", null);
-		store.commit('API_TOKEN', null);
+        store.commit('API_TOKEN', null);
     }
     return response.data
 })
@@ -45,7 +45,7 @@ export default {
     minRequest,
     apis: {
         uniapp(data) {
-            return new MinRequest().get(resUrl+'/web/captcha', data)
+            return new MinRequest().get(resUrl + '/web/captcha', data)
         },
         /**
          * 上传文件
@@ -53,7 +53,7 @@ export default {
          * @param success
          */
         upfile(file) {
-            return new MinRequest().uploadFile(resUrl+'/web/captcha', file)
+            return new MinRequest().uploadFile(resUrl + '/web/captcha', file)
         },
         /**
          * 下载文件
@@ -110,8 +110,8 @@ export default {
          * @param verify_code
          * @returns {Promise | Promise<unknown>}
          */
-        user_password(password, verify_code){
-            return minRequest.put('/api/user/password',{password:password,verify_code:verify_code})
+        user_password(password, verify_code) {
+            return minRequest.put('/api/user/password', {password: password, verify_code: verify_code})
         },
         /**
          * 更改手机
@@ -120,7 +120,7 @@ export default {
          * @returns {Promise | Promise<unknown>}
          */
         user_phone(phone, verify_code) {
-            return minRequest.put('/api/user/phone',{phone:phone,verify_code:verify_code})
+            return minRequest.put('/api/user/phone', {phone: phone, verify_code: verify_code})
         },
         /**
          * 修改用户信息
@@ -372,9 +372,18 @@ export default {
          * @param data
          * @returns {Promise | Promise<unknown>}
          */
-        notices(data){
+        notices(data) {
             return minRequest.get('/api/notices', data)
         },
+        /**
+         * 标签详情
+         * @param id
+         * @returns {Promise | Promise<unknown>}
+         */
+        tag_info(id) {
+            return minRequest.get('/api/tags/' + id)
+        },
+
 
         //===============================搜索相关接口================================
         /**
@@ -452,32 +461,32 @@ export default {
         coins_detail(code) {
             return minRequest.get('/api/coins/' + code)
         },
-		/**
-		 * 获取交易所详情
-		 * @param coin
-		 * @param currency
-		 * @returns {Promise | Promise<unknown>}
-		 */
-		coins_exhange_detail(code) {
-		    return minRequest.get('/api/coins/exchange/' + code)
-		},
-		/**
-		 * 获取交易所公告
-		 * @param coin
-		 * @param currency
-		 * @returns {Promise | Promise<unknown>}
-		 */
-		coins_exhange_news(code, data) {
-		    return minRequest.get('/api/coins/exchange/' + code+'/news',data)
-		},
-		/**
-		 * 获取交易所行情
-		 * @param coin
-		 * @param currency
-		 * @returns {Promise | Promise<unknown>}
-		 */
-		coins_exhange_markets(code, data) {
-		    return minRequest.get('/api/coins/exchange/' + code+'/markets',data)
-		},
+        /**
+         * 获取交易所详情
+         * @param coin
+         * @param currency
+         * @returns {Promise | Promise<unknown>}
+         */
+        coins_exhange_detail(code) {
+            return minRequest.get('/api/coins/exchange/' + code)
+        },
+        /**
+         * 获取交易所公告
+         * @param coin
+         * @param currency
+         * @returns {Promise | Promise<unknown>}
+         */
+        coins_exhange_news(code, data) {
+            return minRequest.get('/api/coins/exchange/' + code + '/news', data)
+        },
+        /**
+         * 获取交易所行情
+         * @param coin
+         * @param currency
+         * @returns {Promise | Promise<unknown>}
+         */
+        coins_exhange_markets(code, data) {
+            return minRequest.get('/api/coins/exchange/' + code + '/markets', data)
+        },
     }
 }

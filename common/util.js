@@ -13,6 +13,10 @@ const friendlyDate = {
             };
 
             var now = Date.now();
+            var timestampStr =String(timestamp) ;
+            if (timestampStr.length<11) {
+                timestamp = timestamp*1000
+            }
             var seconds = Math.floor((now - timestamp) / 1000);
             var minutes = Math.floor(seconds / 60);
             var hours = Math.floor(minutes / 60);

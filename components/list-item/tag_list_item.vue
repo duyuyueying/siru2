@@ -1,6 +1,6 @@
 <template>
 		<view class="media-item">
-			<view class="link_wrapper" v-for="(item, index) in items" :key="index" :style="{marginRight: index == 0 ? '30upx' : '0upx'}"  @tap="gotoDetail" hover-class="hover">
+			<view class="link_wrapper" v-for="(item, index) in items" :key="index" :style="{marginRight: index == 0 ? '30upx' : '0upx'}"  @tap="gotoDetail(item)" hover-class="hover">
 				<view class="content_wrapper flex_row" >
 					<text class="list_item_black_title_base right_space_base">{{item.name}}</text>
 					<text class="tag" v-if="item.number>49">热</text>
@@ -41,9 +41,9 @@
 					}
 				})
 			},
-			gotoDetail() {
+			gotoDetail(item) {
 				uni.navigateTo({
-					url: '/pages/tagPage/tagPage'
+					url: '/pages/tagPage/tagPage?id=' + item.id
 				})
 			}
         }

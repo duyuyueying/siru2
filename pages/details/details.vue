@@ -682,7 +682,7 @@
 	}
 	.comment-wrap{
 		background-color: #f5f5f5;
-		height: 500upx;
+		/*height: 500upx;*/
 	}
 	.icon_social{
 		width: 45upx;

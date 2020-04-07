@@ -41,135 +41,21 @@
 					</view>
 				</view>
 			</scroll-view>
-			
 		</view>
-		<view v-else>
-			<!-- 顶部选项卡 -->
-			<!-- 搜索页面分类不多，没有scrollview，后续tab多起来，该换scrollview -->
-			<!-- <scroll-view id="nav-bar" class="nav-bar" scroll-x scroll-with-animation :scroll-left="scrollLeft"> -->
-				<view class="flex_row nav-bar fixed_tabbar" :style="{top: (elSize.height + 44)+'px'}">
-					<view
-						v-for="(item,index) in tabBars" :key="index"
-						class="nav-item"
-						:class="{current: index === tabCurrentIndex}"
-						:id="'tab'+index"
-						@click="changeTab(index)"
-					>{{item.name}}</view>
-				</view>
-				<view >
-					<view class="uni-tabbar__placeholder-view" />
-				</view>
-			<!-- </scroll-view> -->
-			<!-- 下拉刷新组件 -->
-			<view>
-				<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" :top="90" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
-					<!-- 内容部分 -->
-					<swiper 
-						id="swiper"
-						class="swiper-box" 
-						:duration="300" 
-						:current="tabCurrentIndex" 
-						@change="changeTab"
-					>
-						<swiper-item v-for="(tabItem, index) in tabBars" :key="index">
-							<scroll-view 
-								class="panel-scroll-box" 
-								:scroll-y="enableScroll" 
-								@scrolltolower="loadMore"
-								>
-								<view v-for="(item, index) in tabItem.newsList" :key="index" class="news-item" @click="navToDetails(item)">
-									<!-- 直播 -->
-									<uni-vedio-list-item :item="item" v-if="tabItem.name == '视频'"></uni-vedio-list-item >
-									<!-- 专栏 -->
-									<person-list-item :item="item" v-else-if="tabItem.name == '专栏'">
-										<view class="flex_row">
-											<view class="flex_row mr20"><text class="m-head_left_text" style="marginRight: 10upx">文章  </text><text class="m-head_left_text" style="color:#000">111</text></view>
-											<view  class="flex_row"><text class="m-head_left_text">粉丝  </text><text class="m-head_left_text" style="color:#000">222</text></view>
-										</view>
-									</person-list-item>
-									<!-- 币种 -->
-									<uni-coins-item :item="item" v-else-if="tabItem.name == '币种'"></uni-coins-item>
-									<!-- 交易所 -->
-									<uni-ex-change-item :item="item" v-else-if="tabItem.name == '交易所'"></uni-ex-change-item>
-									<!-- 快讯 -->
-									<fast-news-item :newsItem="item" v-else-if="tabItem.name == '快讯'"></fast-news-item>
-									<!-- 文章 -->
-									<news-item :newsItem="item" v-else></news-item>
-								</view> 
-								<!-- 上滑加载更多组件 -->
-								<mix-load-more :status="loadMoreStatus"></mix-load-more>
-							</scroll-view>
-							<scroll-view
-								class="panel-scroll-box" 
-								:scroll-y="enableScroll" 
-								@scrolltolower="loadMore"
-								:style="{height: swiperHeight+'px'}"
-								v-if="false"
-								>
-								<view v-for="(item, index) in tabItem.newsList" :key="index">
-									<view class="u-item_wrap">
-										<view class="u-item_head_wrap">
-											<uni-title :title="item.name" size="34" height="90" @click="switchTab(item)">
-												<view class="m-head_left" :style="{height:'90upx'}" >
-													<text class="m-head_left_text">共</text>
-													<text class="m-head_left_focus_text">{{item.total}}</text>
-													<text class="m-head_left_text">条</text>
-													<icons type="right" color="#999" size="12"></icons>
-												</view>
-											</uni-title>
-										</view>
-										<!-- 专栏 -->
-										<view class="u_item_list" v-if="item.enCode == 'specialColumn'">
-											<person-list-item v-for="(subItem, i) in item.list" :item="subItem" :key="i" showLine>
-												<view class="flex_row">
-													<view class="flex_row_center mr20"><text class="m-head_left_text" style="marginRight: 10upx;">文章  </text><text class="m-head_left_text" style="color:#000">111</text></view>
-													<view  class="flex_row_center"><text class="m-head_left_text" style="marginRight: 10upx;">粉丝  </text><text class="m-head_left_text" style="color:#000">222</text></view>
-												</view>
-											</person-list-item>
-										</view>
-										<!-- 文章 -->
-										<view class="u_item_list" v-if="item.enCode == 'article'">
-											<news-item v-for="(subItem, i) in item.list" :newsItem="subItem" :key="i" ></news-item>
-										</view>
-										<!-- 快讯 -->
-										<view class="u_item_list" v-if="item.enCode == 'fastNews'">
-											<fast-news-item v-for="(subItem, i) in item.list" :newsItem="subItem" :key="i"></fast-news-item>
-										</view>
-										<!-- 你想找 -->
-										<view class="u_item_list" v-if="item.enCode == 'coinType'">
-											<uni-coins-item v-for="(subItem, i) in item.list" :item="subItem" :key="i" ></uni-coins-item>
-										</view>
-										<!-- 交易所 -->
-										<view class="u_item_list" v-if="item.enCode == 'exChange'">
-											<uni-ex-change-item v-for="(subItem, i) in item.list" :item="subItem" :key="i" ></uni-ex-change-item>
-										</view>
-									</view>
-								</view>
-								<!-- 上滑加载更多组件 -->
-								<mix-load-more :status="loadMoreStatus"></mix-load-more>
-							</scroll-view>
-						</swiper-item>
-					</swiper>
-				</mix-pulldown-refresh>
-			</view>
+		<view v-else style="height:100vh">
+			<uni-tab-swiper :tabBars="tabBars" ref="tabSwiper"></uni-tab-swiper>
 		</view>
 	</view>
 </template>
 
 <script>
 	import {uniStatusBar } from '@dcloudio/uni-ui';
+	import uniTabSwiper from '@/components/uni-tab-swiper/uni-tab-swiper'
+	import searchListPage from '@/pages/search/search-list-page.vue';
 	import uniTitle from '@/components/uni-title.vue';
 	import uniTag from '@/components/uni-tag.vue';
-	import newsItem from '@/components/list-item/news-item.vue';
-	import fastNewsItem from '@/components/list-item/fast-news-item.vue';
-	import personListItem from '@/components/list-item/person-list-item.vue';
-	import {newsList} from '@/service/getData.js';
-	import liveItem from '@/components/list-item/uni-video-list-item.vue';
-	import uniCoinsItem from '@/components/list-item/uni-coins-item.vue';
-	import uniExChangeItem from '@/components/list-item/uni-exchange-item.vue';
 	import icons from '@/components/icons/icons.vue';
 	import {loadMore, getElSize} from '@/common/util.js';
-	import {newItem, searchTab, searchList, newsItems, focusAuthors, tags, coins} from '@/mock/data';
 	
 	let scrollTimer = false, tabBar;
 	let HISTORY_LIST = 'HISTORY_LIST'; // 存放历史数据的keyName
@@ -181,61 +67,67 @@
 				hotList: [], // 热门
 				keyWord: '', // 搜索关键字
 				showInit: true, // 展示默认页面
-				tabBars: [], // tab数据
-				enableScroll: true,
-				swiperHeight: 0, // scrollView的高度
-				pageSize: 15,
-				searchTabType: [{
-					id: 2,
-					name: '文章',
-					enCode: 'article',
-					type: 'article'
-				}, {
-					id: 3,
-					name: '快讯',
-					enCode: 'fastNews',
-					type: 'news'
-				}, {
-					id: 4,
-					name: '币种',
-					enCode: 'coinType',
-					type: 'coin'
-				}, {
-					id: 5,
-					name: '交易所',
-					enCode: 'exchange'
-				}
-				],
+			
 				searchType: 'article',
-				loadMoreStatus: 0,
 			}
 		},
 		components:{
 			uniTitle,
 			uniTag,
-			newsItem,
-			uniCoinsItem,
-			uniExChangeItem,
-			personListItem,
-			liveItem,
 			uniStatusBar,
 			icons,
-			fastNewsItem
+			uniTabSwiper
 		},
 		mixins:[loadMore,getElSize],
+		computed: {
+			tabBars(){
+				return [{
+					name: '文章',
+					component: searchListPage,
+					data: {
+						id: 2,
+						enCode: 'article',
+						type: 'article',
+						name: '文章',
+						keyWord: this.keyWord
+					}
+				}, {
+					name: '快讯',
+					component: searchListPage,
+					data:{
+						id: 3,
+						name: '快讯',
+						enCode: 'fastNews',
+						type: 'news',
+						keyWord: this.keyWord
+					}
+				}, {
+					name: '币种',
+					component: searchListPage,
+					data: {
+						id: 4,
+						name: '币种',
+						enCode: 'coinType',
+						type: 'coin',
+						keyWord: this.keyWord
+					}
+				}, {
+					id: 5,
+					name: '交易所',
+					enCode: 'exchange',
+					component: searchListPage,
+					data: {
+						id: 5,
+						name: '交易所',
+						enCode: 'exchange',
+						keyWord: this.keyWord
+					}
+				}]
+			}
+		},
 		onLoad() {
-			this.tabBars = this.initTab(this.searchTabType);
 			this.loadHistoryListData();
 			this.loadHotWords();
-		},
-		onReady() {
-			let _this = this;
-			uni.getSystemInfo({
-				success: function(e) {
-					// 44为标题的高度
-					_this.swiperHeight = e.windowHeight - 44;
-				}
-			})
 		},
 		mounted() {
 			this.getElSize('.statusBar');
@@ -261,105 +153,6 @@
 					}
 				});
 			},
-			//搜索列表
-			async loadList(action){
-				let tabItem = this.tabBars[this.tabCurrentIndex];
-				//action= add上拉加载 refresh下拉刷新
-				if (action=='refresh') {
-					tabItem.newsList = [];
-					tabItem.pageNum = 1;
-					this.loadMoreStatus = 0;
-				}
-				if (this.loadMoreStatus==0) {
-					this.loadMoreStatus = 1;
-					// 自盘
-					let data = [];
-					if(tabItem.name == '文章') {
-						data = await this.$api.search_articles({
-							type: [1,3],
-							keyword: this.keyWord,
-							pageNum: tabItem.pageNum,
-							pageSize: this.pageSize,
-						});
-					} else if(tabItem.name == '快讯'){
-						data = await this.$api.search_articles({
-							type: 2,
-							keyword: this.keyWord,
-							pageNum: tabItem.pageNum,
-							pageSize: this.pageSize,
-						});
-					} else if(tabItem.name == '币种' ||tabItem.name == '交易所'){
-						data = await this.$api.search_coins({
-							keyword: this.keyWord,
-							pageNum: tabItem.pageNum,
-							exhangePage: tabItem.pageNum,
-							pageSize: this.pageSize,
-						});
-					}
-					
-					if (data && data.code == 200) {
-						let result = [];
-						if(tabItem.name == '币种') {
-							if(data.result.code == 200){
-								result = data.result.coinlist || [];
-								tabItem.lastPage = data.result.coin_maxpage
-							}
-						} else if(tabItem.name == '交易所'){
-							if(data.result.code == 200){
-								result = data.result.exchangelist || [];
-								tabItem.lastPage = data.result.exchange_maxpage
-							}
-						}else {
-							result = data.result.data || [];
-							tabItem.lastPage = data.result.last_page
-						}
-						tabItem.newsList.push(...result);
-						this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
-						tabItem.refreshing = false;
-						if (tabItem.pageNum==tabItem.lastPage) {
-							this.loadMoreStatus = 2;
-						}else{
-							this.loadMoreStatus = 0;
-						}
-						tabItem.pageNum += 1;
-					} else {
-						this.$message(data.msg)
-					}
-				}
-			},
-			//tab切换
-			async changeTab(e){
-				if(scrollTimer){
-					//多次切换只执行最后一次
-					clearTimeout(scrollTimer);
-					scrollTimer = false;
-				}
-				let index = e;
-				//e=number为点击切换，e=object为swiper滑动切换
-				if(typeof e === 'object'){
-					index = e.detail.current
-				}
-				if(typeof e === 'number'){
-					//点击切换时先切换再滚动tabbar，避免同时切换视觉错位
-					this.tabCurrentIndex = index; 
-				}
-				//延迟300ms,等待swiper动画结束再修改tabbar
-				scrollTimer = setTimeout(()=>{
-					if(typeof e === 'object'){
-						this.tabCurrentIndex = index; 
-					}
-					this.tabCurrentIndex = index; 
-					//第一次切换tab，动画结束后需要加载数据
-					let tabItem = this.tabBars[this.tabCurrentIndex];
-					this.searchType = tabItem.type
-
-					if(this.tabCurrentIndex !== 0 && tabItem.loaded !== true){
-						this.loadList('refresh');
-						tabItem.loaded = true;
-					}
-
-				}, 300)
-			},
 			// 清除搜索历史
 			clearAllHistory() {
 				this.historyList = [];
@@ -369,12 +162,6 @@
 			deleteTag(index) {
 				this.historyList.splice(index,1);
 				this.setHistoryListData(this.historyList);
-			},
-			// 直播列表页面
-			gotoLiveList(){
-				uni.navigateTo({
-					url: '../livelist/livelist'
-				})
 			},
 			/**
 			 * 提交搜索
@@ -388,7 +175,11 @@
 				}
 				if(e.value != ''){
 					this.showInit = false;
-					this.loadList('refresh');
+					// 如果tabswiper存在就进行搜索
+					let tabSwiperComp = this.$refs.tabSwiper;
+					if(tabSwiperComp){
+						tabSwiperComp.onPulldownReresh()
+					}
 					if(this.historyList.includes(this.keyWord)){
 						return;
 					} else {

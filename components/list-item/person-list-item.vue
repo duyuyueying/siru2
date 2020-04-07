@@ -37,7 +37,12 @@
 			}
 		},
         props: {
-            item: Object,
+            item: {
+							type: Object,
+							default(){
+								return {}
+							}
+						},
 			// 认证
 			showIdentification: {
 				type: Boolean,

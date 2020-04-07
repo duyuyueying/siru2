@@ -5,8 +5,8 @@ const minRequest = new MinRequest()
 
 // 192.168.1.3 192.168.123.90 192.168.123.224
 // 192.168.50.29
-const apiUrl = 'http://192.168.50.29:8182'
-const resUrl = 'http://192.168.50.29:8181'
+const apiUrl = 'http://192.168.1.3:8182'
+const resUrl = 'http://192.168.1.3:8181'
 
 // 请求拦截器
 minRequest.interceptors.request((request) => {

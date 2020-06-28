@@ -24,8 +24,83 @@
 				<view><text class="txt white right_space_base">{{user.follows_count}} 关注</text></view>
 				<view v-if="user.data.qrCode" class="qrCode_wrap" @tap="showQrCode"><icons type="qrCode" color="black"></icons></view>
 			</view>
+
 		</view>
-    <uni-tab-swiper :tabBars="tabBars"></uni-tab-swiper>
+		<view class="relative_section">
+			<tabs :tabs="['主页','专栏']" @changeTab="changeTab" :defaultTab="currTab"></tabs>
+		</view>
+		<swiper :current="currTab" @change="changeTab" class="swiper">
+			<swiper-item>
+				<view class="content_wrapper">
+					<uni-title title="个人介绍"></uni-title>
+					<view class="pad30">
+						<view class="brBot"><text class="desc_txt">{{user.data.profile!=''?user.data.profile:'该用户很忙什么都没留下。'}}</text></view>
+
+						<view class="list_container flex_row" v-if="user.data.phone!=''">
+							<view class="icon_wrapper1">
+								<image class="image-list2" src="../../static/social/phone.png"></image>
+							</view>
+							<view class="flex_column border_bottom">
+								<text class="list_item_black_txt">手机号码</text>
+								<text class="list_item_black_title_sm">{{user.data.phone}}</text>
+							</view>
+						</view>
+
+						<view class="list_container flex_row" v-if="user.data.email!=''">
+							<view class="icon_wrapper1">
+								<image class="image-list2" src="../../static/social/message.png"></image>
+							</view>
+							<view class="flex_column border_bottom">
+								<text class="list_item_black_txt">电子邮件</text>
+								<text class="list_item_black_title_sm">{{user.data.email}}</text>
+							</view>
+						</view>
+
+						<view class="list_container flex_row" v-if="user.data.wechat_official!=''">
+							<view class="icon_wrapper1">
+								<image class="image-list2" src="../../static/social/wechat2.png"></image>
+							</view>
+							<view class="flex_column border_bottom">
+								<text class="list_item_black_txt">公众号</text>
+								<text class="list_item_black_title_sm">{{user.data.wechat_official}}</text>
+							</view>
+						</view>
+						<view class="list_container flex_row" v-if="user.data.wechat!=''">
+							<view class="icon_wrapper1 ">
+								<image class="image-list2" src="../../static/social/wechat.png"></image>
+							</view>
+							<view class="flex_column border_bottom">
+								<text class="list_item_black_txt">微信号</text>
+								<text class="list_item_black_title_sm">{{user.data.wechat}}</text>
+							</view>
+						</view>
+
+						<view class="list_container flex_row" v-if="user.data.twitter!=''">
+							<view class="icon_wrapper1 ">
+								<image class="image-list2" src="../../static/social/twitter.png"></image>
+							</view>
+							<view class="flex_column border_bottom">
+								<text class="list_item_black_txt">Twitter</text>
+								<text class="list_item_black_title_sm">{{user.data.twitter}}</text>
+							</view>
+						</view>
+					</view>
+				</view>
+			</swiper-item>
+			<swiper-item>
+				<mix-pulldown-refresh ref="mixPulldownRefresh" class="panel-content" @refresh="onPulldownReresh" @setEnableScroll="setEnableScroll">
+					<scroll-view
+						class="panel-scroll-box"
+						:scroll-y="enableScrollY"
+						@scrolltolower="loadMore"
+						>
+						<news-item :newsItem="item" v-for="(item, index) in dataList" :key="index"></news-item>
+						<!-- 上滑加载更多组件 -->
+						<mix-load-more :status="loadMoreStatus" @click.native="loadMore"></mix-load-more>
+					</scroll-view>
+				</mix-pulldown-refresh>
+			</swiper-item>
+		</swiper>
 		<uni-popup ref="sign">
 			<view class="sign_box">
 				<view><text class="list_item_black_title_sm heavy">{{user.nickname}}</text></view>
@@ -42,12 +117,15 @@
 </template>
 
 <script>
-  import {mapState} from 'vuex';
-  import uniTabSwiper from '@/components/uni-tab-swiper/uni-tab-swiper'
+	import {mapState} from 'vuex';
+	import {focusAuthor, newsItems} from '@/mock/data.js';
+	import {identification} from '@/common/config.js';
+	import tabs from '@/components/tabs.vue';
+	import uniTitle from '@/components/uni-title.vue';
+	import newsItem from '@/components/list-item/news-item.vue';
 	import icons from '@/components/icons/icons.vue';
-  import {uniPopup} from '@dcloudio/uni-ui';
-  import authorHomePage from '@/pages/author/author-home-page.vue';
-  import authorNewsPage from '@/pages/author/author-news-page.vue';
+	import {loadMore} from '@/common/util.js';
+	import {uniPopup} from '@dcloudio/uni-ui';
 	export default {
 		data() {
 			const userData = {
@@ -61,21 +139,37 @@
 				profile: '',
 			}
 			return {
-        // tabBars: [{name: '主页', component: authorHomePage}, {name: '专栏', component: authorNewsPage}],
 				id: 0,
 				userData: userData,
 				user: {
 					data: userData
-				}
+				},
+				identification: null,
+				iStatusBarHeight: 0,
+				currTab: 0,
+				scrollViewOffset: 0,
+
+				dataList:[],
+				loadMoreStatus:  0, //加载更多 0加载前，1加载中，2没有更多了
+				enableScrollY: true,
+				refreshing: false, // 刷新状态
+				pageNum: 1,
+				total: 0,
+				pageSize: 15,
+				lastPage: 1,
 			}
 		},
+		mixins:[loadMore],
 		components:{
+			tabs,
+			uniTitle,
+			newsItem,
 			icons,
-      uniPopup,
-      uniTabSwiper
-    },
+			uniPopup
+		},
 		async onLoad(query) {
 			this.iStatusBarHeight  = uni.getSystemInfoSync().statusBarHeight;
+			// this.identification = identification[this.user.identification];
 			this.type = query.type;
 			this.id =  query.id;
 
@@ -85,15 +179,17 @@
 			} else {
 				await this.getUser(this.id);
 			}
+
 			uni.setNavigationBarTitle({
 				title: this.user.nickname
 			});
 			this.modifyStatusBarButtonStyle();
+
+			this.loadList('refresh');
 		},
 		onShareAppMessage() {
 			console.log('分享...');
-    },
-    // 关注按钮交互
+		},
 		onNavigationBarButtonTap(e) {
 			if(this.type == 'self' && e.index == 1) {
 				uni.navigateTo({
@@ -110,18 +206,18 @@
 				})
 			}
 		},
-		computed: {
-      ...mapState(['userInfo']),
-      tabBars(){
-        if(this.type == 'self') {
-          this.user = this.userInfo
-          this.user.data = Object.assign({}, this.userData, this.userInfo.data)
-        }
-        return [{name: '主页', component: authorHomePage, data: this.user.data, noRefresh: true, noLoadMore: true }, {name: '专栏', component: authorNewsPage, data:{id: this.id}}]
-      } 
-    },
+		mounted() {
+			this.getElSize();
+		},
+		onPageScroll(e) {
+			if(Math.ceil(e.scrollTop) + 20 > this.scrollViewOffset ) {
+				this.enableScrollY = true;
+			} else {
+				this.enableScrollY = false;
+			}
+		},
+		computed: mapState(['userInfo']),
 		methods: {
-      // 获取作者信息
 			async getUser(id) {
 				return new Promise((resolve)=>{
 					this.$api.getUser(id).then(data => {
@@ -138,12 +234,61 @@
 						}
 					})
 				})
-      },
-      // 下载二维码弹框
+			},
+			//列表
+			loadList(action){
+				//action= add上拉加载 refresh下拉刷新
+				if (action=='refresh') {
+					this.dataList = [];
+					this.pageNum = 1;
+					this.loadMoreStatus = 0;
+				}
+
+				if (this.loadMoreStatus==0) {
+					this.loadMoreStatus = 1;
+					this.$api.search_articles({
+						user_id: this.id,
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+					}).then(data => {
+						if (data && data.code === 200) {
+							this.info = data.result.info
+							const result = data.result.data
+							this.total = data.result.total
+							this.lastPage = data.result.last_page
+							this.dataList.push(...result);
+							this.$refs.mixPulldownRefresh && this.$refs.mixPulldownRefresh.endPulldownRefresh();
+							this.refreshing = false;
+							if (this.pageNum==this.lastPage) {
+								this.loadMoreStatus = 2;
+							}else{
+								this.loadMoreStatus = 0;
+							}
+							this.pageNum += 1;
+						} else {
+							this.errorBack()
+						}
+					})
+				}
+			},
+			changeTab(e) {
+				let index = e.detail.current
+				if(index == this.currTab){
+					return;
+				}
+				this.currTab = e.detail.current;
+				if(this.dataList.length == 0) {
+					this.loadList('add')
+				}
+			},
+			showQrCode() {
+				this.$refs.sign.open();
+			},
 			download() {
 				uni.downloadFile({
 					url: 'https://img.36krcdn.com/20200307/v2_945dcd5d78514102a1e83a016bfbb2a6_img_000',
 					success(e) {
+
 						uni.saveImageToPhotosAlbum({
 							filePath: e.tempFilePath,
 							success(path) {
@@ -160,11 +305,17 @@
 				});
 				this.close();
 			},
-	    // 展示二维码弹框
-			showQrCode() {
-				this.$refs.sign.open();
-      },
-      // 关闭二维码弹框
+			//获得元素的size
+			getElSize() {
+				let el = uni.createSelectorQuery().select('.relative_section');
+				el.fields({
+					size: true,
+					scrollOffset: true,
+					rect: true
+				}, (data) => {
+					this.scrollViewOffset = data.top;
+				}).exec();
+			},
 			close() {
 				this.$refs.sign.close();
 			},
@@ -184,6 +335,7 @@
 					});
 				}
 				// #endif
+
 			}
 		}
 	}

@@ -7,8 +7,8 @@
 			<image class="logo_img" style="width: 50upx;height: 50upx;margin-right: 8upx" :src="item.logo"></image>
 		</view>
 		<view class="flex3 flex_column">
-			<text class="blod_black_txt">{{item.name}}</text>
-			<text class="normal_txt">{{item.name_zh}}</text>
+			<text class="blod_black_txt">{{item.symbol}}</text>
+			<text class="normal_txt">{{item.name_zh ? item.name_zh : item.name}}</text>
 		</view>
 		<view class="flex7 flex_column">
 			<!-- <text class="blod_black_txt">&yen;{{item.volume}}</text> -->
